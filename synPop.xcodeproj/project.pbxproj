@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9D7B63481FAAC3F70044FD3F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63471FAAC3F70044FD3F /* main.cpp */; };
+		9D7B63531FAAC4610044FD3F /* basic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63521FAAC4610044FD3F /* basic.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,8 @@
 /* Begin PBXFileReference section */
 		9D7B63441FAAC3F70044FD3F /* synPop */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = synPop; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D7B63471FAAC3F70044FD3F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		9D7B63511FAAC4490044FD3F /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		9D7B63521FAAC4610044FD3F /* basic.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = basic.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +61,8 @@
 			isa = PBXGroup;
 			children = (
 				9D7B63471FAAC3F70044FD3F /* main.cpp */,
+				9D7B63511FAAC4490044FD3F /* main.h */,
+				9D7B63521FAAC4610044FD3F /* basic.cpp */,
 			);
 			path = synPop;
 			sourceTree = "<group>";
@@ -119,6 +124,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D7B63531FAAC4610044FD3F /* basic.cpp in Sources */,
 				9D7B63481FAAC3F70044FD3F /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -159,7 +165,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
+				ENABLE_TESTABILITY = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -215,6 +221,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
