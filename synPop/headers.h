@@ -27,6 +27,7 @@ class agent;
 class rbldg;    //residential
 class bbldg;    //business
 class gbldg;    //govermental
+class sbldg;    //school bldgs
 
 //sites
 class hhold;    //household

@@ -33,10 +33,10 @@ public:
     hhold *hd;    //household
     workp *wp;    //workplace
     schol *sh;    //school
-    mblok *vg;
-    cblok *ct;
+    mblok *mbk;
+    cblok *cbk;
     
-    agent(string id, int age = -1, char gendr = '-', char margs = 'u', hhold *hd = NULL, workp *wp = NULL, schol *sh = NULL, mblok *vg = NULL, cblok *ct = NULL);
+    agent(int aid, int age = -1, char gendr = '-', char margs = 'u', hhold *hd = NULL, workp *wp = NULL, schol *sh = NULL, mblok *mbk = NULL, cblok *cbk = NULL);
     
     ~agent();
     

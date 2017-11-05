@@ -13,14 +13,68 @@
 using namespace std;
 
 class rbldg{
+public:
+    int bid;
+    double lat, log;
+    double area;
+    map<int, double> ngbbldg;   //neighbour buildings
     
+    hhold *hd;
+    mblok *mbk;
+    cblok *cbk;
+    
+    rbldg(int bid, double lat, double log, double area, mblok *mbk, cblok *cbk){
+        this->bid = bid;
+        this->lat = lat;
+        this->log = log;
+        this->area = area;
+        this->mbk = mbk;
+        this->cbk = cbk;
+        this->hd = NULL;
+    }
+    
+    ~rbldg(){
+        mbk = NULL;
+        cbk = NULL;
+        hd = NULL;
+        ngbbldg.clear();
+    }
 };
 
 class bbldg{
+    int bid;
+    double lat, log;
+    double area;
+    map<int, double> ngbbldg;   //neighbour buildings
+    string name;
     
+    mblok *mbk;
+    cblok *cbk;
+    
+    bbldg(int bid, double lat, double log, double area, string name, mblok *mbk, cblok *cbk){
+        this->bid = bid;
+        this->lat = lat;
+        this->log = log;
+        this->area = area;
+        this->name = name;
+        this->mbk = mbk;
+        this->cbk = cbk;
+        
+        ngbbldg.clear();
+    }
+    
+    ~work_bldg(){
+        mbk = NULL;
+        cbk = NULL;
+        ngbbldg.clear();
+    }
 };
 
 class gbldg{
+    
+};
+
+class sbldg{
     
 };
 

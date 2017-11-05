@@ -16,7 +16,7 @@ class mblok{
 public:
     int mid;                            //mblock id
     double lat, log;                    //latitude & longitude
-    cblok *cb;                          //city block
+    cblok *cbk;                          //city block
     
     map<int, agent*> mblok_pop;         //population
     

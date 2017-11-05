@@ -13,15 +13,77 @@
 using namespace std;
 
 class hhold{
+public:
+    int hid;                            //hhold id
+    agent *hldr;                        //hhold holder
+    char type;                          /* Married-couple family              ----- 0
+                                           Female householder, no husband     ----- 1
+                                           Male householder, no wife          ----- 2
+                                           Householder living alone           ----- 3
+                                           Householder with non-relatives     ----- 4
+                                        */
+    int size;
+    map<int, agent*> mmbrs;             //hhold members
+    double lat, log;
+    double area;
     
+    rbldg *rdg;
+    mblok *mbk;
+    cblok *cbk;
+    
+    hhold(int hid, int size, char type, rbldg *rdg, mblok *mbk, cblok *cbk);
+    ~hhold();
+    
+    void asg_bldg(rbldg *rdg);
+    void add_mmbr(agent *p, char role);
+    void rmv_mmbr(agent *p);
+    void update();
+    void removd();
 };
 
 class workp{
+public:
+    int wid;
+    int size;
+    map<int, agent*> emplys;             //employees members
+    double lat, log;
+    double area;
     
+    bbldg *bdg;
+    mblok *mbk;
+    cblok *cbk;
+    
+    workp(int wid, int size, bbldg *bdg, mblok *mbk, cblok *cbk);
+    ~workp();
+    
+    void asg_bldg(bbldg *bdg);
+    void add_mmbr(agent *p);
+    void rmv_mmbr(agent *p);
+    void update();
+    void removd();
 };
 
 class schol{
+public:
+    int sid;
+    int size;
+    map<int, agent*> tchrs;
+    map<int, agent*> stdts;
     
+    double lat, log;
+    double area;
+    
+    bbldg *bdg;
+    mblok *mbk;
+    cblok *cbk;
+    
+    void asg_bldg(gbldg *gdg);
+    void add_tchr(agent *p);
+    void add_stdt(agent *p);
+    void rmv_tchr(agent *p);
+    void rmv_stdt(agent *p);
+    void update();
+    void removd();
 };
 
 #endif /* sites_hpp */
