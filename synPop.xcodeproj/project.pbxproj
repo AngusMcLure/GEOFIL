@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9D7B63481FAAC3F70044FD3F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63471FAAC3F70044FD3F /* main.cpp */; };
-		9D7B63531FAAC4610044FD3F /* basic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63521FAAC4610044FD3F /* basic.cpp */; };
+		9D7B63531FAAC4610044FD3F /* funcs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63521FAAC4610044FD3F /* funcs.cpp */; };
 		9DEF232E1FAACE10008F520B /* agent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF232C1FAACE10008F520B /* agent.cpp */; };
 		9DEF23321FAE8C3C008F520B /* blocks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23301FAE8C3C008F520B /* blocks.cpp */; };
 		9DEF23351FAE8D1A008F520B /* bldgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23331FAE8D1A008F520B /* bldgs.cpp */; };
@@ -31,10 +31,10 @@
 		9D7B63441FAAC3F70044FD3F /* synPop */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = synPop; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D7B63471FAAC3F70044FD3F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9D7B63511FAAC4490044FD3F /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
-		9D7B63521FAAC4610044FD3F /* basic.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = basic.cpp; sourceTree = "<group>"; };
+		9D7B63521FAAC4610044FD3F /* funcs.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = funcs.cpp; sourceTree = "<group>"; };
 		9DEF232C1FAACE10008F520B /* agent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = agent.cpp; sourceTree = "<group>"; };
 		9DEF232D1FAACE10008F520B /* agent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = agent.h; sourceTree = "<group>"; };
-		9DEF232F1FAE88E5008F520B /* classes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = classes.h; sourceTree = "<group>"; };
+		9DEF232F1FAE88E5008F520B /* headers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = headers.h; sourceTree = "<group>"; };
 		9DEF23301FAE8C3C008F520B /* blocks.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = blocks.cpp; sourceTree = "<group>"; };
 		9DEF23311FAE8C3C008F520B /* blocks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = blocks.h; sourceTree = "<group>"; };
 		9DEF23331FAE8D1A008F520B /* bldgs.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bldgs.cpp; sourceTree = "<group>"; };
@@ -77,12 +77,12 @@
 				9D7B63471FAAC3F70044FD3F /* main.cpp */,
 				9D7B63511FAAC4490044FD3F /* main.h */,
 				9DEF23391FAEA256008F520B /* agroups.h */,
-				9D7B63521FAAC4610044FD3F /* basic.cpp */,
+				9D7B63521FAAC4610044FD3F /* funcs.cpp */,
 				9DEF232C1FAACE10008F520B /* agent.cpp */,
 				9DEF23301FAE8C3C008F520B /* blocks.cpp */,
 				9DEF23311FAE8C3C008F520B /* blocks.h */,
 				9DEF232D1FAACE10008F520B /* agent.h */,
-				9DEF232F1FAE88E5008F520B /* classes.h */,
+				9DEF232F1FAE88E5008F520B /* headers.h */,
 				9DEF23331FAE8D1A008F520B /* bldgs.cpp */,
 				9DEF23341FAE8D1A008F520B /* bldgs.h */,
 				9DEF23361FAE8D2E008F520B /* sites.cpp */,
@@ -148,7 +148,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9D7B63531FAAC4610044FD3F /* basic.cpp in Sources */,
+				9D7B63531FAAC4610044FD3F /* funcs.cpp in Sources */,
 				9DEF23351FAE8D1A008F520B /* bldgs.cpp in Sources */,
 				9DEF23321FAE8C3C008F520B /* blocks.cpp in Sources */,
 				9D7B63481FAAC3F70044FD3F /* main.cpp in Sources */,

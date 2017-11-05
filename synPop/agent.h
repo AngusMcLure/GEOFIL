@@ -9,7 +9,7 @@
 #ifndef agent_hpp
 #define agent_hpp
 
-#include "classes.h"
+#include "headers.h"
 using namespace std;
 
 class agent{

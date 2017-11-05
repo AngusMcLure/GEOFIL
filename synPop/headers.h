@@ -43,7 +43,8 @@ class agrps;
 
 //func for generating households
 typedef int (*pf)(double *p);
-
 int r_size(pf f, double *p);
+
+
 
 #endif /* classes_h */
