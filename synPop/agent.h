@@ -18,17 +18,16 @@ public:
     int age;            //in days
     char gendr;        //m - male, f - female
     
-    char hrole;    //h - holder, s - spouse, c - child, r - relatives, n - nonrelatives
+    char role;    //h - holder, s - spouse, c - child, r - relatives, n - nonrelatives
     char works; //w - working, s - schooling, h - housing
     char margs; //u - unmarried, m - married, s - single
-    int dtime;     //
     int bwind;   //birth window closed for female just having a baby
     
     char epids;     //s - susceptible, e - exposed, i - infectious, r - removed, d - dead
     
     agent *spw;
-    map<string, agent*> chldr;
-    map<string, agent*> parnt;
+    map<int, agent*> chldr;
+    map<int, agent*> parnt;
     
     hhold *hd;    //household
     workp *wp;    //workplace
@@ -42,7 +41,7 @@ public:
     
     void add_child(agent *p);
     void add_parent(agent *p);
-    void clr_relation();
+    void clr_sociallinks();
 };
 
 #endif /* agent_hpp */

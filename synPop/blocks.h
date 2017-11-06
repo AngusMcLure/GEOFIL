@@ -25,7 +25,7 @@ public:
     //map<int, rbldg*> mblok_rbldgs_occupy;
     //map<int, rbldg*> mblok_rbldgs_vacant;
     map<int, rbldg*> mblok_rbldgs;
-    map<int, bbldg*> mblok_bbldgs;
+    map<int, wbldg*> mblok_wbldgs;
     
     void add_hhold(hhold *p);
     void add_agent(agent *p);
@@ -50,7 +50,7 @@ public:
     map<int, hhold*> cblok_hholds;
     map<int, rbldg*> cblok_rbldgs;
     map<int, rbldg*> cblok_rbldgs_vcnt; //vacant residential buildings
-    map<int, bbldg*> cblok_bbldgs;
+    map<int, wbldg*> cblok_wbldgs;
     
     map<int, mblok*> mbloks;
     map<string, int> mbloksIndex;       //meshblocks in cblocks

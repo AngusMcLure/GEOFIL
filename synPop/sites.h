@@ -49,14 +49,14 @@ public:
     double lat, log;
     double area;
     
-    bbldg *bdg;
+    map<int, wbldg*> wdg;                         //building list
     mblok *mbk;
     cblok *cbk;
     
-    workp(int wid, int size, bbldg *bdg, mblok *mbk, cblok *cbk);
+    workp(int wid, int size, mblok *mbk, cblok *cbk);
     ~workp();
     
-    void asg_bldg(bbldg *bdg);
+    void asg_bldg(wbldg *wdg);
     void add_mmbr(agent *p);
     void rmv_mmbr(agent *p);
     void update();
@@ -73,11 +73,11 @@ public:
     double lat, log;
     double area;
     
-    bbldg *bdg;
+    sbldg *sdg;
     mblok *mbk;
     cblok *cbk;
     
-    void asg_bldg(gbldg *gdg);
+    void asg_bldg(sbldg *sdg);
     void add_tchr(agent *p);
     void add_stdt(agent *p);
     void rmv_tchr(agent *p);

@@ -17,7 +17,6 @@ public:
     int bid;
     double lat, log;
     double area;
-    map<int, double> ngbbldg;   //neighbour buildings
     
     hhold *hd;
     mblok *mbk;
@@ -37,45 +36,59 @@ public:
         mbk = NULL;
         cbk = NULL;
         hd = NULL;
-        ngbbldg.clear();
     }
 };
 
-class bbldg{
+class wbldg{
     int bid;
     double lat, log;
     double area;
-    map<int, double> ngbbldg;   //neighbour buildings
-    string name;
     
+    workp *wkp;
     mblok *mbk;
     cblok *cbk;
     
-    bbldg(int bid, double lat, double log, double area, string name, mblok *mbk, cblok *cbk){
+    wbldg(int bid, double lat, double log, double area, wokp *wkp, mblok *mbk, cblok *cbk){
         this->bid = bid;
         this->lat = lat;
         this->log = log;
         this->area = area;
-        this->name = name;
+        this->wkp = wkp;
         this->mbk = mbk;
         this->cbk = cbk;
-        
-        ngbbldg.clear();
     }
     
-    ~work_bldg(){
+    ~wbldg(){
+        wkp = NULL;
         mbk = NULL;
         cbk = NULL;
-        ngbbldg.clear();
     }
-};
-
-class gbldg{
-    
 };
 
 class sbldg{
+    int bid;
+    double lat, log;
+    double area;
     
+    schol *sch;
+    mblok *mbk;
+    cblok *cbk;
+    
+    sbldg(int bid, double lat, double log, double area, schol *sch, mblok *mbk, cblok *cbk){
+        this->bid = bid;
+        this->lat = lat;
+        this->log = log;
+        this->area = area;
+        this->sch = sch;
+        this->mbk = mbk;
+        this->cbk = cbk;
+    }
+    
+    ~sbldg(){
+        sch = NULL;
+        mbk = NULL;
+        cbk = NULL;
+    }
 };
 
 #endif /* bldgs_hpp */
