@@ -22,7 +22,7 @@ hhold::~hhold(){
     this->mmbrs.clear();
 }
 
-void hhold::asg_bldg(rbldg *rdg){
+void hhold::add_bldg(rbldg *rdg){
     this->rdg = rdg;
 
     lat = rdg->lat;
@@ -32,7 +32,7 @@ void hhold::asg_bldg(rbldg *rdg){
     rdg->hd = this;
 }
 
-bool hhold::asg_hldr(agent *p){
+bool hhold::add_hldr(agent *p){
     if(p != NULL) hldr = p;
     else{
         //choose the most aged & married one to be new householder
@@ -71,7 +71,7 @@ void hhold::rmv_mmbr(agent *p){
 bool hhold::updt_hhold(){
     siz = (int)mmbrs.size();
     if(siz != 0){
-        if(hldr == NULL && !asg_hldr(NULL)) return false;
+        if(hldr == NULL && !add_hldr(NULL)) return false;
         
         if(hldr->spw != NULL && hldr->gendr == 'F')
             hldr = hldr->spw;

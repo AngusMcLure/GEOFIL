@@ -9,7 +9,7 @@
 #ifndef agent_hpp
 #define agent_hpp
 
-#include "headers.h"
+#include "paras.h"
 using namespace std;
 
 //individuals

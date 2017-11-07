@@ -5,7 +5,7 @@
 //  Created by Sting Xu on 2/11/17.
 //  Copyright © 2017 Sting Xu. All rights reserved.
 //
-#include "headers.h"
+#include "paras.h"
 using namespace std;
 
 int r_size(pf f, double *p){

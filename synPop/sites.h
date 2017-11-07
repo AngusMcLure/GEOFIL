@@ -36,11 +36,24 @@ public:
     hhold(int hid, int siz, char typ);
     ~hhold();
     
-    void asg_bldg(rbldg *rdg);
-    bool asg_hldr(agent *p);
+    void add_bldg(rbldg *rdg);
+    bool add_hldr(agent *p);
     void add_mmbr(agent *p, char role);
     void rmv_mmbr(agent *p);
     bool updt_hhold();
+};
+
+class rbldg{
+public:
+    int bid;
+    double lat, log;
+    double area;
+    hhold *hd;
+    mblok *mbk;
+    cblok *cbk;
+    
+    rbldg(int bid, double lat, double log, double area, mblok *mbk, cblok *cbk);
+    ~rbldg();
 };
 
 class workp{
@@ -56,46 +69,11 @@ public:
     workp(int wid, int siz);
     ~workp();
     
-    void asg_bldg(wbldg *wdg);
+    void add_bldg(wbldg *wdg);
     void add_mmbr(agent *p);
     void rmv_mmbr(agent *p);
     void update();
     void removd();
-};
-
-class schol{
-public:
-    int sid;
-    int siz;
-    double lat, log;
-    double area;
-    
-    map<int, sbldg*> sdg;
-    
-    map<int, agent*> tchrs;
-    map<int, agent*> stdts;
-    
-    void asg_bldg(sbldg *sdg);
-    void add_tchr(agent *p);
-    void add_stdt(agent *p);
-    void rmv_tchr(agent *p);
-    void rmv_stdt(agent *p);
-    void update();
-    void removd();
-};
-
-class rbldg{
-public:
-    int bid;
-    double lat, log;
-    double area;
-    hhold *hd;
-    mblok *mbk;
-    cblok *cbk;
-    
-    rbldg(int bid, double lat, double log, double area, mblok *mbk, cblok *cbk);
-    ~rbldg();
-    //void asgn_hhold(hhold *p);
 };
 
 class wbldg{
@@ -121,6 +99,27 @@ class wbldg{
         mbk = NULL;
         cbk = NULL;
     }
+};
+
+class schol{
+public:
+    int sid;
+    int siz;
+    double lat, log;
+    double area;
+    
+    map<int, sbldg*> sdg;
+    
+    map<int, agent*> tchrs;
+    map<int, agent*> stdts;
+    
+    void add_bldg(sbldg *sdg);
+    void add_tchr(agent *p);
+    void add_stdt(agent *p);
+    void rmv_tchr(agent *p);
+    void rmv_stdt(agent *p);
+    void update();
+    void removd();
 };
 
 class sbldg{

@@ -32,7 +32,7 @@ public:
     void rmv_hhold(hhold *p);
     void rmv_agent(agent *p);
     void bld_hhold(pf f);
-    void adpt_hhold(hhold *p);          //all members in p are adopted
+    void adpt_chldrs(hhold *p);          //all members in p are adopted
     
     mblok(int mid, cblok *ct);
 };
