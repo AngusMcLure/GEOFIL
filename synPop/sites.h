@@ -23,12 +23,7 @@ class agrps;
 class hhold{
 public:
     int hid;                            //hhold id
-    char typ;                          /* Married-couple family              ----- 0
-                                           Female householder, no husband     ----- 1
-                                           Male householder, no wife          ----- 2
-                                           Householder living alone           ----- 3
-                                           Householder with non-relatives     ----- 4
-                                        */
+    char typ;                           // 0-couple, 1-female, 2-male, 3-alone, 4-nonrelatives
     int siz;
     
     double lat, log;
