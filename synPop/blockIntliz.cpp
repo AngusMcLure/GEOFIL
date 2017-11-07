@@ -35,7 +35,9 @@ void cblok::hndl_bbldg(string ff, int low, int upper, int min_dist){
 }
 
 void cblok::allct_rbldgs(){
-    
+    /*bb->vg->vacant_rbldgs.erase(bb->bldg_id);
+    bb->vg->occupied_rbldgs.insert(pair<int, resident_bldg*>(bb->bldg_id, bb));
+    ct->vacant_rbldgs.erase(bb->bldg_id);*/
 }
 
 void cblok::allct_bbldgs(){

@@ -7,7 +7,7 @@
 //
 #include "agent.h"
 
-agent::agent(int aid, int age, char gendr, char margs, hhold *hd, workp *wp, schol *sh, mblok *mbk, cblok *cbk){
+agent::agent(int aid, int age, char gendr, char margs, hhold *hd, workp *wp, schol *sh){
     this->aid = aid;
     this->age = age;
     this->gendr = gendr;
@@ -16,9 +16,6 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *hd, workp *wp, sch
     this->hd = hd;
     this->wp = wp;
     this->sh = sh;
-    
-    this->mbk = mbk;
-    this->cbk = cbk;
     
     role = '-';
     works = '-';
@@ -31,8 +28,6 @@ agent::~agent(){
     hd = NULL;
     wp = NULL;
     sh = NULL;
-    mbk = NULL;
-    cbk = NULL;
     
     chldr.clear();
     parnt.clear();
@@ -48,10 +43,9 @@ void agent::add_parent(agent *p){
 
 void agent::clr_sociallinks(){
     if(spw != NULL){
-        if(gendr == 'F') cbk->fmal_marrd.erase(aid);
-        else cbk->fmal_marrd.erase(spw->aid);
-        
         spw->margs = 'S';
+        margs = 'S';
+        
         spw->spw = NULL;
         spw = NULL;
     }

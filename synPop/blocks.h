@@ -9,7 +9,7 @@
 #ifndef blocks_hpp
 #define blocks_hpp
 
-#include "headers.h"
+#include "sites.h"
 using namespace std;
 
 class mblok{
@@ -32,6 +32,7 @@ public:
     void rmv_hhold(hhold *p);
     void rmv_agent(agent *p);
     void bld_hhold(pf f);
+    void adpt_hhold(hhold *p);          //all members in p are adopted
     
     mblok(int mid, cblok *ct);
 };
@@ -44,13 +45,13 @@ public:
     int cpop;
     int next_aid;
     map<int, agent*> cblok_pop;
-    map<int, agent*> fmal_marrid;       //married females
+    map<int, agent*> fmal_marrd;       //married females
     
     int next_hid;
-    map<int, hhold*> cblok_hholds;
-    map<int, rbldg*> cblok_rbldgs;
+    //map<int, hhold*> cblok_hholds;
+    //map<int, rbldg*> cblok_rbldgs;
     map<int, rbldg*> cblok_rbldgs_vcnt; //vacant residential buildings
-    map<int, wbldg*> cblok_wbldgs;
+    //map<int, wbldg*> cblok_wbldgs;
     
     map<int, mblok*> mbloks;
     map<string, int> mbloksIndex;       //meshblocks in cblocks

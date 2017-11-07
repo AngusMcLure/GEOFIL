@@ -13,7 +13,8 @@ void cblok::hndl_birth(int t){
 }
 
 void cblok::hndl_death(int t){
-    
+    /*if(gendr == 'F') cbk->fmal_marrd.erase(aid);
+    else cbk->fmal_marrd.erase(spw->aid);*/
 }
 
 void cblok::hndl_marrg(int t){
@@ -21,11 +22,13 @@ void cblok::hndl_marrg(int t){
 }
 
 void cblok::hndl_divrc(int t){
-    
+    /*if(gendr == 'F') cbk->fmal_marrd.erase(aid);
+     else cbk->fmal_marrd.erase(spw->aid);*/
 }
 
 void cblok::hndl_ploss(int t){
-    
+    /*if(gendr == 'F') cbk->fmal_marrd.erase(aid);
+     else cbk->fmal_marrd.erase(spw->aid);*/
 }
 
 void cblok::hndl_mvout(int t){

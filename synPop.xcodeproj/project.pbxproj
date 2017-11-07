@@ -15,6 +15,7 @@
 		9DEF233B1FAFE03C008F520B /* blockIntliz.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233A1FAFE03C008F520B /* blockIntliz.cpp */; };
 		9DEF233E1FAFE162008F520B /* blockRStat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233C1FAFE162008F520B /* blockRStat.cpp */; };
 		9DEF23401FAFE1A6008F520B /* blockMMod.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233F1FAFE1A6008F520B /* blockMMod.cpp */; };
+		9DEF23431FB13045008F520B /* blockMBlok.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23421FB13045008F520B /* blockMBlok.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -39,13 +40,13 @@
 		9DEF232F1FAE88E5008F520B /* headers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = headers.h; sourceTree = "<group>"; };
 		9DEF23301FAE8C3C008F520B /* blockDynm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = blockDynm.cpp; sourceTree = "<group>"; };
 		9DEF23311FAE8C3C008F520B /* blocks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = blocks.h; sourceTree = "<group>"; };
-		9DEF23341FAE8D1A008F520B /* bldgs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bldgs.h; sourceTree = "<group>"; };
 		9DEF23361FAE8D2E008F520B /* sites.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sites.cpp; sourceTree = "<group>"; };
 		9DEF23371FAE8D2E008F520B /* sites.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sites.h; sourceTree = "<group>"; };
 		9DEF23391FAEA256008F520B /* agroups.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = agroups.h; sourceTree = "<group>"; };
 		9DEF233A1FAFE03C008F520B /* blockIntliz.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = blockIntliz.cpp; sourceTree = "<group>"; };
 		9DEF233C1FAFE162008F520B /* blockRStat.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = blockRStat.cpp; sourceTree = "<group>"; };
 		9DEF233F1FAFE1A6008F520B /* blockMMod.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = blockMMod.cpp; sourceTree = "<group>"; };
+		9DEF23421FB13045008F520B /* blockMBlok.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = blockMBlok.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,8 +82,8 @@
 				9DEF232C1FAACE10008F520B /* agent.cpp */,
 				9DEF232D1FAACE10008F520B /* agent.h */,
 				9DEF23391FAEA256008F520B /* agroups.h */,
-				9DEF23341FAE8D1A008F520B /* bldgs.h */,
 				9DEF23301FAE8C3C008F520B /* blockDynm.cpp */,
+				9DEF23421FB13045008F520B /* blockMBlok.cpp */,
 				9DEF233F1FAFE1A6008F520B /* blockMMod.cpp */,
 				9DEF233C1FAFE162008F520B /* blockRStat.cpp */,
 				9DEF233A1FAFE03C008F520B /* blockIntliz.cpp */,
@@ -160,6 +161,7 @@
 				9DEF233E1FAFE162008F520B /* blockRStat.cpp in Sources */,
 				9DEF233B1FAFE03C008F520B /* blockIntliz.cpp in Sources */,
 				9DEF23381FAE8D2E008F520B /* sites.cpp in Sources */,
+				9DEF23431FB13045008F520B /* blockMBlok.cpp in Sources */,
 				9DEF23401FAFE1A6008F520B /* blockMMod.cpp in Sources */,
 				9DEF232E1FAACE10008F520B /* agent.cpp in Sources */,
 			);

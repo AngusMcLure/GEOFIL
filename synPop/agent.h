@@ -12,6 +12,19 @@
 #include "headers.h"
 using namespace std;
 
+//individuals
+class agent;
+
+//sites
+class hhold;    //household
+class workp;    //workplace
+class schol;    //school
+
+//buildings
+class rbldg;    //residential
+class wbldg;    //work buildings
+class sbldg;    //school bldgs
+
 class agent{
 public:
     int aid;
@@ -32,10 +45,8 @@ public:
     hhold *hd;    //household
     workp *wp;    //workplace
     schol *sh;    //school
-    mblok *mbk;
-    cblok *cbk;
     
-    agent(int aid, int age = -1, char gendr = '-', char margs = 'u', hhold *hd = NULL, workp *wp = NULL, schol *sh = NULL, mblok *mbk = NULL, cblok *cbk = NULL);
+    agent(int aid, int age = -1, char gendr = '-', char margs = 'u', hhold *hd = NULL, workp *wp = NULL, schol *sh = NULL);
     
     ~agent();
     
