@@ -9,6 +9,7 @@
 #ifndef blocks_hpp
 #define blocks_hpp
 
+#include "agroups.h"
 #include "sites.h"
 using namespace std;
 
@@ -40,6 +41,7 @@ public:
 class cblok{
 public:
     int cid;                            //cblock id
+    string cname;                       //cblock name
     double lat, log;
     
     int cpop;
@@ -53,6 +55,7 @@ public:
     map<int, rbldg*> cblok_rbldgs_vcnt; //vacant residential buildings
     //map<int, wbldg*> cblok_wbldgs;
     
+    int next_mid;
     map<int, mblok*> mbloks;
     map<string, int> mbloksIndex;       //meshblocks in cblocks
     double **euclid_dist;               //euclidean distance between meshblocks
@@ -74,11 +77,13 @@ public:
     int pop_loss[sim_nd-sim_bg+1];      //net annual population loss due to migration
     
     
-    cblok(string datasets);
-    void reset(string datasets);
-    void read_data(string data, char type);
+    cblok(int cid, string cname, double lat, double log);
+    void read_demgrphcs();
+    void read_parmtrs();
+    void reset_cpop();
     void bld_cblok_pop();
     void add_agent(agent *p);
+    void rmv_agent(agent *p);
     void add_mblok(mblok *p);
     void bld_cblok_hhold();
     void hndl_land_data();

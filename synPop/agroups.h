@@ -8,8 +8,7 @@
 
 #ifndef agroups_h
 #define agroups_h
-
-#include "classes.h"
+#include <vector>
 using namespace std;
 
 class agrp{
@@ -23,14 +22,14 @@ public:
 
 class agrps{
 public:
-    vector<agrps*> agroups;
+    vector<agrp*> agroups;
     
     agrps(){ agroups.clear();}
     ~agrps(){
         for(int i = 0; i < agroups.size(); ++i)
             delete agroups[i];
         
-        age_agroupsgroups.clear();
+        agroups.clear();
         agroups.shrink_to_fit();
     }
 };

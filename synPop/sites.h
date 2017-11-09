@@ -23,7 +23,7 @@ class agrps;
 class hhold{
 public:
     int hid;                            //hhold id
-    char typ;                           // 0-couple, 1-female, 2-male, 3-alone, 4-nonrelatives
+    char typ;                           // C-couple, F-female, M-male, A-alone, N-nonrelatives
     int siz;
     
     double lat, log;
@@ -37,10 +37,11 @@ public:
     ~hhold();
     
     void add_bldg(rbldg *rdg);
-    bool add_hldr(agent *p);
-    void add_mmbr(agent *p, char role);
+    bool asg_hldr(agent *p);
+    void add_mmbr(agent *p);
+    void add_hldr(agent *p);
     void rmv_mmbr(agent *p);
-    bool updt_hhold();
+    void updt_hhold();
 };
 
 class rbldg{

@@ -8,6 +8,14 @@
 
 #include "blocks.h"
 
+void cblok::add_agent(agent *p){
+    
+}
+
+void rmv_agent(agent *p){
+    
+}
+
 void cblok::hndl_birth(int t){
     
 }

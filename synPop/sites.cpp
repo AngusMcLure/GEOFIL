@@ -32,16 +32,12 @@ void hhold::add_bldg(rbldg *rdg){
     rdg->hd = this;
 }
 
-bool hhold::add_hldr(agent *p){
+bool hhold::asg_hldr(agent *p){
     if(p != NULL) hldr = p;
     else{
         //choose the most aged & married one to be new householder
         map<int, agent*>::iterator it = mmbrs.begin();
         for(map<int, agent*>::iterator k = mmbrs.begin(); k != mmbrs.end(); ++k){
-            if(k->second->role == '1'){
-                it = k;
-                break;
-            }
             if(it->second->age < k->second->age || (it->second->margs != 'M' && k->second->margs == 'M'))
                 it = k;
         }
@@ -51,52 +47,42 @@ bool hhold::add_hldr(agent *p){
         
         hldr = it->second;
     }
+    
+    if(hldr->spw != NULL && hldr->gendr == 'F')
+        hldr = hldr->spw;
+    
     return true;
 }
 
-void hhold::add_mmbr(agent *p, char role){
+void hhold::add_mmbr(agent *p){
     p->hd = this;
-    p->role = role;
-    
-    if(role == '0') hldr = p;
+    mmbrs.insert(pair<int, agent*>(p->aid, p));
+}
+
+void hhold::add_hldr(agent *p){
+    p->hd = this;
+    hldr = p;
     mmbrs.insert(pair<int, agent*>(p->aid, p));
 }
 
 void hhold::rmv_mmbr(agent *p){
     p->hd = NULL;
-    if(p->role == '0') hldr = NULL;
+    if(hldr->aid == p->aid) hldr = NULL;
     mmbrs.erase(p->aid);
 }
 
-bool hhold::updt_hhold(){
+void hhold::updt_hhold(){
     siz = (int)mmbrs.size();
-    if(siz != 0){
-        if(hldr == NULL && !add_hldr(NULL)) return false;
-        
-        if(hldr->spw != NULL && hldr->gendr == 'F')
-            hldr = hldr->spw;
-        
-        hldr->role = '0';
-        if(hldr->spw != NULL) hldr->spw->role = '1';
-        
-        for(map<int, agent*>::iterator k = hldr->chldr.begin(); k != hldr->chldr.end(); ++k){
-            if(k->second->hd->hid == hid){
-                k->second->role = '2';
+    if(siz != 0 && typ != 'N'){
+        if(mmbrs.size() == 1) typ = 'A';
+        else{
+            if(hldr->margs != 'M'){
+                if(hldr->gendr == 'F') typ = 'F';
+                else typ = 'M';
             }
-        }
-        
-        if(typ != '4'){
-            if(mmbrs.size() == 1) typ = '3';
-            else{
-                if(hldr->margs != 'M'){
-                    if(hldr->gendr == 'F') typ = '1';
-                    else typ = '2';
-                }
-                else typ = '0';
-            }
+            else typ = 'C';
         }
     }
-    return true;
 }
 
 rbldg::rbldg(int bid, double lat, double log, double area, mblok *mbk, cblok *cbk){

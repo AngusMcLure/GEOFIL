@@ -16,35 +16,34 @@ using namespace std;
 class agent;
 
 //sites
-class hhold;    //household
-class workp;    //workplace
-class schol;    //school
+class hhold;        //household
+class workp;        //workplace
+class schol;        //school
 
 //buildings
-class rbldg;    //residential
-class wbldg;    //work buildings
-class sbldg;    //school bldgs
+class rbldg;        //residential
+class wbldg;        //work buildings
+class sbldg;        //school bldgs
 
 class agent{
 public:
     int aid;
-    int age;            //in days
-    char gendr;        //m - male, f - female
+    int age;        //in days
+    char gendr;     //M - male, F - female
     
-    char role;    //h - holder, s - spouse, c - child, r - relatives, n - nonrelatives
-    char works; //w - working, s - schooling, h - housing
-    char margs; //u - unmarried, m - married, s - single
-    int bwind;   //birth window closed for female just having a baby
+    char works;     //W - working, S - schooling, H - housing
+    char margs;     //U - unmarried, M - married, S - single
+    int bwind;      //birth window closed for female just having a baby
     
-    char epids;     //s - susceptible, e - exposed, i - infectious, r - removed, d - dead
+    char epids;     //S - susceptible, E - exposed, I - infectious, R - removed, D - dead
     
     agent *spw;
     map<int, agent*> chldr;
     map<int, agent*> parnt;
     
-    hhold *hd;    //household
-    workp *wp;    //workplace
-    schol *sh;    //school
+    hhold *hd;      //household
+    workp *wp;      //workplace
+    schol *sh;      //school
     
     agent(int aid, int age = -1, char gendr = '-', char margs = 'u', hhold *hd = NULL, workp *wp = NULL, schol *sh = NULL);
     
