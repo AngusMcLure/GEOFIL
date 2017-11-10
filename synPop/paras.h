@@ -31,6 +31,7 @@ int ztpoisson(double *p);
 //files ----------------------------------------------------------------------------------
 //paths
 #define datadir                 "/Users/stingxu/Desktop/Coding/SynPop/data/"
+#define config                  "/Users/stingxu/Desktop/Coding/SynPop/$config/"
 #define parameters              "/Users/stingxu/Desktop/Coding/SynPop/parameters/"
 #define outdir                  "/Users/stingxu/Desktop/Coding/SynPop/output/"
 

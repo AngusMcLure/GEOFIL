@@ -28,11 +28,13 @@ public:
     map<int, rbldg*> mblok_rbldgs;
     map<int, wbldg*> mblok_wbldgs;
     
+    void intlz_pop();
     void add_hhold(hhold *p);
     void add_agent(agent *p);
     void rmv_hhold(hhold *p);
     void rmv_agent(agent *p);
     void bld_hhold(pf f);
+    void bld_pop(int mm, int ff, agrps *pp);
     void adpt_chldrs(hhold *p);          //all members in p are adopted
     
     mblok(int mid, cblok *cbk, double lat = 0, double log = 0);
@@ -58,7 +60,8 @@ public:
     
     int next_mid, meshblocks;
     map<int, mblok*> mbloks;
-    map<string, int> mbloksIndex;       //meshblocks in cblocks
+    map<string, int> mbloksIndexA;       //meshblocks in cblocks
+    map<int, string> mbloksIndexB;      
     map<int, double*> mblok_crdnt;      //meshblock coordinates
     double **euclid_dist;               //euclidean distance between meshblocks
     double **road_dist;                 //road distance between meshblocks

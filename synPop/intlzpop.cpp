@@ -45,7 +45,8 @@ void cblok::reset_cpop(){
     mblok_crdnt.clear();
     
     //clear meshblock index
-    mbloksIndex.clear();
+    mbloksIndexA.clear();
+    mbloksIndexB.clear();
     
     //clear meshblock distance matrix
     for(int i = 0; i < meshblocks; ++i){
@@ -88,8 +89,9 @@ void cblok::read_demgrphcs(){
     }
     
     while(getline(in, line)){
-        if(mbloksIndex.find(line) == mbloksIndex.end()){
-            mbloksIndex.insert(pair<string, int>(line, next_mid++));
+        if(mbloksIndexA.find(line) == mbloksIndexA.end()){
+            mbloksIndexA.insert(pair<string, int>(line, next_mid));
+            mbloksIndexB.insert(pair<int, string>(next_mid++, line));
         }
     }
     in.close();
@@ -156,7 +158,7 @@ void cblok::read_demgrphcs(){
         p = std::strtok(str, ",");  //village name may have space
         
         //deal with age group record
-        int mid = mbloksIndex[p];
+        int mid = mbloksIndexA[p];
         if(mblok_agrps.find(mid) != mblok_agrps.end()){
             cout << "village name: " << p << " already exist!" << endl;
             exit(1);
@@ -205,7 +207,7 @@ void cblok::read_demgrphcs(){
         p = std::strtok(str, ",");  //village name may have space
         
         //deal with gender record
-        int mid = mbloksIndex[p];
+        int mid = mbloksIndexA[p];
         if(mblok_mpops.find(mid) != mblok_mpops.end()){
             cout << "village name: " << p << " already exist, read gender data!" << endl;
             exit(1);
@@ -291,7 +293,7 @@ void cblok::read_demgrphcs(){
         std::strcpy(str, line.c_str());
         
         p = std::strtok(str, ",");  //village name may have space
-        int mid = mbloksIndex[p];
+        int mid = mbloksIndexA[p];
         
         if(mblok_hholds.find(mid) != mblok_hholds.end()){
             cout << "village already exist, in reading housing units data" << endl;
@@ -342,15 +344,16 @@ void cblok::read_demgrphcs(){
     
     getline(in, line);  //header
     while(getline(in,line)){
-        int mid = mbloksIndex[line];
+        int mid = mbloksIndexA[line];
         mblok_agrps.erase(mid);
         mblok_mpops.erase(mid);
         mblok_fpops.erase(mid);
         mblok_hholds.erase(mid);
-        mbloksIndex.erase(line);
+        mbloksIndexB.erase(mid);
+        mbloksIndexA.erase(line);
     }
     in.close();
-    meshblocks = (int)mbloksIndex.size();
+    meshblocks = (int)mbloksIndexA.size();
     
     //10. read meshblock lat & long
     file = datadir;     file = file + village_coordinates;
@@ -362,8 +365,8 @@ void cblok::read_demgrphcs(){
         std::strcpy(str, line.c_str());
         
         p = std::strtok(str, ",");  //village name may have space
-        map<string, int>::iterator k = mbloksIndex.find(p);
-        if(k == mbloksIndex.end()) continue;
+        map<string, int>::iterator k = mbloksIndexA.find(p);
+        if(k == mbloksIndexA.end()) continue;
         
         int mid = k->second;
         p = std::strtok(NULL, ",");     double lat = atof(p);
@@ -375,7 +378,7 @@ void cblok::read_demgrphcs(){
     }
     in.close();
     
-    if(mblok_crdnt.size() < mbloksIndex.size()){
+    if(mblok_crdnt.size() < mbloksIndexA.size()){
         cout << "meshblock coordinates are missing in " << village_coordinates << endl;
         exit(1);
     }
@@ -501,7 +504,10 @@ void cblok::bld_mbloks(){
 }
 
 void cblok::bld_cblok_pop(){
-    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        mbk->intlz_pop();
+    }
 }
 
 void cblok::bld_cblok_hhold(){

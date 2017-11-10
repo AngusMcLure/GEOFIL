@@ -32,6 +32,41 @@ mblok::~mblok(){
     mblok_wbldgs.clear();
 }
 
+void mblok::intlz_pop(){
+    string file = config;
+    file = file + cbk->mbloksIndexB[mid];
+    file = file + "_pop";
+    
+    ifstream in(file.c_str());
+    if(!in){
+        int mm = cbk->mblok_mpops[mid], ff = cbk->mblok_fpops[mid];
+        agrps *pp = cbk->mblok_agrps[mid];
+        bld_pop(mm, ff, pp);
+    }
+    else{
+        string line;
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");
+            int aid = atoi(p);
+            
+            p = std::strtok(NULL, ",");
+            int age = std::atoi(p);
+            
+            p = std::strtok(NULL, ",");
+            char gender = p[0];
+            
+            agent *g = new agent(aid, age, gender);
+            add_agent(g);
+            
+            delete []str;
+        }
+        in.close();
+    }
+}
+
 void mblok::add_hhold(hhold *p){
     mblok_hholds.insert(pair<int, hhold*>(p->hid, p));
 }
@@ -56,6 +91,10 @@ void mblok::rmv_agent(agent *p){
 void mblok::bld_hhold(pf f){
     
     //r_size(f, p);
+}
+
+void mblok::bld_pop(int mm, int ff, agrps *pp){
+    
 }
 
 void mblok::adpt_chldrs(hhold *p){
