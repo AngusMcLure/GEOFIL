@@ -1,4 +1,9 @@
-Age_down (>=),Age_up (<),Number of Males/100 Females
+******************************************************************************
+*Description
+*data from 2014 statistical year book of american samoa
+*Format as "Age_down (>=),Age_up (<),Number of Males/100 Females"
+******************************************************************************
+
 0,5,107.0
 5,10,113.2
 10,15,104.9

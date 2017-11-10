@@ -21,8 +21,8 @@ cblok::cblok(int cid, string cname, double lat, double log){
     next_hid = 1;
     next_mid = 1;
     
-    read_parmtrs();
     read_demgrphcs();
+    read_parmtrs();
 }
 
 void cblok::reset_cpop(){
@@ -32,7 +32,7 @@ void cblok::reset_cpop(){
 void cblok::read_demgrphcs(){
     ifstream in;
     string line, file;
-    //read villages and create index
+    //1. read villages and create index
     file = datadir;    file = file + villages;
     in.open(file.c_str());
     
@@ -44,20 +44,22 @@ void cblok::read_demgrphcs(){
     }
     
     while(getline(in, line)){
-        //assign an id for meshblock
         if(mbloksIndex.find(line) == mbloksIndex.end()){
             mbloksIndex.insert(pair<string, int>(line, next_mid++));
         }
     }
+    in.close();
     
-    //reading sex ratio by age group
-    file = parameters;    file = file + sex_ratio_age;
+    //2. reading sex ratio by age group
+    file = datadir;    file = file + sex_ratio_age;
     in.open(file.c_str());
-    if(!in){
-        cout << "open " << file << " failed" << endl;
-        exit(1);
+    
+    //skip the description
+    while(getline(in, line)){
+        if(line[0] == '*') continue;
+        if(line.length() <= 1) continue;  //empty line with carriage return
+        break;
     }
-    getline(in, line);
     
     int ii = 0;
     while(getline(in, line)){
@@ -74,7 +76,7 @@ void cblok::read_demgrphcs(){
     }
     in.close();
     
-    //reading village pop by age group
+    //3. reading village pop by age group
     file = datadir;    file = file + village_pop_age;
     in.open(file.c_str());
     
@@ -85,13 +87,13 @@ void cblok::read_demgrphcs(){
         break;
     }
     
-    //age group segments
-    vector<int> age_seg_dn;
-    vector<int> age_seg_up;
-    
     char *str = new char[line.size()+1];
     std::strcpy(str, line.c_str());
     char *p = std::strtok(str, " ,");
+    
+    //age group segments
+    vector<int> age_seg_dn;
+    vector<int> age_seg_up;
     
     p = std::strtok(NULL, ", ");
     while(p){
@@ -130,8 +132,9 @@ void cblok::read_demgrphcs(){
     }
     age_seg_dn.clear(); age_seg_dn.shrink_to_fit();
     age_seg_up.clear(); age_seg_up.shrink_to_fit();
+    in.close();
     
-    //read village pop by gender
+    //4. read village pop by gender
     file = datadir;    file = file + village_pop_gender;
     in.open(file.c_str());
     
@@ -179,17 +182,123 @@ void cblok::read_demgrphcs(){
         
         delete []str;
     }
+    in.close();
     
-    //read females by age group
+    //5. read females by age group
     file = datadir;    file = file + females_age;
     in.open(file.c_str());
+    
+    //skip the description
+    while(getline(in, line)){
+        if(line[0] == '*') continue;
+        if(line.length() <= 1) continue;  //empty line with carriage return
+        break;
+    }
+    
+    ii = 0;
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        p = std::strtok(str, "-, ");
+        p = std::strtok(NULL, "-, ");
+        p = std::strtok(NULL, "-, ");
+        
+        fmalbyage[ii++] = atoi(p);
+        delete []str;
+    }
+    in.close();
+    
+    //6. read males by age group
+    file = datadir;    file = file + males_age;
+    in.open(file.c_str());
+    
+    //skip the description
+    while(getline(in, line)){
+        if(line[0] == '*') continue;
+        if(line.length() <= 1) continue;  //empty line with carriage return
+        break;
+    }
+    
+    ii = 0;
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        p = std::strtok(str, "-, ");
+        p = std::strtok(NULL, "-, ");
+        p = std::strtok(NULL, "-, ");
+        
+        malebyage[ii++] = atoi(p);
+        delete []str;
+    }
+    in.close();
+    
+    //7. read household units
+    file = datadir;    file = file + village_units;
+    in.open(file.c_str());
+    
+    //skip the description
+    while(getline(in, line)){
+        if(line[0] == '*') continue;
+        if(line.length() <= 1) continue;  //empty line with carriage return
+        break;
+    }
+    
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        p = std::strtok(str, ",");  //village name may have space
+        int mid = mbloksIndex[p];
+        
+        if(mblok_hholds.find(mid) != mblok_hholds.end()){
+            cout << "village already exist, in reading housing units data" << endl;
+            cout << "village name: " << p << endl;
+            exit(1);
+        }
+        
+        p = std::strtok(NULL, " ,");
+        mblok_hholds.insert(pair<int, int>(mid, atoi(p)));
+        
+        delete []str;
+    }
+    in.close();
+    
+    //8. read household types
+    file = datadir;    file = file + household_types;
+    in.open(file.c_str());
+    
+    //skip the description
+    while(getline(in, line)){
+        if(line[0] == '*') continue;
+        if(line.length() <= 1) continue;  //empty line with carriage return
+        break;
+    }
+    
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        p = std::strtok(str, " ,");
+        if(std::strlen(p) > 1){
+            cout << "hhold type length > 1, in reading hhold type data" << endl;
+            cout << "hhold type: " << p << endl;
+            exit(1);
+        }
+        int t = std::atoi(p);
+        p = std::strtok(NULL, " ,");
+        int count = atoi(p);
+        hholdtypes[t] = count;
+        
+        delete []str;
+    }
+    in.close();
 }
 
 void cblok::read_parmtrs(){
     ifstream in;
     string line, file;
     
-    //reading daily birth rate for females [18, 44]
+    //1. reading daily birth rate for females [18, 44]
     file = parameters;     file = file + fertility;
     in.open(file.c_str());
     if(!in){
@@ -221,7 +330,7 @@ void cblok::read_parmtrs(){
     }
     in.close();
     
-    //reading annual net migrants
+    //2. reading annual net migrants
     file = parameters;    file = file + net_pop_loss;
     in.open(file.c_str());
     if(!in){
@@ -265,7 +374,7 @@ void cblok::read_parmtrs(){
     }
     in.close();
     
-    //reading daily death rate for female
+    //3. reading daily death rate for female
     file = parameters;     file = file + "mortality_female.csv";
     in.open(file.c_str());
     if(!in){

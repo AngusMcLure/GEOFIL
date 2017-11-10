@@ -9,9 +9,12 @@
 #include <iostream>
 #include <ctime>
 #include "main.h"
+using namespace std;
 
 int main(int argc, const char * argv[]) {
     // insert code here...
+    cblok *asamoa = new cblok(as_cid, "American Samoa", as_lat, as_long);
     
+    cout << asamoa->cpop << endl;
     return 0;
 }
