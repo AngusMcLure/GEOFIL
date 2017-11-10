@@ -168,7 +168,6 @@ void cblok::read_demgrphcs(){
         int i = 0;
         while(p){
             mblok_agrps[mid]->agroups.push_back(new agrp(age_seg_dn[i], age_seg_up[i], atoi(p)));
-            cpop += atoi(p);
             p = std::strtok(NULL, ", ");
             ++i;
         }
@@ -375,6 +374,17 @@ void cblok::read_demgrphcs(){
         mblok_crdnt.insert(pair<int, double*>(mid, r));
     }
     in.close();
+    
+    if(mblok_crdnt.size() < mbloksIndex.size()){
+        cout << "meshblock coordinates are missing in " << village_coordinates << endl;
+        exit(1);
+    }
+    
+    //calculate cpop
+    for(map<int, int>::iterator j = mblok_mpops.begin(); j != mblok_mpops.end(); ++j){
+        int mid = j->first;
+        cpop += mblok_mpops[mid] + mblok_fpops[mid];
+    }
 }
 
 void cblok::read_parmtrs(){
@@ -482,8 +492,12 @@ void cblok::read_parmtrs(){
     in.close();
 }
 
-void cblok::add_mblok(mblok *p){
-    
+void cblok::bld_mbloks(){
+    for(map<int, double*>::iterator j = mblok_crdnt.begin(); j != mblok_crdnt.end(); ++j){
+        int mid = j->first;
+        double lat = j->second[0], log = j->second[1];
+        mbloks.insert(pair<int, mblok*>(mid, new mblok(mid, this, lat, log)));
+    }
 }
 
 void cblok::bld_cblok_pop(){

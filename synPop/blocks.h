@@ -83,10 +83,10 @@ public:
     void read_demgrphcs();
     void read_parmtrs();
     void reset_cpop();
+    void bld_mbloks();
     void bld_cblok_pop();
     void add_agent(agent *p);
     void rmv_agent(agent *p);
-    void add_mblok(mblok *p);
     void bld_cblok_hhold();
     void hndl_land_data();
     void allct_rbldgs();
