@@ -35,7 +35,8 @@ public:
     void bld_hhold(pf f);
     void adpt_chldrs(hhold *p);          //all members in p are adopted
     
-    mblok(int mid, cblok *ct);
+    mblok(int mid, cblok *cbk, double lat = 0, double log = 0);
+    ~mblok();
 };
 
 class cblok{
@@ -55,9 +56,10 @@ public:
     map<int, rbldg*> cblok_rbldgs_vcnt; //vacant residential buildings
     //map<int, wbldg*> cblok_wbldgs;
     
-    int next_mid;
+    int next_mid, meshblocks;
     map<int, mblok*> mbloks;
     map<string, int> mbloksIndex;       //meshblocks in cblocks
+    map<int, double*> mblok_crdnt;      //meshblock coordinates
     double **euclid_dist;               //euclidean distance between meshblocks
     double **road_dist;                 //road distance between meshblocks
     
@@ -66,7 +68,7 @@ public:
     map<int, int> mblok_mpops;          //male pop in each mblok
     map<int, int> mblok_fpops;          //female pop in each mblok
     map<int, int> mblok_hholds;         //hholds in each mblok
-    map<int, agrps*> mblok_agrps;       //population by age group;
+    map<int, agrps*> mblok_agrps;       //mblok pop by age group;
     
     int malebyage[16];                  //males by age groups
     int fmalbyage[16];                  //females by age groups

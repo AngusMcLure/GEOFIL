@@ -26,8 +26,7 @@ public:
     
     agrps(){ agroups.clear();}
     ~agrps(){
-        for(int i = 0; i < agroups.size(); ++i)
-            delete agroups[i];
+        for(int i = 0; i < agroups.size(); ++i) delete agroups[i];
         
         agroups.clear();
         agroups.shrink_to_fit();

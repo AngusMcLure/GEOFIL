@@ -16,5 +16,8 @@ int main(int argc, const char * argv[]) {
     cblok *asamoa = new cblok(as_cid, "American Samoa", as_lat, as_long);
     
     cout << asamoa->cpop << endl;
+    cout << asamoa->cblok_pop.size() << endl;
+    
+    
     return 0;
 }

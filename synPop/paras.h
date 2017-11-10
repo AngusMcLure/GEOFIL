@@ -60,7 +60,7 @@ int ztpoisson(double *p);
 #define AS_bldg_dist            "syn_bldg_distance.dat"
 
 //geographics
-#define village_locations       "village_locations.dat"
+#define village_coordinates     "villages_lat_lon.dat"
 #define village_excluded        "village_excluded.dat"
 
 #define vil_euclid_origin       "vil_euclid_origin.dat"

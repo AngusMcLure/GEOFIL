@@ -78,6 +78,7 @@ public:
 };
 
 class wbldg{
+public:
     int bid;
     double lat, log;
     double area;

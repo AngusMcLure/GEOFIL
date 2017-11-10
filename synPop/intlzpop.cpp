@@ -20,13 +20,57 @@ cblok::cblok(int cid, string cname, double lat, double log){
     next_aid = 1;
     next_hid = 1;
     next_mid = 1;
+    meshblocks = 0;
     
     read_demgrphcs();
     read_parmtrs();
 }
 
 void cblok::reset_cpop(){
+    //clear population
+    for(map<int, agent*>::iterator j = cblok_pop.begin(); j != cblok_pop.end(); ++j)
+        delete j->second;
+    fmal_marrd.clear();
+    cblok_pop.clear();
     
+    //clear meshblocks, households, buildings
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j)
+        delete j->second;
+    mbloks.clear();
+    cblok_rbldgs_vcnt.clear();
+    
+    //clear coordiantes
+    for(map<int, double*>::iterator j = mblok_crdnt.begin(); j != mblok_crdnt.end(); ++j)
+        delete [] j->second;
+    mblok_crdnt.clear();
+    
+    //clear meshblock index
+    mbloksIndex.clear();
+    
+    //clear meshblock distance matrix
+    for(int i = 0; i < meshblocks; ++i){
+        delete [] euclid_dist[i];
+        delete [] road_dist[i];
+    }
+    
+    //clear age groups data
+    for(map<int, agrps*>::iterator j = mblok_agrps.begin(); j != mblok_agrps.end(); ++j)
+        delete j->second;
+    mblok_agrps.clear();
+    
+    //clear others
+    mblok_fpops.clear();
+    mblok_mpops.clear();
+    mblok_hholds.clear();
+    
+    //re-call all the contruction functions
+    cpop = 0;
+    next_aid = 1;
+    next_hid = 1;
+    next_mid = 1;
+    
+    read_demgrphcs();
+    read_parmtrs();
 }
 
 void cblok::read_demgrphcs(){
@@ -292,6 +336,45 @@ void cblok::read_demgrphcs(){
         delete []str;
     }
     in.close();
+    
+    //9. read excluded village
+    file = datadir;     file = file + village_excluded;
+    in.open(file.c_str());
+    
+    getline(in, line);  //header
+    while(getline(in,line)){
+        int mid = mbloksIndex[line];
+        mblok_agrps.erase(mid);
+        mblok_mpops.erase(mid);
+        mblok_fpops.erase(mid);
+        mblok_hholds.erase(mid);
+        mbloksIndex.erase(line);
+    }
+    in.close();
+    meshblocks = (int)mbloksIndex.size();
+    
+    //10. read meshblock lat & long
+    file = datadir;     file = file + village_coordinates;
+    in.open(file.c_str());
+    
+    getline(in, line); //header
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        p = std::strtok(str, ",");  //village name may have space
+        map<string, int>::iterator k = mbloksIndex.find(p);
+        if(k == mbloksIndex.end()) continue;
+        
+        int mid = k->second;
+        p = std::strtok(NULL, ",");     double lat = atof(p);
+        p = std::strtok(NULL, ",");     double log = atof(p);
+        
+        double *r = new double[2];
+        r[0] = lat;     r[1] = log;
+        mblok_crdnt.insert(pair<int, double*>(mid, r));
+    }
+    in.close();
 }
 
 void cblok::read_parmtrs(){
@@ -399,6 +482,18 @@ void cblok::read_parmtrs(){
     in.close();
 }
 
+void cblok::add_mblok(mblok *p){
+    
+}
+
+void cblok::bld_cblok_pop(){
+    
+}
+
+void cblok::bld_cblok_hhold(){
+    
+}
+
 void cblok::hndl_land_data(){
     
 }
@@ -422,17 +517,5 @@ void cblok::allct_bbldgs(){
 }
 
 void cblok::calc_bldg_dist(){
-    
-}
-
-void cblok::add_mblok(mblok *p){
-    
-}
-
-void cblok::bld_cblok_pop(){
-    
-}
-
-void cblok::bld_cblok_hhold(){
     
 }

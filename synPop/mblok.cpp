@@ -8,6 +8,30 @@
 
 #include "blocks.h"
 
+mblok::mblok(int mid, cblok *cbk, double lat, double log){
+    this->mid = mid;
+    this->cbk = cbk;
+    this->lat = lat;
+    this->log = log;
+}
+
+mblok::~mblok(){
+    cbk = NULL;
+    mblok_pop.clear();
+    
+    for(map<int, hhold*>::iterator j = mblok_hholds.begin(); j != mblok_hholds.end(); ++j)
+        delete j->second;
+    mblok_hholds.clear();
+    
+    for(map<int, rbldg*>::iterator j = mblok_rbldgs.begin(); j != mblok_rbldgs.end(); ++j)
+        delete j->second;
+    mblok_rbldgs.clear();
+    
+    for(map<int, wbldg*>::iterator j = mblok_wbldgs.begin(); j != mblok_wbldgs.end(); ++j)
+        delete j->second;
+    mblok_wbldgs.clear();
+}
+
 void mblok::add_hhold(hhold *p){
     mblok_hholds.insert(pair<int, hhold*>(p->hid, p));
 }
