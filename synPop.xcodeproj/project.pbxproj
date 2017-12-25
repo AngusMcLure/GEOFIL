@@ -10,11 +10,11 @@
 		9D7B63481FAAC3F70044FD3F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63471FAAC3F70044FD3F /* main.cpp */; };
 		9D7B63531FAAC4610044FD3F /* funcs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63521FAAC4610044FD3F /* funcs.cpp */; };
 		9DEF232E1FAACE10008F520B /* agent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF232C1FAACE10008F520B /* agent.cpp */; };
-		9DEF23321FAE8C3C008F520B /* popdynm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23301FAE8C3C008F520B /* popdynm.cpp */; };
+		9DEF23321FAE8C3C008F520B /* pop_dynm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23301FAE8C3C008F520B /* pop_dynm.cpp */; };
 		9DEF23381FAE8D2E008F520B /* sites.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23361FAE8D2E008F520B /* sites.cpp */; };
-		9DEF233B1FAFE03C008F520B /* intlzpop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233A1FAFE03C008F520B /* intlzpop.cpp */; };
+		9DEF233B1FAFE03C008F520B /* intlz_pop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233A1FAFE03C008F520B /* intlz_pop.cpp */; };
 		9DEF233E1FAFE162008F520B /* rstat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233C1FAFE162008F520B /* rstat.cpp */; };
-		9DEF23401FAFE1A6008F520B /* mobmod.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233F1FAFE1A6008F520B /* mobmod.cpp */; };
+		9DEF23401FAFE1A6008F520B /* mob_mod.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233F1FAFE1A6008F520B /* mob_mod.cpp */; };
 		9DEF23431FB13045008F520B /* mblok.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23421FB13045008F520B /* mblok.cpp */; };
 /* End PBXBuildFile section */
 
@@ -38,14 +38,14 @@
 		9DEF232C1FAACE10008F520B /* agent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = agent.cpp; sourceTree = "<group>"; };
 		9DEF232D1FAACE10008F520B /* agent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = agent.h; sourceTree = "<group>"; };
 		9DEF232F1FAE88E5008F520B /* paras.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = paras.h; sourceTree = "<group>"; };
-		9DEF23301FAE8C3C008F520B /* popdynm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = popdynm.cpp; sourceTree = "<group>"; };
+		9DEF23301FAE8C3C008F520B /* pop_dynm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pop_dynm.cpp; sourceTree = "<group>"; };
 		9DEF23311FAE8C3C008F520B /* blocks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = blocks.h; sourceTree = "<group>"; };
 		9DEF23361FAE8D2E008F520B /* sites.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sites.cpp; sourceTree = "<group>"; };
 		9DEF23371FAE8D2E008F520B /* sites.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sites.h; sourceTree = "<group>"; };
 		9DEF23391FAEA256008F520B /* agroups.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = agroups.h; sourceTree = "<group>"; };
-		9DEF233A1FAFE03C008F520B /* intlzpop.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = intlzpop.cpp; sourceTree = "<group>"; };
+		9DEF233A1FAFE03C008F520B /* intlz_pop.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = intlz_pop.cpp; sourceTree = "<group>"; };
 		9DEF233C1FAFE162008F520B /* rstat.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = rstat.cpp; sourceTree = "<group>"; };
-		9DEF233F1FAFE1A6008F520B /* mobmod.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mobmod.cpp; sourceTree = "<group>"; };
+		9DEF233F1FAFE1A6008F520B /* mob_mod.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mob_mod.cpp; sourceTree = "<group>"; };
 		9DEF23421FB13045008F520B /* mblok.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mblok.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -80,12 +80,12 @@
 			isa = PBXGroup;
 			children = (
 				9DEF232C1FAACE10008F520B /* agent.cpp */,
-				9DEF23301FAE8C3C008F520B /* popdynm.cpp */,
+				9DEF23301FAE8C3C008F520B /* pop_dynm.cpp */,
 				9D7B63521FAAC4610044FD3F /* funcs.cpp */,
-				9DEF233A1FAFE03C008F520B /* intlzpop.cpp */,
+				9DEF233A1FAFE03C008F520B /* intlz_pop.cpp */,
 				9D7B63471FAAC3F70044FD3F /* main.cpp */,
 				9DEF23421FB13045008F520B /* mblok.cpp */,
-				9DEF233F1FAFE1A6008F520B /* mobmod.cpp */,
+				9DEF233F1FAFE1A6008F520B /* mob_mod.cpp */,
 				9DEF233C1FAFE162008F520B /* rstat.cpp */,
 				9DEF23361FAE8D2E008F520B /* sites.cpp */,
 				9DEF232D1FAACE10008F520B /* agent.h */,
@@ -156,13 +156,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				9D7B63531FAAC4610044FD3F /* funcs.cpp in Sources */,
-				9DEF23321FAE8C3C008F520B /* popdynm.cpp in Sources */,
+				9DEF23321FAE8C3C008F520B /* pop_dynm.cpp in Sources */,
 				9D7B63481FAAC3F70044FD3F /* main.cpp in Sources */,
 				9DEF233E1FAFE162008F520B /* rstat.cpp in Sources */,
-				9DEF233B1FAFE03C008F520B /* intlzpop.cpp in Sources */,
+				9DEF233B1FAFE03C008F520B /* intlz_pop.cpp in Sources */,
 				9DEF23381FAE8D2E008F520B /* sites.cpp in Sources */,
 				9DEF23431FB13045008F520B /* mblok.cpp in Sources */,
-				9DEF23401FAFE1A6008F520B /* mobmod.cpp in Sources */,
+				9DEF23401FAFE1A6008F520B /* mob_mod.cpp in Sources */,
 				9DEF232E1FAACE10008F520B /* agent.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
