@@ -108,17 +108,9 @@ void cblok::read_demgrphcs(){
     }
     
     int ii = 0;
-    while(getline(in, line)){
-        char *str = new char[line.size()+1];
-        std::strcpy(str, line.c_str());
-        char *p = NULL;
-        p = std::strtok(str, ",");
-        p = std::strtok(NULL, ",");
-        p = std::strtok(NULL, ",");
-        double pp = atof(p)/(atof(p)+100);
-        sexratio[ii++] = pp;
-        
-        delete []str;
+    double pp = 0;
+    while(in >> pp){
+        sex_ratio[ii++] = pp/(pp+100);
     }
     in.close();
     
@@ -179,7 +171,7 @@ void cblok::read_demgrphcs(){
     age_seg_up.clear(); age_seg_up.shrink_to_fit();
     in.close();
     
-    //4. read village pop by gender
+    //4. read village pop by gender, male first
     file = datadir;    file = file + village_pop_gender;
     in.open(file.c_str());
     
@@ -190,17 +182,7 @@ void cblok::read_demgrphcs(){
         break;
     }
     
-    str = new char[line.size()+1];
-    std::strcpy(str, line.c_str());
-    p = std::strtok(str, " ,");
-    
-    //header
-    bool male_first = false;     //false when female number listed first
-    p = std::strtok(NULL, ", ");
-    if(!std::strcmp(p, "male") or !std::strcmp(p, "Male") or !std::strcmp(p, "MALE")) male_first = true;
-    p = NULL;
-    delete [] str;
-    
+    getline(in, line);          //skip header
     while(getline(in,line)){
         str = new char[line.size()+1];
         std::strcpy(str, line.c_str());
@@ -217,11 +199,6 @@ void cblok::read_demgrphcs(){
         p = std::strtok(NULL, ", ");    males = atoi(p);
         p = std::strtok(NULL, ", ");    females = atoi(p);
         
-        if(male_first == false){
-            int tmp = males;
-            males = females;
-            females = tmp;
-        }
         mblok_mpops.insert(pair<int, int>(mid, males));
         mblok_fpops.insert(pair<int, int>(mid, females));
         
@@ -229,8 +206,8 @@ void cblok::read_demgrphcs(){
     }
     in.close();
     
-    //5. read females by age group
-    file = datadir;    file = file + females_age;
+    //5. read population by age group
+    file = datadir;    file = file + population_age;
     in.open(file.c_str());
     
     //skip the description
@@ -240,44 +217,19 @@ void cblok::read_demgrphcs(){
         break;
     }
     
-    ii = 0;
-    while(getline(in, line)){
-        str = new char[line.size()+1];
-        std::strcpy(str, line.c_str());
-        p = std::strtok(str, "-, ");
-        p = std::strtok(NULL, "-, ");
-        p = std::strtok(NULL, "-, ");
-        
-        fmalbyage[ii++] = atoi(p);
-        delete []str;
-    }
-    in.close();
-    
-    //6. read males by age group
-    file = datadir;    file = file + males_age;
-    in.open(file.c_str());
-    
-    //skip the description
-    while(getline(in, line)){
-        if(line[0] == '*') continue;
-        if(line.length() <= 1) continue;  //empty line with carriage return
-        break;
-    }
+    getline(in, line);          //header
     
     ii = 0;
     while(getline(in, line)){
         str = new char[line.size()+1];
         std::strcpy(str, line.c_str());
-        p = std::strtok(str, "-, ");
-        p = std::strtok(NULL, "-, ");
-        p = std::strtok(NULL, "-, ");
-        
-        malebyage[ii++] = atoi(p);
+        p = std::strtok(str, ", ");     male_by_agrp[ii] = atoi(p);
+        p = std::strtok(NULL, ", ");    fmal_by_agrp[ii++] = atoi(p);
         delete []str;
     }
     in.close();
     
-    //7. read household units
+    //6. read household units
     file = datadir;    file = file + village_units;
     in.open(file.c_str());
     
@@ -308,7 +260,7 @@ void cblok::read_demgrphcs(){
     }
     in.close();
     
-    //8. read household types
+    //7. read household types
     file = datadir;    file = file + household_types;
     in.open(file.c_str());
     
@@ -332,8 +284,31 @@ void cblok::read_demgrphcs(){
         int t = std::atoi(p);
         p = std::strtok(NULL, " ,");
         int count = atoi(p);
-        hholdtypes[t] = count;
+        hhold_types[t] = count;
         
+        delete []str;
+    }
+    in.close();
+    
+    //8. read marital by age group
+    file = datadir;    file = file + marital_age;
+    in.open(file.c_str());
+    
+    //skip the description
+    while(getline(in, line)){
+        if(line[0] == '*') continue;
+        if(line.length() <= 1) continue;  //empty line with carriage return
+        break;
+    }
+    
+    getline(in, line);          //header
+    
+    ii = 0;
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        p = std::strtok(str, ", ");     male_marital_age[ii] = atoi(p);
+        p = std::strtok(NULL, ", ");    fmal_marital_age[ii++] = atoi(p);
         delete []str;
     }
     in.close();
@@ -388,6 +363,13 @@ void cblok::read_demgrphcs(){
         int mid = j->first;
         cpop += mblok_mpops[mid] + mblok_fpops[mid];
     }
+    
+    //calculate smoothed population by age group
+    calc_smoothed_pop_agrp(male_by_agrp, male_by_age);
+    calc_smoothed_pop_agrp(fmal_by_agrp, fmal_by_age);
+    
+    //calculate marital probability by age
+    calc_marital_prob();
 }
 
 void cblok::read_parmtrs(){
@@ -538,4 +520,60 @@ void cblok::allct_bbldgs(){
 
 void cblok::calc_bldg_dist(){
     
+}
+
+void cblok::calc_smoothed_pop_agrp(int *p, int *res){
+    //calculate basic probability
+    double *tmp = new double[80];
+    for(int i = 0; i < 80; ++i)
+        tmp[i] = (double)p[int(i/5)]/5;
+    
+    double l = 0, m = 0, h = 0;
+    int t;
+    for(int i = 0; i < 16; ++i){
+        t = p[i];
+        m = tmp[i*5+2];
+        if(i > 0) l = tmp[i*5-3];
+        if(i < 15) h = tmp[i*5+7];
+        
+        double r = (m-l)/5, s = (h-m)/5;
+        if(i == 0) r = s;
+        if(i == 15) s = r;
+        
+        res[i*5+2] = int((t+3*r-3*s)/5+0.5);      t -= res[i*5+2];
+        res[i*5+1] = int(res[i*5+2]-r+0.5);       t -= res[i*5+1];
+        res[i*5] = int(res[i*5+2]-2*r+0.5);       t -= res[i*5];
+        res[i*5+3] = int(res[i*5+2]+s+0.5);       t -= res[i*5+3];
+        res[i*5+4] = int(res[i*5+2]+2*s+0.5);     t -= res[i*5+4];
+        
+        while(t < 0){
+            -- res[i*5 + rand()%5];
+            ++t;
+        }
+        
+        while(t > 0){
+            ++ res[i*5 + rand()%5];
+            --t;
+        }
+    }
+}
+
+void cblok::calc_marital_prob(){
+    int L = (max_marital_age-min_marital_age)+1;   //45
+    for(int i = 0; i < L; ++i){
+        male_marital_prob[i] = 1 - marital_b_m;
+        fmal_marital_prob[i] = 1 - marital_b_f;
+    }
+    
+    for(int i = 0; i < L; ++i){
+        if(i < 2){
+            male_marital_prob[i] = 1 - sqrt(male_marital_age[0]);
+            fmal_marital_prob[i] = 1 - sqrt(fmal_marital_age[0]);
+        }
+        else if(i < 42){
+            int j = int((i-2)/5), k = j + 1;
+            if(male_marital_age[k] < male_marital_age[j]) male_marital_prob[i] = 1 - pow(male_marital_age[k]/male_marital_age[j], 0.2);
+            if(fmal_marital_age[k] < fmal_marital_age[j]) fmal_marital_prob[i] = 1 - pow(fmal_marital_age[k]/fmal_marital_age[j], 0.2);
+        }
+    }
 }

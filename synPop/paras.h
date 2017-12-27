@@ -21,6 +21,13 @@
 #define sim_nd              2050
 #define unit_types          5
 
+#define min_marital_age     15
+#define max_marital_age     59
+#define marital_a_m         4.16433
+#define marital_b_m         0.9225
+#define marital_a_f         5.57703
+#define marital_b_f         0.90252
+
 //func for generating households
 typedef int (*pf)(double *p);
 int r_size(pf f, double *p);
@@ -40,13 +47,13 @@ int ztpoisson(double *p);
 #define net_pop_loss            "net_migrants.csv"
 #define mortality_male          "mortality_male.csv"
 #define mortality_female        "mortality_female.csv"
+#define marital_age             "marital_age.dat"
 
 //demographics
 #define villages                "villages.dat"
 #define village_pop_gender      "village_pop_gender.dat"
 #define village_pop_age         "village_pop_age.dat"
-#define males_age               "males_age.dat"
-#define females_age             "females_age.dat"
+#define population_age          "pop_age.dat"
 #define sex_ratio_age           "sex_ratio_age.dat"
 #define household_types         "household_types.dat"
 #define village_units           "village_households.dat"
