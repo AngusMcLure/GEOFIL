@@ -29,11 +29,11 @@ class agent{
 public:
     int aid;
     int age;        //in days
-    char gendr;     //M - male, F - female
+    char gendr;     //m - male, f - female
     
     char works;     //W - working, S - schooling, H - housing
-    char margs;     //U - unmarried, M - married, S - single
-    int bwind;      //birth window closed for female just having a baby
+    char margs;     //m - married, s - single, d - divorce, w - widowed
+    int bthwind;      //birth window closed for female just having a baby
     
     char epids;     //S - susceptible, E - exposed, I - infectious, R - removed, D - dead
     
@@ -45,7 +45,7 @@ public:
     workp *wp;      //workplace
     schol *sh;      //school
     
-    agent(int aid, int age = -1, char gendr = '-', char margs = 'u', hhold *hd = NULL, workp *wp = NULL, schol *sh = NULL);
+    agent(int aid, int age = -1, char gendr = '-', char margs = 's', hhold *hd = NULL, workp *wp = NULL, schol *sh = NULL);
     
     ~agent();
     

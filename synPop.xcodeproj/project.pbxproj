@@ -42,7 +42,7 @@
 		9DEF23311FAE8C3C008F520B /* blocks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = blocks.h; sourceTree = "<group>"; };
 		9DEF23361FAE8D2E008F520B /* sites.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sites.cpp; sourceTree = "<group>"; };
 		9DEF23371FAE8D2E008F520B /* sites.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sites.h; sourceTree = "<group>"; };
-		9DEF23391FAEA256008F520B /* agroups.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = agroups.h; sourceTree = "<group>"; };
+		9DEF23391FAEA256008F520B /* agrps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = agrps.h; sourceTree = "<group>"; };
 		9DEF233A1FAFE03C008F520B /* intlz_pop.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = intlz_pop.cpp; sourceTree = "<group>"; };
 		9DEF233C1FAFE162008F520B /* rstat.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = rstat.cpp; sourceTree = "<group>"; };
 		9DEF233F1FAFE1A6008F520B /* mob_mod.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mob_mod.cpp; sourceTree = "<group>"; };
@@ -89,7 +89,7 @@
 				9DEF233C1FAFE162008F520B /* rstat.cpp */,
 				9DEF23361FAE8D2E008F520B /* sites.cpp */,
 				9DEF232D1FAACE10008F520B /* agent.h */,
-				9DEF23391FAEA256008F520B /* agroups.h */,
+				9DEF23391FAEA256008F520B /* agrps.h */,
 				9DEF23311FAE8C3C008F520B /* blocks.h */,
 				9D7B63511FAAC4490044FD3F /* main.h */,
 				9DEF232F1FAE88E5008F520B /* paras.h */,

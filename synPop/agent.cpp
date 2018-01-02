@@ -18,7 +18,7 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *hd, workp *wp, sch
     this->sh = sh;
     
     works = '-';
-    bwind = 0;
+    bthwind = 0;
     epids = 'S';
 }
 

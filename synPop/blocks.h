@@ -9,7 +9,7 @@
 #ifndef blocks_hpp
 #define blocks_hpp
 
-#include "agroups.h"
+#include "agrps.h"
 #include "sites.h"
 using namespace std;
 
@@ -52,6 +52,10 @@ public:
     map<int, agent*> cblok_pop;
     map<int, agent*> fmal_marrd;       //married females
     
+    bool init;                         //for creating pop
+    vector<agent*> mvec[vg_agrps];
+    vector<agent*> fvec[vg_agrps];
+    
     int next_hid;
     //map<int, hhold*> cblok_hholds;
     //map<int, rbldg*> cblok_rbldgs;
@@ -73,25 +77,35 @@ public:
     map<int, int> mblok_hholds;         //hholds in each mblok
     map<int, agrps*> mblok_agrps;       //mblok pop by age group;
     
-    int male_by_agrp[16];               //males by age groups
-    int fmal_by_agrp[16];               //females by age groups
-    int male_by_age[80];                //males by singular age - triangle smoothed
-    int fmal_by_age[80];                //females by singlular age - triangle smoothed
+    int male_by_agrp[age_grps];         //males by age groups
+    int fmal_by_agrp[age_grps];         //females by age groups
+    int male_by_age[max_ages+1];        //males by singular age - triangle smoothed
+    int fmal_by_age[max_ages+1];        //females by singlular age - triangle smoothed
     
-    double male_marital_age[int((max_marital_age - min_marital_age)/5)+1];
-    double fmal_marital_age[int((max_marital_age - min_marital_age)/5)+1];
-    double male_marital_prob[max_marital_age-min_marital_age+1];          //male marriage probability by age
-    double fmal_marital_prob[max_marital_age-min_marital_age+1];          //female marriage probability by age
+    double male_married[marital_agrps];
+    double male_widowed[marital_agrps];
+    double male_divorce[marital_agrps];
+    double fmal_married[marital_agrps];
+    double fmal_widowed[marital_agrps];
+    double fmal_divorce[marital_agrps];
+    double male_single[marital_agrps];
+    double fmal_single[marital_agrps];
+    double male_marital_prob[marital_ages];    //male marriage probability by age
+    double fmal_marital_prob[marital_ages];    //female marriage probability by age
+    
+    double children_by_agrps[10];       //children ever born by age groups
+    double children_by_age[50];         //smoothed children ever born
     
     double mmortlty[18];                //male mortatlity
     double fmortlty[18];                //female mortatlity
     
-    double sex_ratio[16];                //sex ratios by age groups
+    double sex_ratio[age_grps];               //sex ratios by age groups
     double fertlty[sim_nd-sim_bg+1][6]; //fertility by age groups
     
     int pop_loss[sim_nd-sim_bg+1];      //net annual population loss due to migration
     
     cblok(int cid, string cname, double lat, double log);
+    bool pop_reload();
     void read_demgrphcs();
     void read_parmtrs();
     void reset_cpop();
@@ -113,7 +127,8 @@ public:
     void hndl_mvout(int t);
     void hndl_mvgin(int t);
     void hndl_hldfrc(int t);
-    void calc_smoothed_pop_agrp(int *p, int *res);
+    void calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL);
+    void calc_smoothed_chd_agrp(double *p, int pL, double *res, int rL);
     void calc_marital_prob();
     void sim_pop(int t);
     void get_pop(int t);

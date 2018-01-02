@@ -17,7 +17,6 @@ class mblok;   //meshblock, smallest census unit
 class cblok;   //cities or other large census area
 
 //pop by age groups
-class agrp;
 class agrps;
 
 class hhold{

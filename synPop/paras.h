@@ -21,8 +21,14 @@
 #define sim_nd              2050
 #define unit_types          5
 
+#define vg_agrps            12
+#define age_grps            16
+#define max_ages            79
+
 #define min_marital_age     15
-#define max_marital_age     59
+#define max_marital_age     69
+#define marital_agrps       11            // int((max_marital_age - min_marital_age)/5)+1
+#define marital_ages        55
 #define marital_a_m         4.16433
 #define marital_b_m         0.9225
 #define marital_a_f         5.57703
@@ -47,7 +53,6 @@ int ztpoisson(double *p);
 #define net_pop_loss            "net_migrants.csv"
 #define mortality_male          "mortality_male.csv"
 #define mortality_female        "mortality_female.csv"
-#define marital_age             "marital_age.dat"
 
 //demographics
 #define villages                "villages.dat"
@@ -57,6 +62,9 @@ int ztpoisson(double *p);
 #define sex_ratio_age           "sex_ratio_age.dat"
 #define household_types         "household_types.dat"
 #define village_units           "village_households.dat"
+#define marital_male            "marital_male.csv"
+#define marital_female          "marital_female.csv"
+#define number_of_children      "number_of_childen_ever_born.csv"
 
 //land use data
 #define AS_rbldgs_origin        "AS_rbldgs_origin.csv"
