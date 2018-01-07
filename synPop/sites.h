@@ -22,7 +22,7 @@ class agrps;
 class hhold{
 public:
     int hid;                            //hhold id
-    char typ;                           // C-couple, F-female, M-male, A-alone, N-nonrelatives
+    char typ;                           // c-couple, f-female, m-male, a-alone, o-organizational
     int siz;
     
     double lat, log;

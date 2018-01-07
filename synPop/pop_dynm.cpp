@@ -9,7 +9,7 @@
 #include "blocks.h"
 
 void cblok::add_agent(agent *p){
-    
+    cblok_pop.insert(pair<int, agent*>(p->aid, p));
 }
 
 void rmv_agent(agent *p){

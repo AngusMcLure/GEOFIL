@@ -17,16 +17,22 @@ public:
     int age_dn[vg_agrps];
     int age_up[vg_agrps];
     int pop[vg_agrps];
+    int male[vg_agrps];
+    int female[vg_agrps];
     
     agrps(){
         memset(age_dn, 0, sizeof(int)*vg_agrps);
         memset(age_up, 0, sizeof(int)*vg_agrps);
         memset(pop, 0, sizeof(int)*vg_agrps);
+        memset(male, 0, sizeof(int)*vg_agrps);
+        memset(female, 0, sizeof(int)*vg_agrps);
     }
     ~agrps(){
         memset(age_dn, 0, sizeof(int)*vg_agrps);
         memset(age_up, 0, sizeof(int)*vg_agrps);
         memset(pop, 0, sizeof(int)*vg_agrps);
+        memset(male, 0, sizeof(int)*vg_agrps);
+        memset(female, 0, sizeof(int)*vg_agrps);
     }
 };
 

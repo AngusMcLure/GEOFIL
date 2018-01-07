@@ -33,17 +33,18 @@ mblok::~mblok(){
 }
 
 void mblok::intlz_pop(){
-    string file = config;
-    file = file + cbk->mbloksIndexB[mid];
-    file = file + "_pop";
-    
-    ifstream in(file.c_str());
-    if(!in){
+    if(!cbk->init){
         int mm = cbk->mblok_mpops[mid], ff = cbk->mblok_fpops[mid];
         agrps *pp = cbk->mblok_agrps[mid];
         bld_pop(mm, ff, pp);
     }
     else{
+        string file = config;
+        file = file + cbk->mbloksIndexB[mid];
+        file = file + "_pop";
+        
+        ifstream in(file.c_str());
+        
         string line;
         while(getline(in, line)){
             char *str = new char[line.size()+1];
@@ -94,7 +95,90 @@ void mblok::bld_hhold(pf f){
 }
 
 void mblok::bld_pop(int mm, int ff, agrps *pp){
+    int *male_vg = cbk->mblok_agrps[mid]->male;
+    int *female_vg = cbk->mblok_agrps[mid]->female;
     
+    bool no_data = true;
+    for(int i = 0; i < vg_agrps; ++i){
+        if(male_vg[i] > 0){
+            no_data = false;
+            break;
+        }
+    }
+    
+    //male & female pop by age group in village unavailable
+    if(no_data){
+        double males = 0, females = 0;
+        for(int i = 0; i < vg_agrps; ++i){
+            males += cbk->mvec[i].size();
+            females += cbk->fvec[i].size();
+        }
+        
+        int c_mm = mm, c_ff = ff;
+        for(int i = 0; i < vg_agrps; ++i){
+            male_vg[i] = int(cbk->mvec[i].size()*mm/males+0.5);         c_mm -= male_vg[i];
+            female_vg[i] = int(cbk->fvec[i].size()*ff/females+0.5);     c_ff -= female_vg[i];
+        }
+        
+        while(c_mm > 0){
+            int index = rand() % vg_agrps;
+            if(cbk->mvec[index].size() - male_vg[index] > 0){
+                ++ male_vg[index];
+                -- c_mm;
+            }
+        }
+        
+        while(c_mm < 0){
+            -- male_vg[rand()%vg_agrps];
+            ++ c_mm;
+        }
+        
+        while(c_ff > 0){
+            int index = rand() % vg_agrps;
+            if(cbk->fvec[index].size() - female_vg[index] > 0){
+                ++ female_vg[index];
+                -- c_ff;
+            }
+        }
+        
+        while(c_ff < 0){
+            -- female_vg[rand()%vg_agrps];
+            ++ c_ff;
+        }
+    }
+    
+    //build pop based on male/female villagers by age group
+    for(int i = 0; i < vg_agrps; ++i){
+        while(male_vg[i]-- > 0){
+            int index = rand() % cbk->mvec[i].size();
+            agent *cur = cbk->mvec[i][index];
+            
+            cur->aid = cbk->next_aid++;
+            add_agent(cur);
+            cbk->add_agent(cur);
+            cbk->mvec[i].erase(cbk->mvec[i].begin()+index);
+            
+            if(cbk->mvec[i].size() == 0 && male_vg[i] > 0){
+                cout << "err: no enough males to build village pop" << endl;
+                exit(1);
+            }
+        }
+        
+        while(female_vg[i]-- > 0){
+            int index = rand() % cbk->fvec[i].size();
+            agent *cur = cbk->fvec[i][index];
+            
+            cur->aid = cbk->next_aid++;
+            add_agent(cur);
+            cbk->add_agent(cur);
+            cbk->fvec[i].erase(cbk->fvec[i].begin()+index);
+            
+            if(cbk->fvec[i].size() == 0 && female_vg[i] > 0){
+                cout << "err: no enough females to build village pop" << endl;
+                exit(1);
+            }
+        }
+    }
 }
 
 void mblok::adpt_chldrs(hhold *p){

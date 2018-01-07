@@ -60,7 +60,6 @@ int ztpoisson(double *p);
 #define village_pop_age         "village_pop_age.dat"
 #define population_age          "pop_age.dat"
 #define sex_ratio_age           "sex_ratio_age.dat"
-#define household_types         "household_types.dat"
 #define village_units           "village_households.dat"
 #define marital_male            "marital_male.csv"
 #define marital_female          "marital_female.csv"

@@ -28,6 +28,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
     read_parmtrs();
     bld_mbloks();
     bld_cblok_pop();
+    bld_cblok_hhold();
 }
 
 bool cblok::pop_reload(){
@@ -173,6 +174,8 @@ void cblok::read_demgrphcs(){
     }
     delete [] str;
     
+    int last_vg = -1;
+    char sign = 'p';
     while(getline(in,line)){
         str = new char[line.size()+1];
         std::strcpy(str, line.c_str());
@@ -180,26 +183,39 @@ void cblok::read_demgrphcs(){
         
         //deal with age group record
         int mid = mbloksIndexA[p];
-        if(mblok_agrps.find(mid) != mblok_agrps.end()){
-            cout << "village name: " << p << " already exist!" << endl;
-            exit(1);
+        
+        if(mid == last_vg){
+            if(sign == 'p') sign = 'm';
+            if(sign == 'm') sign = 'f';
         }
-        mblok_agrps.insert(pair<int, agrps*>(mid, new agrps()));
+        else{
+            //a new village information
+            sign = 'p';
+            mblok_agrps.insert(pair<int, agrps*>(mid, new agrps()));
+        }
         
         //reading age group population
         p = std::strtok(NULL, ", ");
         int ii = 0;
         while(p){
-            mblok_agrps[mid]->age_dn[ii] = age_seg_dn[ii];
-            mblok_agrps[mid]->age_up[ii] = age_seg_up[ii];
-            mblok_agrps[mid]->pop[ii] += atoi(p);
+            if(sign == 'p'){
+                mblok_agrps[mid]->age_dn[ii] = age_seg_dn[ii];
+                mblok_agrps[mid]->age_up[ii] = age_seg_up[ii];
+                mblok_agrps[mid]->pop[ii] += atoi(p);
+            }
+            else if(sign == 'm') mblok_agrps[mid]->male[ii] += atoi(p);
+            else if(sign == 'f') mblok_agrps[mid]->female[ii] += atoi(p);
+            
             p = std::strtok(NULL, ", ");
             
             if(age_seg_dn[ii] < max_ages-4) ++ii;       //last age group is 75-79
         }
-        mblok_agrps[mid]->age_up[vg_agrps-1] = max_ages;      //adjust to be consistent with population by age group
+        
+        if(sign == 'p') mblok_agrps[mid]->age_up[vg_agrps-1] = max_ages;      //adjust to be consistent with population by age group
         
         delete []str;
+        
+        last_vg = mid;
     }
     age_seg_dn.clear(); age_seg_dn.shrink_to_fit();
     age_seg_up.clear(); age_seg_up.shrink_to_fit();
@@ -283,36 +299,6 @@ void cblok::read_demgrphcs(){
         
         p = std::strtok(NULL, " ,");
         mblok_hholds.insert(pair<int, int>(mid, atoi(p)));
-        
-        delete []str;
-    }
-    in.close();
-    
-    //7. read household types
-    file = datadir;    file = file + household_types;
-    in.open(file.c_str());
-    
-    //skip the description
-    while(getline(in, line)){
-        if(line[0] == '*') continue;
-        if(line.length() <= 1) continue;  //empty line with carriage return
-        break;
-    }
-    
-    while(getline(in, line)){
-        str = new char[line.size()+1];
-        std::strcpy(str, line.c_str());
-        
-        p = std::strtok(str, " ,");
-        if(std::strlen(p) > 1){
-            cout << "hhold type length > 1, in reading hhold type data" << endl;
-            cout << "hhold type: " << p << endl;
-            exit(1);
-        }
-        int t = std::atoi(p);
-        p = std::strtok(NULL, " ,");
-        int count = atoi(p);
-        hhold_types[t] = count;
         
         delete []str;
     }
@@ -592,6 +578,18 @@ void cblok::bld_cblok_pop(){
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
         mbk->intlz_pop();
+    }
+    
+    for(int i = 0; i < vg_agrps; ++i){
+        while(mvec[i].size() > 0){
+            delete mvec[i].back();
+            mvec[i].pop_back();
+        }
+        
+        while(fvec[i].size() > 0){
+            delete fvec[i].back();
+            fvec[i].pop_back();
+        }
     }
 }
 
