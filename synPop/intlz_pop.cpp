@@ -148,13 +148,7 @@ void cblok::read_demgrphcs(){
     file = datadir;    file = file + village_pop_age;
     in.open(file.c_str());
     
-    //skip the description
-    while(getline(in, line)){
-        if(line[0] == '*') continue;
-        if(line.length() <= 1) continue;  //empty line with carriage return
-        break;
-    }
-    
+    getline(in, line);
     char *str = new char[line.size()+1];
     std::strcpy(str, line.c_str());
     char *p = std::strtok(str, " ,");
@@ -225,26 +219,19 @@ void cblok::read_demgrphcs(){
     file = datadir;    file = file + village_pop_gender;
     in.open(file.c_str());
     
-    //skip the description
-    while(getline(in, line)){
-        if(line[0] == '*') continue;
-        if(line.length() <= 1) continue;  //empty line with carriage return
-        break;
-    }
-    
     getline(in, line);          //skip header
     while(getline(in,line)){
         str = new char[line.size()+1];
         std::strcpy(str, line.c_str());
         p = std::strtok(str, ",");  //village name may have space
-        
+     
         //deal with gender record
         int mid = mbloksIndexA[p];
         if(mblok_mpops.find(mid) != mblok_mpops.end()){
             cout << "village name: " << p << " already exist, read gender data!" << endl;
             exit(1);
         }
-        
+     
         int males = 0, females = 0;
         p = std::strtok(NULL, ", ");    males = atoi(p);
         p = std::strtok(NULL, ", ");    females = atoi(p);
@@ -557,7 +544,7 @@ void cblok::bld_cblok_pop(){
             int mm = male_by_age[i], ff = fmal_by_age[i];
             while(mm-- > 0){
                 int id = -1;        //id not initialized
-                int age = i*365 + rand()%365;
+                int age = i*365 + irandom()%365;
                 char gender = 'm';
                 
                 agent *p = new agent(id, age, gender);
@@ -566,7 +553,7 @@ void cblok::bld_cblok_pop(){
             
             while(ff-- > 0){
                 int id = -1;        //id not initialized
-                int age = i*365 + rand()%365;
+                int age = i*365 + irandom()%365;
                 char gender = 'f';
                 
                 agent *p = new agent(id, age, gender);
@@ -594,7 +581,13 @@ void cblok::bld_cblok_pop(){
 }
 
 void cblok::bld_cblok_hhold(){
-    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        int mid = j->first;
+        mblok *mbk = j->second;
+        
+        int n = mblok_hholds[mid];
+        mbk->bld_hhold(n);
+    }
 }
 
 void cblok::hndl_land_data(){
@@ -648,12 +641,12 @@ void cblok::calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL){
         res[i*5+4] = int(res[i*5+2]+2*s+0.5);     t -= res[i*5+4];
         
         while(t < 0){
-            -- res[i*5 + rand()%5];
+            -- res[i*5 + irandom()%5];
             ++t;
         }
         
         while(t > 0){
-            ++ res[i*5 + rand()%5];
+            ++ res[i*5 + irandom()%5];
             --t;
         }
     }

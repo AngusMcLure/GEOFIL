@@ -34,12 +34,15 @@
 #define marital_a_f         5.57703
 #define marital_b_f         0.90252
 
-//func for generating households
-typedef int (*pf)(double *p);
-int r_size(pf f, double *p);
-int gaussian(double *p);
-int ztpoisson(double *p);
+#define mu                  6.06          //household Gaussian
+#define sigma               2.86
+#define lambda              6.47          //household Poisson
 
+//functions
+int gaussian(double m_mu, double s_sigma);
+int ztpoisson(double l_lambda);
+double drandom();
+int irandom();
 
 //files ----------------------------------------------------------------------------------
 //paths

@@ -13,6 +13,15 @@
 #include "sites.h"
 using namespace std;
 
+//family units
+struct unit{
+    agent *father;
+    agent *mother;
+    vector<agent*> child;
+    
+    unit(agent *p = NULL, agent *q = NULL){ father = p;  mother = q;  child.clear();}
+};
+
 class mblok{
 public:
     int mid;                            //mblock id
@@ -33,8 +42,15 @@ public:
     void add_agent(agent *p);
     void rmv_hhold(hhold *p);
     void rmv_agent(agent *p);
-    void bld_hhold(pf f);
+    void rnd_margs(agent *p);
+    void bld_hhold(int n);
     void bld_pop(int mm, int ff, agrps *pp);
+    void balance_cp(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
+                    vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec);
+    void optim_cp_diff(vector<agent *> &m_vec, vector<agent *> &s_vec, vector<agent *> &d_vec, vector<agent *> &w_vec,
+                       vector<agent *> &mvec, vector<agent *> &svec, vector<agent *> &dvec, vector<agent *> &wvec);
+    int locate_age_pos(vector<agent*> &m_mvec, agent *p);
+    int match_cp_diff(vector<agent*> &m_mvec, vector<agent*> &f_mvec);
     void adpt_chldrs(hhold *p);          //all members in p are adopted
     
     mblok(int mid, cblok *cbk, double lat = 0, double log = 0);
@@ -71,7 +87,6 @@ public:
     double **road_dist;                 //road distance between meshblocks
     
     //parameters from file inputs
-    int hhold_types[unit_types];         //number of each type household
     map<int, int> mblok_mpops;          //male pop in each mblok
     map<int, int> mblok_fpops;          //female pop in each mblok
     map<int, int> mblok_hholds;         //hholds in each mblok

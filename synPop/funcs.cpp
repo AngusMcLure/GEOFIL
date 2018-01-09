@@ -8,31 +8,37 @@
 #include "paras.h"
 using namespace std;
 
-int r_size(pf f, double *p){
-    return f(p);
-}
-
-int gaussian(double *p){
-    double mu = p[0], sigma = p[1];
+int gaussian(double m_mu, double s_sigma){
     unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
-    std::normal_distribution<double> distribution (mu, sigma);
+    std::normal_distribution<double> distribution (m_mu, s_sigma);
     
     return int(distribution(generator)+0.5);
 }
 
-int ztpoisson(double *p){
-    double lambda = p[0];
+int ztpoisson(double l_lambda){
     unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-    std::srand(seed);
+    srand48(seed);
     double r = drand48();
     
     int k = 1;
-    double t = lambda/(exp(lambda)-1), s = t;
+    double t = l_lambda/(exp(l_lambda)-1), s = t;
     while(s < r){
         ++k;
-        t *= lambda/k;
+        t *= l_lambda/k;
         s += t;
     }
     return k;
+}
+
+double drandom(){
+    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
+    srand48(seed);
+    return drand48();
+}
+
+int irandom(){
+    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
+    srand(seed);           //for random numbers
+    return rand();
 }
