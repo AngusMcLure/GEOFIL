@@ -119,76 +119,28 @@ void mblok::bld_hhold(int n){
     vector<agent*> m_chld, m_svec, m_mvec, m_wvec, m_dvec;
     vector<agent*> f_chld, f_svec, f_mvec, f_wvec, f_dvec;
     
-    for(map<int, agent*>::iterator j = mblok_pop.begin(); j != mblok_pop.end(); ++j){
-        agent *p = j->second;
-        if(p->age < 15*365){
-            p->margs = 's';
-            if(p->gendr == 'm') m_chld.push_back(p);
-            else f_chld.push_back(p);
-        }
-        else{
-            rnd_margs(p);
-            if(p->margs == 's'){
-                if(p->gendr == 'm') m_svec.push_back(p);
-                else f_svec.push_back(p);
-            }
-            else if(p->margs == 'm'){
-                if(p->gendr == 'm') m_mvec.push_back(p);
-                else f_mvec.push_back(p);
-            }
-            else if(p->margs == 'w'){
-                if(p->gendr == 'm') m_wvec.push_back(p);
-                else f_wvec.push_back(p);
-            }
-            else{
-                if(p->gendr == 'm') m_dvec.push_back(p);
-                else f_dvec.push_back(p);
-            }
-        }
-    }
-    
-    //sort agent by age to simplify building units
-    struct _comp{
-        bool operator() (const agent *p, const agent *q){ return (p->age < q->age);}
-    } _younger;
-    
-    stable_sort(m_chld.begin(), m_chld.end(), _younger);
-    stable_sort(m_svec.begin(), m_svec.end(), _younger);
-    stable_sort(m_mvec.begin(), m_mvec.end(), _younger);
-    stable_sort(m_wvec.begin(), m_wvec.end(), _younger);
-    stable_sort(m_dvec.begin(), m_dvec.end(), _younger);
-    
-    stable_sort(f_chld.begin(), f_chld.end(), _younger);
-    stable_sort(f_svec.begin(), f_svec.end(), _younger);
-    stable_sort(f_mvec.begin(), f_mvec.end(), _younger);
-    stable_sort(f_wvec.begin(), f_wvec.end(), _younger);
-    stable_sort(f_dvec.begin(), f_dvec.end(), _younger);
+    vector<unit*> famly;
+    bld_family_unit(m_mvec, m_svec, m_dvec, m_wvec, f_mvec, f_svec, f_dvec, f_wvec, m_chld, f_chld, famly);
+
     
     //adjust married males & females to be equal
-    balance_cp(m_mvec, m_svec, m_dvec, m_wvec, f_mvec, f_svec, f_dvec, f_wvec);
-    
-    vector<unit*> family;
-    for(int i = 0; i < m_mvec.size(); ++i){
-        agent *p = m_mvec[i];
-        agent *q = f_mvec[i];
-        family.push_back(new unit(p, q));
-    }
+    //balance_cp(m_mvec, m_svec, m_dvec, m_wvec, f_mvec, f_svec, f_dvec, f_wvec);
     
     if(cbk->mbloksIndexB[mid] == "Avaio"){
         cout << "Avaio:" << endl;
         cout << "units = " << n << endl;
         cout << "pop = " << mblok_pop.size() << endl;
-        cout << "cps = " << family.size() << endl;
-        for(int i = 0; i < family.size(); ++i){
-            cout << int(family[i]->father->age/365) << " " << int(family[i]->mother->age/365) << endl;
+        cout << "cps = " << famly.size() << endl;
+        for(int i = 0; i < famly.size(); ++i){
+            cout << int(famly[i]->father->age/365) << " " << int(famly[i]->mother->age/365) << endl;
         }
     }
     
-    for(int i = 0; i < family.size(); ++i){
-        delete family[i];
+    for(int i = 0; i < famly.size(); ++i){
+        delete famly[i];
     }
-    family.clear();
-    family.shrink_to_fit();
+    famly.clear();
+    famly.shrink_to_fit();
 }
 
 void mblok::bld_pop(int mm, int ff, agrps *pp){
@@ -297,256 +249,228 @@ void mblok::bld_pop(int mm, int ff, agrps *pp){
     }
 }
 
-void mblok::balance_cp(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
-                       vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec){
+void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
+                            vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
+                            vector<agent*> &m_chld, vector<agent*> &f_chld, vector<unit*> &famly){
     
-    int len = int(m_mvec.size() - f_mvec.size());
-    while(len < 0){
-        optim_cp_diff(f_mvec, f_svec, f_dvec, f_wvec, m_mvec, m_svec, m_dvec, m_wvec);
-        len = int(m_mvec.size() - f_mvec.size());
-    }
+    //sort agent by age to simplify building units
+    struct _comp{
+        bool operator() (const agent *p, const agent *q){ return (p->age < q->age);}
+    } _younger;
     
-    while(len > 0){
-        optim_cp_diff(m_mvec, m_svec, m_dvec, m_wvec, f_mvec, f_svec, f_dvec, f_wvec);
-        len = int(m_mvec.size() - f_mvec.size());
-    }
-}
-
-void mblok::optim_cp_diff(vector<agent *> &m_vec, vector<agent *> &s_vec, vector<agent *> &d_vec, vector<agent *> &w_vec,
-                          vector<agent *> &mvec, vector<agent *> &svec, vector<agent *> &dvec, vector<agent *> &wvec){
-    int t = int(svec.size() + dvec.size() + wvec.size());
-    if(t == 0){
-        int df_1, df_2;
-        agent *cur = NULL;
-        
-        cur = m_vec.front();
-        m_vec.erase(m_vec.begin());
-        df_1 = match_cp_diff(mvec, m_vec);
-        m_vec.insert(m_vec.begin(), cur);
-        
-        cur = m_vec.back();
-        m_vec.pop_back();
-        df_2 = match_cp_diff(mvec, m_vec);
-        m_vec.insert(m_vec.end(), cur);
-        
-        if(df_1 <= df_2){
-            cur = m_vec.front();
-            m_vec.erase(m_vec.begin());
+    for(map<int, agent*>::iterator j = mblok_pop.begin(); j != mblok_pop.end(); ++j){
+        agent *p = j->second;
+        if(p->age < 15*365){
+            p->margs = 's';
+            if(p->gendr == 'm') m_chld.push_back(p);
+            else f_chld.push_back(p);
         }
         else{
-            cur = m_vec.back();
-            m_vec.pop_back();
-        }
-        
-        //insert cur to other vec
-        while(cur->margs == 'm') rnd_margs(cur);
-        
-        if(cur->margs == 's'){
-            int pos = locate_age_pos(s_vec, cur);
-            s_vec.insert(s_vec.begin()+pos, cur);
-        }
-        else if(cur->margs == 'd'){
-            int pos = locate_age_pos(d_vec, cur);
-            d_vec.insert(d_vec.begin()+pos, cur);
-        }
-        else if(cur->margs == 'w'){
-            int pos = locate_age_pos(w_vec, cur);
-            w_vec.insert(w_vec.begin()+pos, cur);
-        }
-        
-        m_vec.shrink_to_fit();
-        s_vec.shrink_to_fit();
-        d_vec.shrink_to_fit();
-        w_vec.shrink_to_fit();
-    }
-    else{
-        int sign = -1, diff = -1;
-        
-        int p[6];
-        int df_1 = 0, df_2 = 0;
-        if(svec.size() > 0){                //test single vec
-            p[0] = locate_age_pos(mvec, svec.front());
-            mvec.insert(mvec.begin()+p[0], svec.front());
-            df_1 = match_cp_diff(mvec, m_vec);
-            mvec.erase(mvec.begin()+p[0]);
-            
-            if(svec.size() != 1){
-                p[1] = locate_age_pos(mvec, svec.back());
-                mvec.insert(mvec.begin()+p[1], svec.back());
-                df_2 = match_cp_diff(mvec, m_vec);
-                mvec.erase(mvec.begin()+p[1]);
-            }
-            
-            if(svec.size() == 1 || df_1 <= df_2){
-                sign = 0;
-                diff = df_1;
-            }
-            else{
-                sign = 1;
-                diff = df_2;
-            }
-        }
-        
-        if(dvec.size() > 0){                //test divorce vec
-            p[2] = locate_age_pos(mvec, dvec.front());
-            mvec.insert(mvec.begin()+p[2], dvec.front());
-            df_1 = match_cp_diff(mvec, m_vec);
-            mvec.erase(mvec.begin()+p[2]);
-            
-            if(dvec.size() != 1){
-                p[3] = locate_age_pos(mvec, dvec.back());
-                mvec.insert(mvec.begin()+p[3], dvec.back());
-                df_2 = match_cp_diff(mvec, m_vec);
-                mvec.erase(mvec.begin()+p[3]);
-            }
-            
-            if(dvec.size() == 1 || df_1 <= df_2){
-                if(df_1 < diff || sign == -1){
-                    sign = 2;
-                    diff = df_1;
-                }
-            }
-            else{
-                if(df_2 < diff || sign == -1){
-                    sign = 3;
-                    diff = df_2;
-                }
-            }
-        }
-        
-        if(wvec.size() > 0){
-            p[4] = locate_age_pos(mvec, wvec.front());
-            mvec.insert(mvec.begin()+p[4], wvec.front());
-            df_1 = match_cp_diff(mvec, m_vec);
-            mvec.erase(mvec.begin()+p[4]);
-            
-            if(wvec.size() != 1){
-                p[5] = locate_age_pos(mvec, wvec.back());
-                mvec.insert(mvec.begin()+p[5], wvec.back());
-                df_2 = match_cp_diff(mvec, m_vec);
-                mvec.erase(mvec.begin()+p[5]);
-            }
-            
-            if(wvec.size() == 1 || df_1 <= df_2){
-                if(df_1 < diff || sign == -1){
-                    sign = 4;
-                    diff = df_1;
-                }
-            }
-            else{
-                if(df_2 < diff || sign == -1){
-                    sign = 5;
-                    diff = df_2;
-                }
-            }
-        }
-        
-        switch (sign) {
-            case 0:
-                mvec.insert(mvec.begin()+p[0], svec.front());
-                svec.front()->margs = 'm';
-                svec.erase(svec.begin());
-                break;
-            case 1:
-                mvec.insert(mvec.begin()+p[1], svec.back());
-                svec.back()->margs = 'm';
-                svec.pop_back();
-                break;
-            case 2:
-                mvec.insert(mvec.begin()+p[2], dvec.front());
-                dvec.front()->margs = 'm';
-                dvec.erase(dvec.begin());
-                break;
-            case 3:
-                mvec.insert(mvec.begin()+p[3], dvec.back());
-                dvec.back()->margs = 'm';
-                dvec.pop_back();
-                break;
-            case 4:
-                mvec.insert(mvec.begin()+p[4], wvec.front());
-                wvec.front()->margs = 'm';
-                wvec.erase(wvec.begin());
-                break;
-            case 5:
-                mvec.insert(mvec.begin()+p[5], wvec.back());
-                wvec.back()->margs = 'm';
-                wvec.pop_back();
-                break;
-            default:
-                break;
-        }
-        
-        mvec.shrink_to_fit();
-        svec.shrink_to_fit();
-        dvec.shrink_to_fit();
-        wvec.shrink_to_fit();
-    }
-}
-
-int mblok::locate_age_pos(vector<agent *> &m_mvec, agent *p){
-    int index = -1;
-    if(m_mvec.size() == 0) index = 0;
-    else{
-        if(p->age <= m_mvec.front()->age) index = 0;
-        else if(p->age >= m_mvec.back()->age) index = int(m_mvec.size());
-        else{
-            for(index = 1; index < m_mvec.size()-1; ++index){
-                if(p->age > m_mvec[index-1]->age && p->age <= m_mvec[index]->age)
-                    break;
-            }
-        }
-    }
-    
-    if(index == -1){
-        cout << "err: unable to locate pos" << endl;
-        exit(1);
-    }
-    
-    return index;
-}
-
-int mblok::match_cp_diff(vector<agent*> &m_mvec, vector<agent*> &f_mvec){
-    //minimize total age diff of all couples
-    int index = -1, diff = -1;
-    if(m_mvec.size() >= f_mvec.size()){
-        for(int i = 0; i < m_mvec.size()-f_mvec.size(); ++i){
-            int df = 0;
-            for(int j = 0; j < f_mvec.size(); ++j){
-                df += int(abs(m_mvec[i+j]->age - f_mvec[j]->age)/365);
-            }
-            
-            if(diff == -1){
-                diff = df;
-                index = i;
+            if(p->gendr == 'm'){
+                p->margs = 's';
+                m_svec.push_back(p);
                 continue;
             }
             
-            if(diff > df){
-                diff = df;
-                index = i;
+            rnd_margs(p);   //random margs status for female
+            if(p->margs == 'm') f_mvec.push_back(p);
+            else{
+                p->margs = 's';
+                f_svec.push_back(p);
             }
         }
     }
-    else{
-        for(int i = 0; i < f_mvec.size()-m_mvec.size(); ++i){
-            int df = 0;
-            for(int j = 0; j < m_mvec.size(); ++j){
-                df += int(abs(f_mvec[i+j]->age - m_mvec[j]->age)/365);
+    
+    stable_sort(m_chld.begin(), m_chld.end(), _younger);
+    stable_sort(m_svec.begin(), m_svec.end(), _younger);
+    
+    stable_sort(f_chld.begin(), f_chld.end(), _younger);
+    stable_sort(f_mvec.begin(), f_mvec.end(), _younger);
+    
+    //find female's husband
+    while(f_mvec.size() > 0){
+        //no available males
+        if(m_svec.size() == 0 && f_mvec.size() > 0){
+            while(f_mvec.size() > 0){
+                agent *p = f_mvec.back();
+                
+                while(p->margs == 'm') rnd_margs(p);   //random margs status for female
+                
+                if(p->margs == 's') f_svec.push_back(p);
+                else if(p->margs == 'w') f_wvec.push_back(p);
+                else if(p->margs == 'd') f_dvec.push_back(p);
+                
+                f_mvec.pop_back();
             }
-            
-            if(diff == -1){
-                diff = df;
-                index = i;
-                continue;
-            }
-            
-            if(diff > df){
-                diff = df;
-                index = i;
-            }
+            break;
         }
+        
+        agent *q = f_mvec.back();   int q_age = int(q->age/365);
+        agent *p = NULL;            int p_age = 0;
+        
+        if(q->margs != 'm'){
+            cout << "err" << endl;
+            exit(1);
+        }
+        
+        int index = -1;
+        if(q_age > int(m_svec.back()->age/365+3)){          //too old
+            while(q->margs == 'm') rnd_margs(q);
+            
+            if(q->margs == 's') f_svec.push_back(q);
+            else if(q->margs == 'w') f_wvec.push_back(q);
+            else if(q->margs == 'd') f_dvec.push_back(q);
+            
+            f_mvec.pop_back();
+            continue;
+        }
+        else if(q_age < int(m_svec.front()->age/365-5)){   //too young
+            while(q->margs == 'm') rnd_margs(q);
+            
+            if(q->margs == 's') f_svec.push_back(q);
+            else if(q->margs == 'w') f_wvec.push_back(q);
+            else if(q->margs == 'd') f_dvec.push_back(q);
+            
+            f_mvec.pop_back();
+            continue;
+        }
+        else{
+            if(q_age > int(m_svec.back()->age/365)) index = int(m_svec.size()-1);
+            else{
+                for(index = int(m_svec.size()-1); index > 0; --index){
+                    if(int(m_svec[index]->age/365) == q_age) break;
+                    
+                    int df_1 = int(m_svec[index]->age/365) - q_age;
+                    int df_2 = int(m_svec[index-1]->age/365) - q_age;
+                    
+                    if(df_1 > 0 && df_2 < 0){
+                        if(df_1 <= 5 || abs(df_2) > 3) break;      //prefer male > female, within 5 yrs diff
+                        else{
+                            --index; break;                 //if m_age - f_age > 5 && f_age - m_age <= 3
+                        }
+                    }
+                }
+            }
+            p = m_svec[index];      p_age = int(p->age/365);
+        }
+        
+        p->margs = 'm';
+        famly.push_back(new unit(p, q));
+        f_mvec.pop_back();
+        m_svec.erase(m_svec.begin()+index);
     }
-    return diff;
+    
+    stable_sort(f_svec.begin(), f_svec.end(), _younger);
+    stable_sort(f_dvec.begin(), f_dvec.end(), _younger);
+    stable_sort(f_wvec.begin(), f_wvec.end(), _younger);
+    
+    //redo for male single
+    int jj = int(m_svec.size()-1);
+    while(jj >= 0){
+        agent *p = m_svec[jj];
+        rnd_margs(p);
+        if(p->margs == 'm'){
+            m_mvec.push_back(p);
+            m_svec.erase(m_svec.begin()+jj);
+        }
+        else if(p->margs == 'd'){
+            m_dvec.push_back(p);
+            m_svec.erase(m_svec.begin()+jj);
+        }
+        else if(p->margs == 'w'){
+            m_wvec.push_back(p);
+            m_svec.erase(m_svec.begin()+jj);
+        }
+        --jj;
+    }
+    
+    stable_sort(m_mvec.begin(), m_mvec.end(), _younger);
+        
+    while(m_mvec.size() > 0){
+        //no available females
+        if(m_mvec.size() > 0 && f_svec.size() == 0){
+            while(m_mvec.size() > 0){
+                agent *p = m_mvec.back();
+                while(p->margs == 'm') rnd_margs(p);
+                
+                if(p->margs == 's') m_svec.push_back(p);
+                else if(p->margs == 'w') m_wvec.push_back(p);
+                else if(p->margs == 'd') m_dvec.push_back(p);
+                
+                m_mvec.pop_back();
+            }
+            break;
+        }
+        
+        agent *p = m_mvec.back();       int p_age = int(p->age/365);
+        agent *q = NULL;                int q_age = 0;
+        
+        if(p->margs != 'm'){
+            cout << "err" << endl;
+            exit(1);
+        }
+        
+        int index = -1;
+        if(p_age > int(f_svec.back()->age/365+5)){          //too old
+            while(p->margs == 'm') rnd_margs(p);
+            
+            if(p->margs == 's') m_svec.push_back(p);
+            else if(p->margs == 'w') m_wvec.push_back(p);
+            else if(p->margs == 'd') m_dvec.push_back(p);
+            
+            m_mvec.pop_back();
+            continue;
+        }
+        else if(p_age < int(f_svec.front()->age/365-3)){    //too young
+            while(p->margs == 'm') rnd_margs(p);
+            
+            if(p->margs == 's') m_svec.push_back(p);
+            else if(p->margs == 'w') m_wvec.push_back(p);
+            else if(p->margs == 'd') m_dvec.push_back(p);
+            
+            m_mvec.pop_back();
+            continue;
+        }
+        else{
+            if(p_age > int(f_svec.back()->age/365)) index = int(f_svec.size()-1);
+            else{
+                for(index = int(f_svec.size()-1); index > 0; --index){
+                    if(int(f_svec[index]->age/365) == p_age) break;
+                    int df_1 = p_age - int(f_svec[index]->age/365);
+                    int df_2 = p_age - int(f_svec[index-1]->age/365);
+                    
+                    if(df_1 < 0 && df_2 > 0){
+                        if(df_2 <= 5 || abs(df_1) > 3){
+                            -- index; break;
+                        }
+                        else break;
+                    }
+                }
+            }
+            q = f_svec[index];      q_age = int(q->age/365);
+        }
+        
+        q->margs = 'm';
+        famly.push_back(new unit(p, q));
+        m_mvec.pop_back();
+        f_svec.erase(f_svec.begin()+index);
+    }
+    
+    stable_sort(m_svec.begin(), m_svec.end(), _younger);
+    stable_sort(m_dvec.begin(), m_dvec.end(), _younger);
+    stable_sort(m_wvec.begin(), m_wvec.end(), _younger);
+    
+    m_chld.shrink_to_fit();
+    m_mvec.shrink_to_fit();
+    m_svec.shrink_to_fit();
+    m_dvec.shrink_to_fit();
+    m_wvec.shrink_to_fit();
+    
+    f_chld.shrink_to_fit();
+    f_mvec.shrink_to_fit();
+    f_svec.shrink_to_fit();
+    f_dvec.shrink_to_fit();
+    f_wvec.shrink_to_fit();
 }
 
 void mblok::adpt_chldrs(hhold *p){

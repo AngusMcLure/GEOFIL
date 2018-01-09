@@ -45,12 +45,9 @@ public:
     void rnd_margs(agent *p);
     void bld_hhold(int n);
     void bld_pop(int mm, int ff, agrps *pp);
-    void balance_cp(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
-                    vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec);
-    void optim_cp_diff(vector<agent *> &m_vec, vector<agent *> &s_vec, vector<agent *> &d_vec, vector<agent *> &w_vec,
-                       vector<agent *> &mvec, vector<agent *> &svec, vector<agent *> &dvec, vector<agent *> &wvec);
-    int locate_age_pos(vector<agent*> &m_mvec, agent *p);
-    int match_cp_diff(vector<agent*> &m_mvec, vector<agent*> &f_mvec);
+    void bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
+                         vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
+                         vector<agent*> &m_chld, vector<agent*> &f_chld, vector<unit*> &famly);
     void adpt_chldrs(hhold *p);          //all members in p are adopted
     
     mblok(int mid, cblok *cbk, double lat = 0, double log = 0);
