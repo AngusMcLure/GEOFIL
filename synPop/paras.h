@@ -41,6 +41,7 @@
 //functions
 int gaussian(double m_mu, double s_sigma);
 int ztpoisson(double l_lambda);
+int binomial(int r, double p);
 double drandom();
 int irandom();
 
@@ -67,6 +68,7 @@ int irandom();
 #define marital_male            "marital_male.csv"
 #define marital_female          "marital_female.csv"
 #define number_of_children      "number_of_childen_ever_born.csv"
+#define live_birth              "live_birth_by_mother_and_order.csv"
 
 //land use data
 #define AS_rbldgs_origin        "AS_rbldgs_origin.csv"

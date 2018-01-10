@@ -13,6 +13,11 @@
 #include "sites.h"
 using namespace std;
 
+//sort agents by age
+struct _comp{
+    bool operator() (const agent *p, const agent *q){ return (p->age < q->age);}
+} _younger;
+
 //family units
 struct unit{
     agent *father;
@@ -48,6 +53,10 @@ public:
     void bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
                          vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
                          vector<agent*> &m_chld, vector<agent*> &f_chld, vector<unit*> &famly);
+    void match_couple(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
+                      vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
+                      vector<unit*> &famly);
+    void allocate_child(vector<agent*> &m_chld, vector<agent*> &f_chld, vector<unit*> &famly);
     void adpt_chldrs(hhold *p);          //all members in p are adopted
     
     mblok(int mid, cblok *cbk, double lat = 0, double log = 0);
@@ -105,8 +114,9 @@ public:
     double male_marital_prob[marital_ages];    //male marriage probability by age
     double fmal_marital_prob[marital_ages];    //female marriage probability by age
     
-    double children_by_agrps[10];       //children ever born by age groups
-    double children_by_age[50];         //smoothed children ever born
+    double child_number_by_agrps[10];       //children ever born by age groups
+    double child_number_by_age[50];         //smoothed children ever born
+    map<int, int**> live_birth_order;
     
     double mmortlty[18];                //male mortatlity
     double fmortlty[18];                //female mortatlity

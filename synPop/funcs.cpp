@@ -11,15 +11,13 @@ using namespace std;
 int gaussian(double m_mu, double s_sigma){
     unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
-    std::normal_distribution<double> distribution (m_mu, s_sigma);
+    std::normal_distribution<double> distribution(m_mu, s_sigma);
     
     return int(distribution(generator)+0.5);
 }
 
 int ztpoisson(double l_lambda){
-    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-    srand48(seed);
-    double r = drand48();
+    double r = drandom();
     
     int k = 1;
     double t = l_lambda/(exp(l_lambda)-1), s = t;
@@ -29,6 +27,14 @@ int ztpoisson(double l_lambda){
         s += t;
     }
     return k;
+}
+
+int binomial(int r, double p){
+    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator (seed);
+    std::binomial_distribution<int> distribution(r, p);
+    
+    return distribution(generator);
 }
 
 double drandom(){

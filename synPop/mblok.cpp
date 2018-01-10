@@ -253,11 +253,6 @@ void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vect
                             vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
                             vector<agent*> &m_chld, vector<agent*> &f_chld, vector<unit*> &famly){
     
-    //sort agent by age to simplify building units
-    struct _comp{
-        bool operator() (const agent *p, const agent *q){ return (p->age < q->age);}
-    } _younger;
-    
     for(map<int, agent*>::iterator j = mblok_pop.begin(); j != mblok_pop.end(); ++j){
         agent *p = j->second;
         if(p->age < 15*365){
@@ -281,10 +276,29 @@ void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vect
         }
     }
     
-    stable_sort(m_chld.begin(), m_chld.end(), _younger);
-    stable_sort(m_svec.begin(), m_svec.end(), _younger);
+    //match couple to build family units
+    match_couple(m_mvec, m_svec, m_dvec, m_wvec, f_mvec, f_svec, f_dvec, f_wvec, famly);
     
-    stable_sort(f_chld.begin(), f_chld.end(), _younger);
+    
+    
+    m_chld.shrink_to_fit();
+    m_mvec.shrink_to_fit();
+    m_svec.shrink_to_fit();
+    m_dvec.shrink_to_fit();
+    m_wvec.shrink_to_fit();
+    
+    f_chld.shrink_to_fit();
+    f_mvec.shrink_to_fit();
+    f_svec.shrink_to_fit();
+    f_dvec.shrink_to_fit();
+    f_wvec.shrink_to_fit();
+}
+
+void mblok::match_couple(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
+                         vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
+                         vector<unit*> &famly){
+    //sort agent by age to simplify matching couples
+    stable_sort(m_svec.begin(), m_svec.end(), _younger);
     stable_sort(f_mvec.begin(), f_mvec.end(), _younger);
     
     //find female's husband
@@ -385,7 +399,7 @@ void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vect
     }
     
     stable_sort(m_mvec.begin(), m_mvec.end(), _younger);
-        
+    
     while(m_mvec.size() > 0){
         //no available females
         if(m_mvec.size() > 0 && f_svec.size() == 0){
@@ -459,18 +473,28 @@ void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vect
     stable_sort(m_svec.begin(), m_svec.end(), _younger);
     stable_sort(m_dvec.begin(), m_dvec.end(), _younger);
     stable_sort(m_wvec.begin(), m_wvec.end(), _younger);
+}
+
+void mblok::allocate_child(vector<agent*> &m_chld, vector<agent*> &f_chld, vector<unit*> &famly){
+    //allocate child into family unit
+    stable_sort(m_chld.begin(), m_chld.end(), _younger);
+    stable_sort(f_chld.begin(), f_chld.end(), _younger);
     
-    m_chld.shrink_to_fit();
-    m_mvec.shrink_to_fit();
-    m_svec.shrink_to_fit();
-    m_dvec.shrink_to_fit();
-    m_wvec.shrink_to_fit();
-    
-    f_chld.shrink_to_fit();
-    f_mvec.shrink_to_fit();
-    f_svec.shrink_to_fit();
-    f_dvec.shrink_to_fit();
-    f_wvec.shrink_to_fit();
+    while(m_chld.size() > 0){
+        int ii = irandom() % famly.size();
+        unit *cur = famly[ii];
+        agent *p = cur->father, *q = cur->mother;
+        int q_age = int(q->age/365);
+        
+        int jj = q_age - 15;
+        jj = jj>49 ? 49:jj;
+        
+        int rr = q_age - 15 + 1;
+        double pp = cbk->child_number_by_age[jj]/(double)rr;
+        
+        int cd = binomial(rr, pp);
+        
+    }
 }
 
 void mblok::adpt_chldrs(hhold *p){

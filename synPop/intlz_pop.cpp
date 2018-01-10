@@ -291,7 +291,7 @@ void cblok::read_demgrphcs(){
     }
     in.close();
     
-    //8.1 read marital male by age group
+    //7.1 read marital male by age group
     file = datadir;    file = file + marital_male;
     in.open(file.c_str());
     
@@ -312,7 +312,7 @@ void cblok::read_demgrphcs(){
     }
     in.close();
     
-    //8.2 read marital female by age group
+    //7.2 read marital female by age group
     file = datadir;    file = file + marital_female;
     in.open(file.c_str());
     
@@ -333,7 +333,7 @@ void cblok::read_demgrphcs(){
     }
     in.close();
     
-    //9. read children ever born by age groups
+    //8. read children ever born by age groups
     file = datadir;    file = file + number_of_children;
     in.open(file.c_str());
     
@@ -345,14 +345,71 @@ void cblok::read_demgrphcs(){
         str = new char[line.size()+1];
         std::strcpy(str, line.c_str());
         p = std::strtok(str, ",");
-        p = std::strtok(NULL, ",");     children_by_agrps[ii] = atof(p);
+        p = std::strtok(NULL, ",");     child_number_by_agrps[ii] = atof(p);
         ++ii;
         delete []str;
     }
     in.close();
     
     //calculate smoothed children ever born
-    calc_smoothed_chd_agrp(children_by_agrps, 10, children_by_age, 50);
+    calc_smoothed_chd_agrp(child_number_by_agrps, 10, child_number_by_age, 50);
+    
+    //9. read live birth by age of mother and birth-order
+    file = datadir;    file = file + live_birth;
+    in.open(file.c_str());
+    
+    getline(in, line);
+    
+    ii = 0;
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        p = std::strtok(str, ",");      int year = atoi(p);
+        if(live_birth_order.find(year) == live_birth_order.end()){
+            int **pp = new int *[10];
+            for(int i = 0; i < 10; ++i){
+                pp[i] = new int[8];
+                memset(pp[i], 0, sizeof(int)*8);
+            }
+            
+            ii = 0;
+            live_birth_order.insert(pair<int, int**>(year, pp));
+        }
+        
+        int jj = -1;
+        p = std::strtok(NULL, ",");     string ps = p;
+        if(ps == "First") jj = 0;
+        else if(ps == "Second") jj = 1;
+        else if(ps == "Third") jj = 2;
+        else if(ps == "Fourth") jj = 3;
+        else if(ps == "Fifth") jj = 4;
+        else if(ps == "Sixth") jj = 5;
+        else if(ps == "Seventh") jj = 6;
+        else if(ps == "Eighth") jj = 7;
+        else if(ps == "Ninth") jj = 8;
+        else if(ps == "10th and higher") jj = 9;
+        
+        if(jj == -1){
+            cout << "err: jj not change" << endl;
+            exit(1);
+        }
+        
+        p = std::strtok(NULL, ",");
+        
+        p = std::strtok(NULL, ",");     live_birth_order[year][jj][ii++] = atoi(p);
+        
+        delete []str;
+    }
+    in.close();
+    
+    cout << "2014 live birth order" << endl;
+    for(int i = 0; i < 10; ++i){
+        for(int j = 0; j < 8; ++j){
+            cout << live_birth_order[2014][i][j] << " ";
+        }
+        cout << endl;
+    }
     
     //10. read excluded village
     file = datadir;     file = file + village_excluded;
