@@ -38,6 +38,8 @@
 #define sigma               2.86
 #define lambda              6.47          //household Poisson
 
+#define max_child_number    10
+
 //functions
 int gaussian(double m_mu, double s_sigma);
 int ztpoisson(double l_lambda);

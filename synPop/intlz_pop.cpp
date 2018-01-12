@@ -352,7 +352,7 @@ void cblok::read_demgrphcs(){
     in.close();
     
     //calculate smoothed children ever born
-    calc_smoothed_chd_agrp(child_number_by_agrps, 10, child_number_by_age, 50);
+    calc_smoothed_agrp(child_number_by_agrps, 10, child_number_by_age, 50);
     
     //9. read live birth by age of mother and birth-order
     file = datadir;    file = file + live_birth;
@@ -360,55 +360,33 @@ void cblok::read_demgrphcs(){
     
     getline(in, line);
     
-    ii = 0;
     while(getline(in, line)){
         str = new char[line.size()+1];
         std::strcpy(str, line.c_str());
         
-        p = std::strtok(str, ",");      int year = atoi(p);
-        if(live_birth_order.find(year) == live_birth_order.end()){
-            int **pp = new int *[10];
-            for(int i = 0; i < 10; ++i){
-                pp[i] = new int[8];
-                memset(pp[i], 0, sizeof(int)*8);
-            }
-            
-            ii = 0;
-            live_birth_order.insert(pair<int, int**>(year, pp));
-        }
+        p = std::strtok(str, ",");      int i = atoi(p)-1;
         
-        int jj = -1;
-        p = std::strtok(NULL, ",");     string ps = p;
-        if(ps == "First") jj = 0;
-        else if(ps == "Second") jj = 1;
-        else if(ps == "Third") jj = 2;
-        else if(ps == "Fourth") jj = 3;
-        else if(ps == "Fifth") jj = 4;
-        else if(ps == "Sixth") jj = 5;
-        else if(ps == "Seventh") jj = 6;
-        else if(ps == "Eighth") jj = 7;
-        else if(ps == "Ninth") jj = 8;
-        else if(ps == "10th and higher") jj = 9;
-        
-        if(jj == -1){
-            cout << "err: jj not change" << endl;
-            exit(1);
-        }
-        
+        ii = 0;
         p = std::strtok(NULL, ",");
-        
-        p = std::strtok(NULL, ",");     live_birth_order[year][jj][ii++] = atoi(p);
+        while(p){
+            live_birth_order_by_agrps[i][ii++] = atoi(p);
+            p = std::strtok(NULL, ",");
+        }
         
         delete []str;
     }
     in.close();
-    
-    cout << "2014 live birth order" << endl;
+    //calculate smoothed live birth
     for(int i = 0; i < 10; ++i){
-        for(int j = 0; j < 8; ++j){
-            cout << live_birth_order[2014][i][j] << " ";
-        }
-        cout << endl;
+        calc_smoothed_pop_agrp(live_birth_order_by_agrps[i], 7, live_birth_order_by_age[i], 35);
+        
+        //calculate age interval
+        int age_dn = 0, age_up = 34;
+        while(live_birth_order_by_age[i][age_dn] == 0) ++age_dn;
+        while(live_birth_order_by_age[i][age_up] == 0) --age_up;
+        
+        live_birth_order_interval[i][0] = age_dn;
+        live_birth_order_interval[i][1] = age_up;
     }
     
     //10. read excluded village
@@ -691,25 +669,34 @@ void cblok::calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL){
         if(i == 0) r = s;
         if(i == pL-1) s = r;
         
-        res[i*5+2] = int((t+3*r-3*s)/5+0.5);      t -= res[i*5+2];
-        res[i*5+1] = int(res[i*5+2]-r+0.5);       t -= res[i*5+1];
-        res[i*5] = int(res[i*5+2]-2*r+0.5);       t -= res[i*5];
-        res[i*5+3] = int(res[i*5+2]+s+0.5);       t -= res[i*5+3];
-        res[i*5+4] = int(res[i*5+2]+2*s+0.5);     t -= res[i*5+4];
+        res[i*5+2] = int((t+3*r-3*s)/5+0.5);    res[i*5+2] = res[i*5+2]<0 ? 0:res[i*5+2];      t -= res[i*5+2];
+        res[i*5+1] = int(res[i*5+2]-r+0.5);     res[i*5+1] = res[i*5+1]<0 ? 0:res[i*5+1];      t -= res[i*5+1];
+        res[i*5] = int(res[i*5+2]-2*r+0.5);     res[i*5] = res[i*5]<0 ? 0:res[i*5];            t -= res[i*5];
+        res[i*5+3] = int(res[i*5+2]+s+0.5);     res[i*5+3] = res[i*5+3]<0 ? 0:res[i*5+3];      t -= res[i*5+3];
+        res[i*5+4] = int(res[i*5+2]+2*s+0.5);   res[i*5+4] = res[i*5+4]<0 ? 0:res[i*5+4];      t -= res[i*5+4];
         
         while(t < 0){
-            -- res[i*5 + irandom()%5];
-            ++t;
+            for(int j = 0; j < 5; ++j){
+                if(res[i*5+j] > 0){
+                    --res[i*5+j];
+                    ++t;
+                }
+                if(t == 0) break;
+            }
         }
         
         while(t > 0){
-            ++ res[i*5 + irandom()%5];
-            --t;
+            for(int j = 0; j < 5; ++j){
+                ++res[i*5+j];
+                --t;
+                
+                if(t == 0) break;
+            }
         }
     }
 }
 
-void cblok::calc_smoothed_chd_agrp(double *p, int pL, double *res, int rL){
+void cblok::calc_smoothed_agrp(double *p, int pL, double *res, int rL){
     //calculate basic probability
     double *tmp = new double[rL];
     for(int i = 0; i < rL; ++i)
