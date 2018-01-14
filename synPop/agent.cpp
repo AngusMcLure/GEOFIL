@@ -24,20 +24,19 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *hd, workp *wp, sch
 
 agent::~agent(){
     spw = NULL;
+    mom = NULL;
+    dad = NULL;
+    mom_law = NULL;
+    dad_law = NULL;
     hd = NULL;
     wp = NULL;
     sh = NULL;
     
     chldr.clear();
-    parnt.clear();
 }
 
 void agent::add_child(agent *p){
     chldr.insert(pair<int, agent*>(p->aid, p));
-}
-
-void agent::add_parent(agent *p){
-    parnt.insert(pair<int, agent*>(p->aid, p));
 }
 
 void agent::clr_sociallinks(){
@@ -49,13 +48,22 @@ void agent::clr_sociallinks(){
         spw = NULL;
     }
     
-    for(map<int, agent*>::iterator k = parnt.begin(); k != parnt.end(); ++k){
-        k->second->chldr.erase(aid);
-    }
-    parnt.clear();
+    mom = NULL;
+    dad = NULL;
+    mom_law = NULL;
+    dad_law = NULL;
     
     for(map<int, agent*>::iterator k = chldr.begin(); k != chldr.end(); ++k){
-        k->second->parnt.erase(aid);
+        agent *b = k->second;
+        
+        if(gendr == 'm'){
+            if(b->dad->aid == aid) b->dad = NULL;
+            if(b->dad_law->aid == aid) b->dad_law = NULL;
+        }
+        else{
+            if(b->mom->aid == aid) b->mom = NULL;
+            if(b->mom_law->aid == aid) b->mom_law = NULL;
+        }
     }
     chldr.clear();
 }

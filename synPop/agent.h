@@ -38,8 +38,11 @@ public:
     char epids;     //S - susceptible, E - exposed, I - infectious, R - removed, D - dead
     
     agent *spw;
+    agent *dad;
+    agent *mom;
+    agent *dad_law;
+    agent *mom_law;
     map<int, agent*> chldr;
-    map<int, agent*> parnt;
     
     hhold *hd;      //household
     workp *wp;      //workplace
@@ -50,7 +53,6 @@ public:
     ~agent();
     
     void add_child(agent *p);
-    void add_parent(agent *p);
     void clr_sociallinks();
 };
 

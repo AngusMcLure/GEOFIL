@@ -122,16 +122,168 @@ void mblok::bld_hhold(int n){
     
     vector<unit*> famly;
     bld_family_unit(m_mvec, m_svec, m_dvec, m_wvec, f_mvec, f_svec, f_dvec, f_wvec, chld, famly);
-
     
-    //adjust married males & females to be equal
-    //balance_cp(m_mvec, m_svec, m_dvec, m_wvec, f_mvec, f_svec, f_dvec, f_wvec);
+    struct _comp_age{
+        bool operator() (const agent *p, const agent *q){ return (p->age < q->age);}
+    } _younger;
+    
+    //m_svec, m_dvec, m_wvec, f_svec, famly
+    m_svec.insert(m_svec.end(), m_dvec.begin(), m_dvec.end());
+    m_svec.insert(m_svec.end(), m_wvec.begin(), m_wvec.end());
+    m_svec.insert(m_svec.end(), f_svec.begin(), f_svec.end());
+    
+    m_dvec.clear(); m_dvec.shrink_to_fit();
+    m_wvec.clear(); m_wvec.shrink_to_fit();
+    f_svec.clear(); f_svec.shrink_to_fit();
+    
+    stable_sort(m_svec.begin(), m_svec.end(), _younger);
+    
+    int pop = int(mblok_pop.size());
+    double lambda_vg = pop/(double)n;
+    int *hhold_size = new int[n];
+    int capacity = 0;
+    for(int i = 0; i < n; ++i){
+        hhold_size[i] = ztpoisson(lambda_vg);
+        capacity += hhold_size[i];
+    }
+    
+    while(capacity > pop){
+        int index = irandom() % n;
+        int size = ztpoisson(lambda_vg);
+        
+        if(hhold_size[index] <= size) continue;
+        
+        if(hhold_size[index]-size > capacity-pop){
+            hhold_size[index] -= capacity-pop;
+            capacity -= (capacity-pop);
+        }
+        else{
+            capacity -= hhold_size[index]-size;
+            hhold_size[index] = size;
+        }
+    }
+    
+    while(capacity < pop){
+        int index = irandom() % n;
+        int size = ztpoisson(lambda_vg);
+        
+        if(hhold_size[index] >= size) continue;
+        
+        if(size-hhold_size[index] > pop-capacity){
+            hhold_size[index] += pop-capacity;
+            capacity += (pop-capacity);
+        }
+        else{
+            capacity += size-hhold_size[index];
+            hhold_size[index] = size;
+        }
+    }
+    
+    struct _comp_size{
+        bool operator() (unit *p, unit *q){
+            int n = int(p->child.size()+1);     if(p->father != NULL) ++n;
+            int m = int(q->child.size()+1);     if(q->father != NULL) ++m;
+            return (n < m);
+        }
+    } _smaller;
+    
+    stable_sort(hhold_size, hhold_size+n);
+    stable_sort(famly.begin(), famly.end(), _smaller);
+    
+    int ii = n-1;
+    while(ii >= 0){
+        int s_hold = hhold_size[ii];
+        hhold *h_hold = new hhold(cbk->next_hid++, s_hold);
+        
+        unit *cur = famly.back();
+        agent *p = cur->father;
+        agent *q = cur->mother;
+        
+        h_hold->add_mmbr(q);
+        
+        if(p != NULL){
+            h_hold->add_mmbr(p);
+            h_hold->hldr = p;
+        }
+        
+        for(int i = 0; i < cur->child.size(); ++i)
+            h_hold->add_mmbr(cur->child[i]);
+        
+        int s_unit = int(h_hold->mmbrs.size());
+        
+        while(s_unit < s_hold){
+            if(cur->avail_ages.size() > 0){
+                int s = int(cur->avail_ages.size());
+                int age = cur->avail_ages[s-1];
+                
+                int max = int(cur->mother->age/365)-15;
+                if(s >= 2) max = cur->avail_ages[s-2];
+                
+                int min = 15;
+                if(cur->child.size() > 0) min = int(cur->child.front()->age/365+1);
+                
+                int pos = binary_search(m_svec, age);
+                if(pos == -1){
+                    for(int j = min; j < max; ++j){
+                        pos = binary_search(m_svec, j);
+                        if(pos != -1) break;
+                    }
+                }
+                
+                if(pos != -1){
+                    agent *b = m_svec[pos];
+                    
+                    if(p != NULL){
+                        p->add_child(b);
+                        b->dad = p;
+                    }
+                    q->add_child(b);
+                    b->mom = q;
+                    
+                    m_svec.erase(m_svec.begin()+pos);
+                    cur->child.insert(cur->child.begin(), b);
+                    h_hold->add_mmbr(b);
+                    
+                    cur->avail_ages.pop_back();
+                    ++s_unit;
+                    continue;
+                }
+                else{
+                    int jj = -1;
+                    for(int i = 0; i < famly.size()-1; ++i){
+                        int m = int(famly[i]->child.size()+1);
+                        if(famly[i]->father != NULL) ++m;
+                        
+                        if(m > s_hold - s_unit) break;
+                        
+                        if(famly)
+                    }
+                }
+            }
+            s_unit = int(h_hold->mmbrs.size());
+        }
+    }
     
     if(cbk->mbloksIndexB[mid] == "Avaio"){
+        cout << "hhold = " << n << ": ";
+        for(int i = 0; i < n; ++i){
+            cout << hhold_size[i] << " ";
+        }
+        cout << endl;
+        
+        cout << "family = " << famly.size() << ": ";
+        for(int i = 0; i < famly.size(); ++i){
+            int n = int(famly[i]->child.size()+1);
+            if(famly[i]->father != NULL) ++n;
+            cout << n << " ";
+        }
+        cout << endl;
+        
         cout << "Avaio:" << endl;
         cout << "units = " << n << endl;
+        
         cout << "pop = " << mblok_pop.size() << endl;
-        cout << "cps = " << famly.size() << endl;
+        cout << "family = " << famly.size() << endl;
         for(int i = 0; i < famly.size(); ++i){
             agent *p = famly[i]->father;
             agent *q = famly[i]->mother;
@@ -139,9 +291,14 @@ void mblok::bld_hhold(int n){
             if(p != NULL){
                 cout << "m: " << int(p->age/365) << " " << p->margs << endl;
             }
-            cout << "f: " << int(q->age/365) << " " << q->margs << " " << q->chldr.size() << endl;
-            for(map<int, agent*>::iterator j = q->chldr.begin(); j != q->chldr.end(); ++j){
-                cout << "  c: " << int(j->second->age/365) << " " << j->second->gendr << " " << j->second->margs << endl;
+            cout << "f: " << int(q->age/365) << " " << q->margs << " " << famly[i]->child.size() + famly[i]->avail_ages.size() << endl;
+            
+            for(int j = 0; j < famly[i]->avail_ages.size(); ++j){
+                cout << "   c: " << int(q->age/365)-famly[i]->avail_ages[j] << " " << famly[i]->avail_ages[j] << endl;
+            }
+            
+            for(int j = 0; j < famly[i]->child.size(); ++j){
+                cout << "   c: " << int(q->age/365)-int(famly[i]->child[j]->age/365) << " " << int(famly[i]->child[j]->age/365) << " " << famly[i]->child[j]->gendr << " " << famly[i]->child[j]->margs << endl;
             }
         }
     }
@@ -291,12 +448,14 @@ void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vect
     //build single parent family - only female
     while(f_dvec.size() > 0){
         agent *q = f_dvec.back();
+        q->spw = NULL;
         famly.push_back(new unit(NULL, q));
         f_dvec.pop_back();
     }
     
     while(f_wvec.size() > 0){
         agent *q = f_wvec.back();
+        q->spw = NULL;
         famly.push_back(new unit(NULL, q));
         f_wvec.pop_back();
     }
@@ -485,6 +644,14 @@ void mblok::match_couple(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<
         m_mvec.pop_back();
         f_svec.erase(f_svec.begin()+index);
     }
+    
+    for(int i = 0; i < famly.size(); ++i){
+        unit *cur = famly[i];
+        agent *p = cur->father;
+        agent *q = cur->mother;
+        p->spw = q;
+        q->spw = p;
+    }
 }
 
 void mblok::allocate_child(vector<agent*> &chld_vec, vector<unit*> &famly){
@@ -497,10 +664,14 @@ void mblok::allocate_child(vector<agent*> &chld_vec, vector<unit*> &famly){
     stable_sort(chld_vec.begin(), chld_vec.end(), _younger);
     vector<unit*> family(famly);
     
+    int birth_age[10];
+
     while(chld_vec.size() > 0){
+        //cout << cbk->mbloksIndexB[mid] << " " << chld_vec.size() << " " << family.size() << endl;
         int ii = irandom() % family.size();
         unit *cur = family[ii];
-        agent *p = cur->father, *q = cur->mother;
+        
+        agent *q = cur->mother;
         int q_age = int(q->age/365);
         
         //max age with child < 15 yrs is 49+14
@@ -510,71 +681,104 @@ void mblok::allocate_child(vector<agent*> &chld_vec, vector<unit*> &famly){
         rr = rr>10 ? 10:rr;
         
         double pp = cbk->child_number_by_age[q_age-15]/(double)rr;
-        int rand_num = binomial(rr, pp);
-        int num = rand_num - int(q->chldr.size());
+        int num = binomial(rr, pp);
         
-        if(num <= 0) continue;
+        if(num <= cur->child.size()) continue;
         
-        int *birth_age = new int[num];
-        memset(birth_age, -1, sizeof(int)*num);
+        memset(birth_age, -1, sizeof(int)*10);
         
-        int index = num-1, last_age = q_age-15+1;
-        while(index >= 0){
-            int age_dn = cbk->live_birth_order_interval[index][0];
-            int age_up = min(cbk->live_birth_order_interval[index][1], last_age-1);
-            
-            if(age_dn > age_up) break;
-            
-            //next kid's age_dn = this age_dn, impossible to finish
-            if(index > 0 && age_dn == age_up && age_dn == cbk->live_birth_order_interval[index-1][0]) break;
-            
-            double total = 0;
-            for(int j = age_dn; j <= age_up; ++j) total += cbk->live_birth_order_by_age[index][j];
-            
-            double r = drandom(), prob = 0;
-            int jj = age_dn;
-            for(jj = age_dn; jj <= age_up; ++jj){
-                prob += cbk->live_birth_order_by_age[index][jj]/total;
-                if(r < prob) break;
-            }
-            
-            if(jj < index) continue;
-            if(index > 0 && jj <= cbk->live_birth_order_interval[index-1][0]) continue;
-            
-            birth_age[index] = jj;  last_age = jj;
-            if(jj == index){
-                for(int k = index-1; k >= 0; --k) birth_age[k] = k;
-                break;
-            }
-            else --index;
+        int index = num-1;
+        int age_dn = cbk->live_birth_order_interval[index][0];
+        int age_up = min(cbk->live_birth_order_interval[index][1], q_age-15);
+        
+        if(age_dn > age_up) continue;
+        
+        double total = 0;
+        for(int j = age_dn; j <= age_up; ++j) total += cbk->live_birth_order_by_age[index][j];
+        
+        double r = drandom(), prob = 0;
+        int jj = age_dn;
+        for(jj = age_dn; jj <= age_up; ++jj){
+            prob += cbk->live_birth_order_by_age[index][jj]/total;
+            if(r < prob) break;
         }
         
-        if(birth_age[0] == -1){
-            delete []birth_age;
-            continue;    //not initialized
+        double seg = jj/(double)num;
+        int adult_chld = 0;
+        for(int i = 0; i < num; ++i){
+            birth_age[i] = int(seg*(i+1)+0.5);
+            
+            if(q_age - (birth_age[i]+15) >= 15)
+                ++adult_chld;
         }
+        
+        if(num - adult_chld <= cur->child.size()) continue;
+        
+        for(int i = 0; i < cur->child.size(); ++i){
+            agent *cp = cur->child[i];
+            chld_vec.push_back(cp);
+        }
+        cur->child.clear();
+        cur->avail_ages.clear();
+        stable_sort(chld_vec.begin(), chld_vec.end(), _younger);
         
         for(int i = 0; i < num; ++i){
             int chld_age = q_age - (birth_age[i]+15);
-            if(chld_age >= 15) continue;
-            
-            int pos = binary_search(chld_vec, chld_age);
-            if(pos == -1) continue;
-            
-            agent *cp = chld_vec[pos];
-            if(p != NULL){
-                cp->add_parent(p);
-                p->add_child(cp);
+            if(chld_age >= 15){
+                cur->avail_ages.push_back(chld_age);
+                continue;
             }
             
-            q->add_child(cp);
-            cp->add_parent(q);
+            int pos = binary_search(chld_vec, chld_age);
             
-            cur->child.push_back(cp);
-            chld_vec.erase(chld_vec.begin()+pos);
+            if(pos == -1 && i > 0){
+                for(int j = birth_age[i-1]+1; j < birth_age[i]; ++j){
+                    chld_age = q_age - (j+15);
+                    pos = binary_search(chld_vec, chld_age);
+                    if(pos != -1){
+                        birth_age[i] = j;
+                        break;
+                    }
+                }
+            }
+            
+            if(pos == -1 && i < num-1){
+                for(int j = birth_age[i]+1; j < birth_age[i+1]; ++j){
+                    chld_age = q_age - (j+15);
+                    pos = binary_search(chld_vec, chld_age);
+                    if(pos != -1){
+                        birth_age[i] = j;
+                        break;
+                    }
+                }
+            }
+            
+            if(pos != -1){
+                agent *cp = chld_vec[pos];
+                cur->child.push_back(cp);
+                chld_vec.erase(chld_vec.begin()+pos);
+            }
         }
-        delete []birth_age;
-        if(cur->mother->chldr.size() == rand_num) family.erase(family.begin()+ii);
+        cur->child.shrink_to_fit();
+        cur->avail_ages.shrink_to_fit();
+        if(cur->child.size() == rr) family.erase(family.begin()+ii);
+    }
+    
+    for(int i = 0; i < famly.size(); ++i){
+        unit *cur = famly[i];
+        agent *p = cur->father;
+        agent *q = cur->mother;
+        for(int j = 0; j < cur->child.size(); ++j){
+            agent *b = cur->child[j];
+            
+            if(p != NULL){
+                p->add_child(b);
+                b->dad = p;
+            }
+            
+            q->add_child(b);
+            b->mom = q;
+        }
     }
     
     family.clear();
@@ -607,6 +811,8 @@ int mblok::binary_search(vector<agent*> &vec, int age){
     else if(int(vec[ll]->age/365) == age) pos = ll;
     else if(int(vec[hh]->age/365) == age) pos = hh;
     
+    while(pos > 0 && int(vec[pos-1]->age/365) == int(vec[pos]->age/365)) --pos;
+    
     return pos;
 }
 
@@ -635,8 +841,14 @@ void mblok::adpt_chldrs(hhold *p){
         pp->add_child(cur);
         pp->spw->add_child(cur);
         
-        cur->add_parent(pp);
-        cur->add_parent(pp->spw);
+        if(pp->gendr == 'm'){
+            cur->dad = pp;
+            cur->mom = pp->spw;
+        }
+        else{
+            cur->mom = pp;
+            cur->dad = pp->spw;
+        }
         
         p->rmv_mmbr(cur);
         pp->hd->add_mmbr(cur);

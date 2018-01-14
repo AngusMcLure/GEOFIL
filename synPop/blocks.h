@@ -18,8 +18,9 @@ struct unit{
     agent *father;
     agent *mother;
     vector<agent*> child;
+    vector<int> avail_ages;
     
-    unit(agent *p = NULL, agent *q = NULL){ father = p;  mother = q;  child.clear();}
+    unit(agent *p = NULL, agent *q = NULL){ father = p;  mother = q;  child.clear();  avail_ages.clear();}
 };
 
 class mblok{

@@ -32,11 +32,10 @@ public:
     agent *hldr;                        //hhold holder
     map<int, agent*> mmbrs;             //hhold members
     
-    hhold(int hid, int siz, char typ);
+    hhold(int hid, int siz, char typ = '-');
     ~hhold();
     
     void add_bldg(rbldg *rdg);
-    bool asg_hldr(agent *p);
     void add_mmbr(agent *p);
     void add_hldr(agent *p);
     void rmv_mmbr(agent *p);

@@ -59,12 +59,6 @@ void hhold::add_mmbr(agent *p){
     mmbrs.insert(pair<int, agent*>(p->aid, p));
 }
 
-void hhold::add_hldr(agent *p){
-    p->hd = this;
-    hldr = p;
-    mmbrs.insert(pair<int, agent*>(p->aid, p));
-}
-
 void hhold::rmv_mmbr(agent *p){
     p->hd = NULL;
     if(hldr->aid == p->aid) hldr = NULL;
