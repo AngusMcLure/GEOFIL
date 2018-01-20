@@ -6,7 +6,8 @@
 //  Copyright © 2017 Sting Xu. All rights reserved.
 //
 
-#include "sites.h"
+#include "agent.h"
+#include "blocks.h"
 
 hhold::hhold(int hid, int siz, char typ){
     this->hid = hid;
@@ -22,7 +23,7 @@ hhold::~hhold(){
     this->mmbrs.clear();
 }
 
-void hhold::add_bldg(rbldg *rdg){
+void hhold::asg_bldg(rbldg *rdg){
     this->rdg = rdg;
 
     lat = rdg->lat;
@@ -30,6 +31,7 @@ void hhold::add_bldg(rbldg *rdg){
     area = rdg->area;
     
     rdg->hd = this;
+    rdg->cbk->rmv_vcnt_rbldg(rdg);
 }
 
 bool hhold::asg_hldr(agent *p){

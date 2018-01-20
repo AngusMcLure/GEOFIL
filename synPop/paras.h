@@ -9,11 +9,14 @@
 #ifndef headers_h
 #define headers_h
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
-#include <cstring>
+#include <iomanip>
+#include <string>
 #include <vector>
 #include <random>
+#include <chrono>
 #include <ctime>
 #include <map>
 

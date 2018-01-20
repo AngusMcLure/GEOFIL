@@ -12,8 +12,16 @@ void cblok::add_agent(agent *p){
     cblok_pop.insert(pair<int, agent*>(p->aid, p));
 }
 
-void rmv_agent(agent *p){
+void cblok::rmv_agent(agent *p){
     
+}
+
+void cblok::add_vcnt_rbldg(rbldg *p){
+    cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
+}
+
+void cblok::rmv_vcnt_rbldg(rbldg *p){
+    cblok_vcnt_rbldgs.erase(p->bid);
 }
 
 void cblok::hndl_birth(int t){

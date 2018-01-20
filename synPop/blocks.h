@@ -9,18 +9,168 @@
 #ifndef blocks_hpp
 #define blocks_hpp
 
+#include "agent.h"
 #include "agrps.h"
-#include "sites.h"
 using namespace std;
+
+//census blocks
+class mblok;   //meshblock, smallest census unit
+class cblok;   //cities or other large census area
+
+class rbldg;        //residential
+class wbldg;        //work buildings
+class sbldg;        //school bldgs
+
+class hhold{
+public:
+    int hid;                            //hhold id
+    char typ;                           // c-couple, f-female, m-male, a-alone, o-organizational
+    int siz;
+    
+    double lat, log;
+    double area;
+    rbldg *rdg;
+    
+    agent *hldr;                        //hhold holder
+    map<int, agent*> mmbrs;             //hhold members
+    
+    hhold(int hid, int siz = 0, char typ = '-');
+    ~hhold();
+    
+    void asg_bldg(rbldg *rdg);
+    void add_mmbr(agent *p);
+    bool asg_hldr(agent *p);
+    void rmv_mmbr(agent *p);
+    void updt_hhold();
+};
+
+class rbldg{
+public:
+    int bid;
+    double log, lat;
+    double area;
+    hhold *hd;
+    mblok *mbk;
+    cblok *cbk;
+    
+    rbldg(int bid, double log, double lat, double area, mblok *mbk, cblok *cbk);
+    ~rbldg();
+};
+
+class workp{
+public:
+    int wid;
+    int siz;
+    map<int, agent*> emplys;             //employees members
+    double lat, log;
+    double area;
+    
+    map<int, wbldg*> wdg;                         //building list
+    
+    workp(int wid, int siz);
+    ~workp();
+    
+    void add_bldg(wbldg *wdg);
+    void add_mmbr(agent *p);
+    void rmv_mmbr(agent *p);
+    void update();
+    void removd();
+};
+
+class wbldg{
+public:
+    int bid;
+    double lat, log;
+    double area;
+    workp *wkp;
+    mblok *mbk;
+    cblok *cbk;
+    
+    wbldg(int bid, double lat, double log, double area, workp *wkp, mblok *mbk, cblok *cbk){
+        this->bid = bid;
+        this->lat = lat;
+        this->log = log;
+        this->area = area;
+        this->wkp = wkp;
+        this->mbk = mbk;
+        this->cbk = cbk;
+    }
+    
+    ~wbldg(){
+        wkp = NULL;
+        mbk = NULL;
+        cbk = NULL;
+    }
+};
+
+class schol{
+public:
+    int sid;
+    int siz;
+    double lat, log;
+    double area;
+    
+    map<int, sbldg*> sdg;
+    
+    map<int, agent*> tchrs;
+    map<int, agent*> stdts;
+    
+    void add_bldg(sbldg *sdg);
+    void add_tchr(agent *p);
+    void add_stdt(agent *p);
+    void rmv_tchr(agent *p);
+    void rmv_stdt(agent *p);
+    void update();
+    void removd();
+};
+
+class sbldg{
+    int bid;
+    double lat, log;
+    double area;
+    schol *sch;
+    mblok *mbk;
+    cblok *cbk;
+    
+    sbldg(int bid, double lat, double log, double area, schol *sch, mblok *mbk, cblok *cbk){
+        this->bid = bid;
+        this->lat = lat;
+        this->log = log;
+        this->area = area;
+        this->sch = sch;
+        this->mbk = mbk;
+        this->cbk = cbk;
+    }
+    
+    ~sbldg(){
+        sch = NULL;
+        mbk = NULL;
+        cbk = NULL;
+    }
+};
 
 //family units
 struct unit{
-    agent *father;
-    agent *mother;
-    vector<agent*> child;
-    vector<int> avail_ages;
-    
-    unit(agent *p = NULL, agent *q = NULL){ father = p;  mother = q;  child.clear();  avail_ages.clear();}
+	agent *father;
+	agent *mother;
+	vector<agent*> child;
+	vector<int> avail_ages;
+
+	unit(agent *p = NULL, agent *q = NULL){ father = p;  mother = q;  child.clear();  avail_ages.clear(); }
+	~unit(){
+		father = NULL;
+		mother = NULL;
+		child.clear();
+		child.shrink_to_fit();
+		avail_ages.clear();
+		avail_ages.shrink_to_fit();
+	}
+	int u_size(){
+		int n = int(child.size());
+		if (father != NULL) ++n;
+		if (mother != NULL) ++n;
+		return n;
+	}
 };
 
 class mblok{
@@ -30,7 +180,6 @@ public:
     cblok *cbk;                          //city block
     
     map<int, agent*> mblok_pop;         //population
-    
     map<int, hhold*> mblok_hholds;
     
     //map<int, rbldg*> mblok_rbldgs_occupy;
@@ -44,8 +193,13 @@ public:
     void rmv_hhold(hhold *p);
     void rmv_agent(agent *p);
     void rnd_margs(agent *p);
-    void bld_hhold(int n);
+    void add_rbldg(rbldg *p);
+    
+    //for building population
     void bld_pop(int mm, int ff, agrps *pp);
+    
+    //for building household
+    void bld_hhold();
     void bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
                          vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
                          vector<agent*> &chld, vector<unit*> &famly);
@@ -54,6 +208,7 @@ public:
                       vector<unit*> &famly);
     void allocate_child(vector<agent*> &chld, vector<unit*> &famly);
     int binary_search(vector<agent*> &vec, int age);
+
     void adpt_chldrs(hhold *p);          //all members in p are adopted
     
     mblok(int mid, cblok *cbk, double lat = 0, double log = 0);
@@ -78,7 +233,7 @@ public:
     int next_hid;
     //map<int, hhold*> cblok_hholds;
     //map<int, rbldg*> cblok_rbldgs;
-    map<int, rbldg*> cblok_rbldgs_vcnt; //vacant residential buildings
+    map<int, rbldg*> cblok_vcnt_rbldgs; //vacant residential buildings
     //map<int, wbldg*> cblok_wbldgs;
     
     int next_mid, meshblocks;
@@ -92,7 +247,7 @@ public:
     //parameters from file inputs
     map<int, int> mblok_mpops;          //male pop in each mblok
     map<int, int> mblok_fpops;          //female pop in each mblok
-    map<int, int> mblok_hholds;         //hholds in each mblok
+    //map<int, int> mblok_hholds;         //hholds in each mblok
     map<int, agrps*> mblok_agrps;       //mblok pop by age group;
     
     int male_by_agrp[age_grps];         //males by age groups
@@ -134,6 +289,8 @@ public:
     void bld_cblok_pop();
     void add_agent(agent *p);
     void rmv_agent(agent *p);
+    void add_vcnt_rbldg(rbldg *p);
+    void rmv_vcnt_rbldg(rbldg *p);
     void bld_cblok_hhold();
     void hndl_land_data();
     void allct_rbldgs();

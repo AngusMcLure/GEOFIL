@@ -30,7 +30,7 @@ int ztpoisson(double l_lambda){
 }
 
 int binomial(int r, double p){
-    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
+	unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
     std::binomial_distribution<int> distribution(r, p);
     
@@ -38,13 +38,10 @@ int binomial(int r, double p){
 }
 
 double drandom(){
-    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-    srand48(seed);
-    return drand48();
+	//return drand48();
+	return rand() / (double)RAND_MAX;
 }
 
 int irandom(){
-    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-    srand(seed);           //for random numbers
     return rand();
 }

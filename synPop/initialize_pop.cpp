@@ -1,0 +1,1832 @@
+//
+//  blockInitialize.cpp
+//  synPop
+//
+//  Created by Sting Xu on 6/11/17.
+//  Copyright © 2017 Sting Xu. All rights reserved.
+//
+
+#include "blocks.h"
+using namespace std;
+
+cblok::cblok(int cid, string cname, double lat, double log){
+    this->cid = cid;
+    this->cname = cname;
+    this->lat = lat;
+    this->log = log;
+    
+    cpop = 0;
+    next_aid = 1;
+    next_hid = 1;
+    next_mid = 1;
+    meshblocks = 0;
+    
+    init = pop_reload();
+    
+    if(!init) read_demgrphcs(); //population not created
+    read_parmtrs();
+    bld_mbloks();
+    bld_cblok_pop();
+    bld_cblok_hhold();
+    
+    hndl_land_data();
+}
+
+bool cblok::pop_reload(){
+    string file = config;
+    file = file + cname;
+    file = file + "_pop.init";
+    
+    ifstream in(file.c_str());
+    
+    if(!in) return false;
+    
+    string line;
+    getline(in, line);
+    if(line != "TRUE") return false;
+    
+    getline(in, line);      cpop = atoi(line.c_str());
+    getline(in, line);      next_aid = atoi(line.c_str());
+    getline(in, line);      next_hid = atoi(line.c_str());
+    getline(in, line);      next_mid = atoi(line.c_str());
+    getline(in, line);      meshblocks = atoi(line.c_str());
+    
+    return true;
+}
+
+void cblok::reset_cpop(){
+    //clear population
+    for(map<int, agent*>::iterator j = cblok_pop.begin(); j != cblok_pop.end(); ++j)
+        delete j->second;
+    fmal_marrd.clear();
+    cblok_pop.clear();
+    
+    //clear meshblocks, households, buildings
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j)
+        delete j->second;
+    mbloks.clear();
+    cblok_vcnt_rbldgs.clear();
+    
+    //clear coordiantes
+    for(map<int, double*>::iterator j = mblok_crdnt.begin(); j != mblok_crdnt.end(); ++j)
+        delete [] j->second;
+    mblok_crdnt.clear();
+    
+    //clear meshblock index
+    mbloksIndexA.clear();
+    mbloksIndexB.clear();
+    
+    //clear meshblock distance matrix
+    for(int i = 0; i < meshblocks; ++i){
+        delete [] euclid_dist[i];
+        delete [] road_dist[i];
+    }
+    
+    //clear age groups data
+    for(map<int, agrps*>::iterator j = mblok_agrps.begin(); j != mblok_agrps.end(); ++j)
+        delete j->second;
+    mblok_agrps.clear();
+    
+    //clear others
+    mblok_fpops.clear();
+    mblok_mpops.clear();
+    
+    //re-call all the contruction functions
+    cpop = 0;
+    next_aid = 1;
+    next_hid = 1;
+    next_mid = 1;
+    meshblocks = 0;
+    
+    if(pop_reload()) read_demgrphcs(); //population not created
+    read_parmtrs();
+    bld_mbloks();
+    bld_cblok_pop();
+}
+
+void cblok::read_demgrphcs(){
+    ifstream in;
+    string line, file;
+    //1. read villages and create index
+    file = datadir;    file = file + villages;
+    in.open(file.c_str());
+    
+    //skip the description
+    while(getline(in, line)){
+        if(line[0] == '*') continue;
+        if(line.length() <= 1) continue;  //empty line with carriage return
+        break;
+    }
+    
+    while(getline(in, line)){
+        if(mbloksIndexA.find(line) == mbloksIndexA.end()){
+            mbloksIndexA.insert(pair<string, int>(line, next_mid));
+            mbloksIndexB.insert(pair<int, string>(next_mid++, line));
+        }
+    }
+    in.close();
+    
+    //2. reading sex ratio by age group
+    file = datadir;    file = file + sex_ratio_age;
+    in.open(file.c_str());
+    
+    //skip the description
+    while(getline(in, line)){
+        if(line[0] == '*') continue;
+        if(line.length() <= 1) continue;  //empty line with carriage return
+        break;
+    }
+    
+    int ii = 0;
+    double pp = 0;
+    while(in >> pp){
+        sex_ratio[ii++] = pp/(pp+100);
+    }
+    in.close();
+    
+    //3. reading village pop by age group
+    file = datadir;    file = file + village_pop_age;
+    in.open(file.c_str());
+    
+    getline(in, line);
+    char *str = new char[line.size()+1];
+    std::strcpy(str, line.c_str());
+    char *p = std::strtok(str, " ,");
+    
+    //age group segments
+    vector<int> age_seg_dn;
+    vector<int> age_seg_up;
+    
+    p = std::strtok(NULL, ", ");
+    while(p){
+        string s = p;
+        int age_dn = atoi(&s.substr(0, s.find('-'))[0]);
+        int age_up = atoi(&s.substr(s.find('-')+1, s.size()-s.find('-')-1)[0]);
+        age_seg_dn.push_back(age_dn);
+        age_seg_up.push_back(age_up);
+        p = std::strtok(NULL, ", ");
+    }
+    delete [] str;
+    
+    int last_vg = -1;
+    char sign = 'p';
+    while(getline(in,line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        p = std::strtok(str, ",");  //village name may have space
+        
+        //deal with age group record
+        int mid = mbloksIndexA[p];
+        
+        if(mid == last_vg){
+            if(sign == 'p') sign = 'm';
+            if(sign == 'm') sign = 'f';
+        }
+        else{
+            //a new village information
+            sign = 'p';
+            mblok_agrps.insert(pair<int, agrps*>(mid, new agrps()));
+        }
+        
+        //reading age group population
+        p = std::strtok(NULL, ", ");
+        int ii = 0;
+        while(p){
+            if(sign == 'p'){
+                mblok_agrps[mid]->age_dn[ii] = age_seg_dn[ii];
+                mblok_agrps[mid]->age_up[ii] = age_seg_up[ii];
+                mblok_agrps[mid]->pop[ii] += atoi(p);
+            }
+            else if(sign == 'm') mblok_agrps[mid]->male[ii] += atoi(p);
+            else if(sign == 'f') mblok_agrps[mid]->female[ii] += atoi(p);
+            
+            p = std::strtok(NULL, ", ");
+            
+            if(age_seg_dn[ii] < max_ages-4) ++ii;       //last age group is 75-79
+        }
+        
+        if(sign == 'p') mblok_agrps[mid]->age_up[vg_agrps-1] = max_ages;      //adjust to be consistent with population by age group
+        
+        delete []str;
+        
+        last_vg = mid;
+    }
+    age_seg_dn.clear(); age_seg_dn.shrink_to_fit();
+    age_seg_up.clear(); age_seg_up.shrink_to_fit();
+    in.close();
+    
+    //4. read village pop by gender, male first
+    file = datadir;    file = file + village_pop_gender;
+    in.open(file.c_str());
+    
+    getline(in, line);          //skip header
+    while(getline(in,line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        p = std::strtok(str, ",");  //village name may have space
+     
+        //deal with gender record
+        int mid = mbloksIndexA[p];
+        if(mblok_mpops.find(mid) != mblok_mpops.end()){
+            cout << "village name: " << p << " already exist, read gender data!" << endl;
+            exit(1);
+        }
+     
+        int males = 0, females = 0;
+        p = std::strtok(NULL, ", ");    males = atoi(p);
+        p = std::strtok(NULL, ", ");    females = atoi(p);
+        
+        mblok_mpops.insert(pair<int, int>(mid, males));
+        mblok_fpops.insert(pair<int, int>(mid, females));
+        
+        delete []str;
+    }
+    in.close();
+    
+    //5. read population by age group
+    file = datadir;    file = file + population_age;
+    in.open(file.c_str());
+    
+    //skip the description
+    getline(in, line);          //header
+    
+    ii = 0;
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        p = std::strtok(str, ", ");     male_by_agrp[ii] = atoi(p);
+        p = std::strtok(NULL, ", ");    fmal_by_agrp[ii++] = atoi(p);
+        delete []str;
+    }
+    in.close();
+    
+    //7.1 read marital male by age group
+    file = datadir;    file = file + marital_male;
+    in.open(file.c_str());
+    
+    //skip the description
+    getline(in, line);          //header
+    
+    ii = 0;
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        p = std::strtok(str, ",");
+        p = std::strtok(NULL, ",");     male_single[ii] = atof(p);
+        p = std::strtok(NULL, ",");     male_married[ii] = atof(p);
+        p = std::strtok(NULL, ",");     male_widowed[ii] = atof(p);
+        p = std::strtok(NULL, ",");     male_divorce[ii] = atof(p);
+        ++ii;
+        delete []str;
+    }
+    in.close();
+    
+    //7.2 read marital female by age group
+    file = datadir;    file = file + marital_female;
+    in.open(file.c_str());
+    
+    //skip the description
+    getline(in, line);          //header
+    
+    ii = 0;
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        p = std::strtok(str, ",");
+        p = std::strtok(NULL, ",");     fmal_single[ii] = atof(p);
+        p = std::strtok(NULL, ",");     fmal_married[ii] = atof(p);
+        p = std::strtok(NULL, ",");     fmal_widowed[ii] = atof(p);
+        p = std::strtok(NULL, ",");     fmal_divorce[ii] = atof(p);
+        ++ii;
+        delete []str;
+    }
+    in.close();
+    
+    //8. read children ever born by age groups
+    file = datadir;    file = file + number_of_children;
+    in.open(file.c_str());
+    
+    //skip the description
+    getline(in, line);          //header
+    
+    ii = 0;
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        p = std::strtok(str, ",");
+        p = std::strtok(NULL, ",");     child_number_by_agrps[ii] = atof(p);
+        ++ii;
+        delete []str;
+    }
+    in.close();
+    
+    //calculate smoothed children ever born
+    calc_smoothed_agrp(child_number_by_agrps, 10, child_number_by_age, 50);
+    
+    //9. read live birth by age of mother and birth-order
+    file = datadir;    file = file + live_birth;
+    in.open(file.c_str());
+    
+    getline(in, line);
+    
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        p = std::strtok(str, ",");      int i = atoi(p)-1;
+        
+        ii = 0;
+        p = std::strtok(NULL, ",");
+        while(p){
+            live_birth_order_by_agrps[i][ii++] = atoi(p);
+            p = std::strtok(NULL, ",");
+        }
+        
+        delete []str;
+    }
+    in.close();
+    //calculate smoothed live birth
+    for(int i = 0; i < 10; ++i){
+        calc_smoothed_pop_agrp(live_birth_order_by_agrps[i], 7, live_birth_order_by_age[i], 35);
+        
+        //calculate age interval
+        int age_dn = 0, age_up = 34;
+        while(live_birth_order_by_age[i][age_dn] == 0) ++age_dn;
+        while(live_birth_order_by_age[i][age_up] == 0) --age_up;
+        
+        live_birth_order_interval[i][0] = age_dn;
+        live_birth_order_interval[i][1] = age_up;
+    }
+    
+    //10. read excluded village
+    file = datadir;     file = file + village_excluded;
+    in.open(file.c_str());
+    
+    getline(in, line);  //header
+    while(getline(in,line)){
+        int mid = mbloksIndexA[line];
+        mblok_agrps.erase(mid);
+        mblok_mpops.erase(mid);
+        mblok_fpops.erase(mid);
+        mbloksIndexB.erase(mid);
+        mbloksIndexA.erase(line);
+    }
+    in.close();
+    meshblocks = (int)mbloksIndexA.size();
+    
+    //11. read meshblock lat & long
+    file = datadir;     file = file + village_coordinates;
+    in.open(file.c_str());
+    
+    getline(in, line); //header
+    while(getline(in, line)){
+        str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        p = std::strtok(str, ",");  //village name may have space
+        map<string, int>::iterator k = mbloksIndexA.find(p);
+        if(k == mbloksIndexA.end()) continue;
+        
+        int mid = k->second;
+        p = std::strtok(NULL, ",");     double lat = atof(p);
+        p = std::strtok(NULL, ",");     double log = atof(p);
+        
+        double *r = new double[2];
+        r[0] = lat;     r[1] = log;
+        mblok_crdnt.insert(pair<int, double*>(mid, r));
+    }
+    in.close();
+    
+    if(mblok_crdnt.size() < mbloksIndexA.size()){
+        cout << "meshblock coordinates are missing in " << village_coordinates << endl;
+        exit(1);
+    }
+    
+    //calculate cpop
+    for(map<int, int>::iterator j = mblok_mpops.begin(); j != mblok_mpops.end(); ++j){
+        int mid = j->first;
+        cpop += mblok_mpops[mid] + mblok_fpops[mid];
+    }
+}
+
+void cblok::read_parmtrs(){
+    ifstream in;
+    string line, file;
+    
+    //1. reading daily birth rate for females [18, 44]
+    file = parameters;     file = file + fertility;
+    in.open(file.c_str());
+    if(!in){
+        cout << "open " << file << " failed" << endl;
+        exit(1);
+    }
+    getline(in, line);
+    while(getline(in, line)){
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        char *p = NULL;
+        
+        p = std::strtok(str, ",");      int yy = atoi(p) - 2010;
+        p = std::strtok(NULL, ",");     double asfr15_19 = atof(p);
+        p = std::strtok(NULL, ",");     double asfr20_24 = atof(p);
+        p = std::strtok(NULL, ",");     double asfr25_29 = atof(p);
+        p = std::strtok(NULL, ",");     double asfr30_34 = atof(p);
+        p = std::strtok(NULL, ",");     double asfr35_39 = atof(p);
+        p = std::strtok(NULL, ",");     double asfr40_44 = atof(p);
+        
+        fertlty[yy][0] = asfr15_19;
+        fertlty[yy][1] = asfr20_24;
+        fertlty[yy][2] = asfr25_29;
+        fertlty[yy][3] = asfr30_34;
+        fertlty[yy][4] = asfr35_39;
+        fertlty[yy][5] = asfr40_44;
+        
+        delete []str;
+    }
+    in.close();
+    
+    //2. reading annual net migrants
+    file = parameters;    file = file + net_pop_loss;
+    in.open(file.c_str());
+    if(!in){
+        cout << "open " << file << " failed" << endl;
+        exit(1);
+    }
+    getline(in, line);
+    
+    while(getline(in,line)){
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        char *p = NULL;
+        p = std::strtok(str, ",");      int yy = atoi(p) - 2010;
+        p = std::strtok(NULL, ",");     int net = atoi(p);
+        pop_loss[yy] = net;
+        
+        delete []str;
+    }
+    in.close();
+    
+    //reading daily death rate for male
+    file = parameters;     file = file + "mortality_male.csv";
+    in.open(file.c_str());
+    if(!in){
+        cout << "open " << file << " failed" << endl;
+        exit(1);
+    }
+    getline(in, line);
+    
+    int ii = 0;
+    while(getline(in, line)){
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        char *p = NULL;
+        p = std::strtok(str, ",");
+        p = std::strtok(NULL, ",");
+        p = std::strtok(NULL, ",");
+        mmortlty[ii++] = atof(p);
+        
+        delete []str;
+    }
+    in.close();
+    
+    //3. reading daily death rate for female
+    file = parameters;     file = file + "mortality_female.csv";
+    in.open(file.c_str());
+    if(!in){
+        cout << "open " << file << " failed" << endl;
+        exit(1);
+    }
+    
+    getline(in, line);
+    
+    ii = 0;
+    while(getline(in, line)){
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        char *p = NULL;
+        p = std::strtok(str, ",");
+        p = std::strtok(NULL, ",");
+        p = std::strtok(NULL, ",");
+        fmortlty[ii++] = atof(p);
+        
+        delete []str;
+    }
+    in.close();
+    
+    //calculate marital probability by age
+    calc_marital_prob();
+}
+
+void cblok::bld_mbloks(){
+    for(map<int, double*>::iterator j = mblok_crdnt.begin(); j != mblok_crdnt.end(); ++j){
+        int mid = j->first;
+        double lat = j->second[0], log = j->second[1];
+        mbloks.insert(pair<int, mblok*>(mid, new mblok(mid, this, lat, log)));
+    }
+}
+
+void cblok::bld_cblok_pop(){
+    //create cpop based on smoothed male/female by age group
+    if(!init){
+        //calculate smoothed population by age group
+        calc_smoothed_pop_agrp(male_by_agrp, age_grps, male_by_age, max_ages+1);
+        calc_smoothed_pop_agrp(fmal_by_agrp, age_grps, fmal_by_age, max_ages+1);
+        
+        for(int i = 0; i < max_ages+1; ++i){
+            //calculate index in village population age group
+            int index = 0;
+            int *age_dn = mblok_agrps.begin()->second->age_dn;
+            int *age_up = mblok_agrps.begin()->second->age_up;
+            
+            while(true){
+                if(i >= age_dn[index] && i <= age_up[index]) break;
+                ++index;
+            }
+            
+            //create pop vector
+            int mm = male_by_age[i], ff = fmal_by_age[i];
+            while(mm-- > 0){
+                int id = -1;        //id not initialized
+                int age = i*365 + irandom()%365;
+                char gender = 'm';
+                
+                agent *p = new agent(id, age, gender);
+                mvec[index].push_back(p);
+            }
+            
+            while(ff-- > 0){
+                int id = -1;        //id not initialized
+                int age = i*365 + irandom()%365;
+                char gender = 'f';
+                
+                agent *p = new agent(id, age, gender);
+                fvec[index].push_back(p);
+            }
+        }
+    }
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        mbk->intlz_pop();
+    }
+    
+    for(int i = 0; i < vg_agrps; ++i){
+        while(mvec[i].size() > 0){
+            delete mvec[i].back();
+            mvec[i].pop_back();
+        }
+        
+        while(fvec[i].size() > 0){
+            delete fvec[i].back();
+            fvec[i].pop_back();
+        }
+    }
+}
+
+void cblok::bld_cblok_hhold(){
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        mbk->bld_hhold();
+    }
+}
+
+void cblok::hndl_land_data(){
+    string data = config;  data = data + AS_rbldgs;
+    ifstream in(data.c_str());
+    
+    if(!in){
+        data = datadir;     data = data + AS_rbldgs_origin;
+        hndl_rbldg(data, 30, 300, 20);
+        allct_rbldgs();
+    }
+    
+}
+
+void cblok::hndl_rbldg(string ff, int low, int upper, int min_dist){
+    ifstream in(ff.c_str());
+    
+    string line;
+    getline(in, line);  //skip the header
+    
+    while(getline(in, line)){
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        char *p = std::strtok(str, ",");
+        int bid = atoi(p);
+        
+        p = std::strtok(NULL, ",");
+        string mbk = p;
+        
+        if(mbloksIndexA.find(mbk) == mbloksIndexA.end()){
+            cout << "err: mblock " << mbk << " non exist" << endl;
+            exit(1);
+        }
+        
+        p = std::strtok(NULL, ",");      double area = atof(p);
+        p = std::strtok(NULL, ",");      double log = atof(p);
+        p = std::strtok(NULL, ",");      double lat = atof(p);
+        
+        mblok *mbk_p = mbloks[mbloksIndexA[mbk]];
+        rbldg *bg = new rbldg(bid, log, lat, area, mbk_p, this);
+        add_vcnt_rbldg(bg);
+        mbk_p->add_rbldg(bg);
+        delete []str;
+    }
+    in.close();
+    
+    cout << "bldg number with unique is " << cblok_vcnt_rbldgs.size() << endl;
+    
+    int max_bid = 0;
+    for(map<int, rbldg*>::iterator j = cblok_vcnt_rbldgs.begin(); j != cblok_vcnt_rbldgs.end();){
+        if(max_bid < j->first) max_bid = j->first;
+        
+        rbldg *p = j->second;
+        if(p->mbk->mblok_hholds.size() >= p->mbk->mblok_rbldgs.size()){      //no enough building in current village
+            ++j;    continue;
+        }
+        
+        double dist = pow(min_dist, 2); int ii = -1;      //dist as 20^2
+        for(map<int, rbldg*>::iterator k = cblok_vcnt_rbldgs.begin(); k != cblok_vcnt_rbldgs.end(); ++k){
+            if(k->first == p->bid) continue;
+            
+            double log_dif = fabs(k->second->log - p->log);
+            double lat_dif = fabs(k->second->lat - p->lat);
+            if(log_dif >= dist || lat_dif >= dist) continue;
+            
+            if(k->second->area < p->area) continue;
+            
+            double diff = pow(log_dif, 2) + pow(lat_dif, 2);
+            if(diff < dist){
+                dist = diff;
+                ii = k->first;
+            }
+        }
+        
+        if(ii == -1){
+            ++j;    continue;
+        }
+        
+        bool merging = false;
+        rbldg *q = cblok_vcnt_rbldgs[ii];
+        
+        if(q->area + p->area >= upper){      //unreasonable size
+            ++j;    continue;
+        }
+        
+        if(fabs(p->log - q->log) < 5 || fabs(p->lat - q->lat) < 5) merging = true;
+        else if(p->area < q->area*0.2) merging = true;
+        
+        if(merging == true){
+            q->area += p->area;
+            p->mbk->mblok_rbldgs.erase(p->bid);
+            cblok_vcnt_rbldgs.erase(j++);
+        }
+        else ++j;
+    }
+    cout << "bldgs number with merging is " << cblok_vcnt_rbldgs.size() << endl;
+    
+    for(map<int, rbldg*>::iterator j = cblok_vcnt_rbldgs.begin(); j != cblok_vcnt_rbldgs.end();){
+        if(j->second->area > upper || j->second->area < low){
+            j->second->mbk->mblok_rbldgs.erase(j->first);
+            cblok_vcnt_rbldgs.erase(j++);
+        }
+        else ++j;
+    }
+    cout << "bldgs number with reasonable size is " << cblok_vcnt_rbldgs.size() << endl;
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        if(j->second->mblok_hholds.size() > j->second->mblok_rbldgs.size()){
+            int k = int(j->second->mblok_hholds.size() - j->second->mblok_rbldgs.size());
+            
+            int loop = 0;
+            while(k > 0){
+                ++loop;
+                if(loop > j->second->mblok_rbldgs.size()*3) break;
+                
+                int ii  = rand() % j->second->mblok_rbldgs.size(), jj = rand() % j->second->mblok_rbldgs.size();
+                while(jj == ii) jj = rand() % j->second->mblok_rbldgs.size();
+                
+                map<int, rbldg*>::iterator p = j->second->mblok_rbldgs.begin(), q = j->second->mblok_rbldgs.begin();
+                while(ii-- > 0) ++p;
+                while(jj-- > 0) ++q;
+                
+                double d = pow(p->second->log - q->second->log, 2) + pow(p->second->lat - q->second->lat, 2);
+                if(d < pow(min_dist,2)) continue;
+                
+                double log = (p->second->log + q->second->log)/2, lat = (p->second->lat + q->second->lat)/2, area = (p->second->area + q->second->area)/2;
+        
+                ++max_bid;
+                rbldg *pp = new rbldg(max_bid, log, lat, area, j->second, this);
+                    
+                j->second->add_rbldg(pp);
+                add_vcnt_rbldg(pp);
+                
+                --k;
+            }
+        }
+    }
+    
+    cout << "bldgs number with reconstruction is " << cblok_vcnt_rbldgs.size() << endl;
+}
+
+void cblok::hndl_bbldg(string ff, int low, int upper, int min_dist){
+    
+}
+
+void cblok::allct_rbldgs(){
+    struct _comp_bldg{
+        bool operator() (const rbldg *lhs, const rbldg *rhs){
+            return lhs->area > rhs->area;
+        }
+    } _bigger_area;
+    
+    struct _comp_hhold{
+        bool operator() (const hhold *lhs, const hhold *rhs){
+            return lhs->siz > rhs->siz;
+        }
+    } _bigger_size;
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        if(j->second->mblok_rbldgs.size() < j->second->mblok_hholds.size()){
+            cout << "err: no enough bldgs in meshblock " << j->first << endl;
+            exit(1);
+        }
+        
+        vector<rbldg*> v_1;
+        for(map<int, rbldg*>::iterator k = j->second->mblok_rbldgs.begin(); k != j->second->mblok_rbldgs.end(); ++k){
+            if(k->second->hd == NULL) v_1.push_back(k->second);
+        }
+        stable_sort(v_1.begin(), v_1.end(), _bigger_area);
+        
+        vector<hhold*> v_2;
+        for(map<int, hhold*>::iterator k = j->second->mblok_hholds.begin(); k != j->second->mblok_hholds.end(); ++k){
+            if(k->second->rdg == NULL) v_2.push_back(k->second);
+        }
+        stable_sort(v_2.begin(), v_2.end(), _bigger_size);
+        
+        int a = int((v_1.size()-v_2.size())/2), b = int((v_1.size()-v_2.size()))-a;
+        while(a-- > 0) v_1.erase(v_1.begin());
+        while(b-- > 0) v_1.erase(v_1.begin()+v_1.size()-1);
+        
+        for(int i = 0; i < v_2.size(); ++i){
+            hhold *h_hold = v_2[i];
+            rbldg *bb = v_1[i];
+            h_hold->asg_bldg(bb);
+        }
+        
+        v_1.clear(); v_1.shrink_to_fit();
+        v_2.clear(); v_2.shrink_to_fit();
+    }
+    
+    string data = config;  data = data + AS_rbldgs;
+    ofstream out(data.c_str());
+    out << "bldg_id,log,lat,area,meshblock,hhold_id" << endl;
+    out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        for(map<int, rbldg*>::iterator k = mbk->mblok_rbldgs.begin(); k != mbk->mblok_rbldgs.end(); ++k){
+            rbldg *p = k->second;
+            out << p->bid << "," << p->log << "," << p->lat << "," << p->area << "," << mbk->cbk->mbloksIndexB[mbk->mid] << ",";
+            if(p->hd == NULL) out << "N/A" << endl;
+            else out << p->hd->hid << endl;
+        }
+    }
+    out.close();
+}
+
+void cblok::allct_bbldgs(){
+    
+}
+
+void cblok::calc_bldg_dist(){
+    
+}
+
+void cblok::calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL){
+    //calculate basic probability
+    double *tmp = new double[rL];
+    for(int i = 0; i < rL; ++i)
+        tmp[i] = (double)p[int(i/5)]/5;
+    
+    double l = 0, m = 0, h = 0;
+    int t;
+    for(int i = 0; i < pL; ++i){
+        t = p[i];
+        m = tmp[i*5+2];
+        if(i > 0) l = tmp[i*5-3];
+        if(i < pL-1) h = tmp[i*5+7];
+        
+        double r = (m-l)/5, s = (h-m)/5;
+        if(i == 0) r = s;
+        if(i == pL-1) s = r;
+        
+        res[i*5+2] = int((t+3*r-3*s)/5+0.5);    res[i*5+2] = res[i*5+2]<0 ? 0:res[i*5+2];      t -= res[i*5+2];
+        res[i*5+1] = int(res[i*5+2]-r+0.5);     res[i*5+1] = res[i*5+1]<0 ? 0:res[i*5+1];      t -= res[i*5+1];
+        res[i*5] = int(res[i*5+2]-2*r+0.5);     res[i*5] = res[i*5]<0 ? 0:res[i*5];            t -= res[i*5];
+        res[i*5+3] = int(res[i*5+2]+s+0.5);     res[i*5+3] = res[i*5+3]<0 ? 0:res[i*5+3];      t -= res[i*5+3];
+        res[i*5+4] = int(res[i*5+2]+2*s+0.5);   res[i*5+4] = res[i*5+4]<0 ? 0:res[i*5+4];      t -= res[i*5+4];
+        
+        while(t < 0){
+            for(int j = 0; j < 5; ++j){
+                if(res[i*5+j] > 0){
+                    --res[i*5+j];
+                    ++t;
+                }
+                if(t == 0) break;
+            }
+        }
+        
+        while(t > 0){
+            for(int j = 0; j < 5; ++j){
+                ++res[i*5+j];
+                --t;
+                
+                if(t == 0) break;
+            }
+        }
+    }
+}
+
+void cblok::calc_smoothed_agrp(double *p, int pL, double *res, int rL){
+    //calculate basic probability
+    double *tmp = new double[rL];
+    for(int i = 0; i < rL; ++i)
+        tmp[i] = (double)p[int(i/5)];
+    
+    double l = 0, m = 0, h = 0;
+    double t;
+    for(int i = 0; i < pL; ++i){
+        t = p[i];
+        m = tmp[i*5+2];
+        if(i > 0) l = tmp[i*5-3];
+        if(i < pL-1) h = tmp[i*5+7];
+        
+        double r = (m-l)/5, s = (h-m)/5;
+        if(i == 0) r = s;
+        if(i == pL-1) s = r;
+        
+        res[i*5+2] = (5*t+3*r-3*s)/5;    t -= res[i*5+2];
+        res[i*5+1] = res[i*5+2]-r;       t -= res[i*5+1];
+        res[i*5] = res[i*5+2]-2*r;       t -= res[i*5];
+        res[i*5+3] = res[i*5+2]+s;       t -= res[i*5+3];
+        res[i*5+4] = res[i*5+2]+2*s;     t -= res[i*5+4];
+    }
+    
+    for(int i = 0; i < rL; ++i){
+        res[i] = res[i]<0 ? 0 : res[i];
+    }
+}
+
+void cblok::calc_marital_prob(){
+    for(int i = 0; i < marital_ages; ++i){
+        male_marital_prob[i] = 1 - marital_b_m;
+        fmal_marital_prob[i] = 1 - marital_b_f;
+    }
+    
+    for(int i = 0; i < marital_ages; ++i){
+        if(i < 2){
+            male_marital_prob[i] = 1 - sqrt(male_single[0]);
+            fmal_marital_prob[i] = 1 - sqrt(fmal_single[0]);
+        }
+        else if(i < 42){
+            int j = int((i-2)/5), k = j + 1;
+            if(male_single[k] < male_single[j]) male_marital_prob[i] = 1 - pow(male_single[k]/male_single[j], 0.2);
+            if(fmal_single[k] < fmal_single[j]) fmal_marital_prob[i] = 1 - pow(fmal_single[k]/fmal_single[j], 0.2);
+        }
+    }
+}
+
+mblok::mblok(int mid, cblok *cbk, double lat, double log){
+    this->mid = mid;
+    this->cbk = cbk;
+    this->lat = lat;
+    this->log = log;
+}
+
+mblok::~mblok(){
+    cbk = NULL;
+    mblok_pop.clear();
+    
+    for(map<int, hhold*>::iterator j = mblok_hholds.begin(); j != mblok_hholds.end(); ++j)
+        delete j->second;
+    mblok_hholds.clear();
+    
+    for(map<int, rbldg*>::iterator j = mblok_rbldgs.begin(); j != mblok_rbldgs.end(); ++j)
+        delete j->second;
+    mblok_rbldgs.clear();
+    
+    for(map<int, wbldg*>::iterator j = mblok_wbldgs.begin(); j != mblok_wbldgs.end(); ++j)
+        delete j->second;
+    mblok_wbldgs.clear();
+}
+
+void mblok::intlz_pop(){
+    if(!cbk->init){
+        int mm = cbk->mblok_mpops[mid], ff = cbk->mblok_fpops[mid];
+        agrps *pp = cbk->mblok_agrps[mid];
+        bld_pop(mm, ff, pp);
+    }
+    else{
+        string file = config;
+        file = file + cbk->mbloksIndexB[mid];
+        file = file + "_pop";
+        
+        ifstream in(file.c_str());
+        
+        string line;
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");
+            int aid = atoi(p);
+            
+            p = std::strtok(NULL, ",");
+            int age = std::atoi(p);
+            
+            p = std::strtok(NULL, ",");
+            char gender = p[0];
+            
+            agent *g = new agent(aid, age, gender);
+            add_agent(g);
+            
+            delete []str;
+        }
+        in.close();
+    }
+}
+
+void mblok::bld_hhold(){
+    //initialize marriage status
+    vector<agent*> m_svec, m_mvec, m_wvec, m_dvec;
+    vector<agent*> f_svec, f_mvec, f_wvec, f_dvec;
+    vector<agent*> chld;
+    
+    vector<unit*> famly;
+    //cout << cbk->mbloksIndexB[mid] << endl;
+    bld_family_unit(m_mvec, m_svec, m_dvec, m_wvec, f_mvec, f_svec, f_dvec, f_wvec, chld, famly);
+    
+    struct _comp_size{
+        bool operator() (unit *p, unit *q){
+            return p->u_size() < q->u_size();
+        }
+    } _smaller;
+    
+    stable_sort(famly.begin(), famly.end(), _smaller);
+    
+    for(int j = 0; j < famly.size();){
+        if(famly[j]->u_size() >= 2) break;
+        
+        if(int(famly[j]->mother->age/365) < 30){
+            m_svec.push_back(famly[j]->mother);
+            
+            delete famly[j];
+            famly.erase(famly.begin()+j);
+        }
+        else ++j;
+    }
+    
+    struct _comp_age{
+        bool operator() (const agent *p, const agent *q){ return (p->age < q->age);}
+    } _younger;
+    
+    //m_svec, m_dvec, m_wvec, f_svec, famly
+    m_svec.insert(m_svec.end(), m_dvec.begin(), m_dvec.end());
+    m_svec.insert(m_svec.end(), m_wvec.begin(), m_wvec.end());
+    m_svec.insert(m_svec.end(), f_svec.begin(), f_svec.end());
+    
+    m_dvec.clear(); m_dvec.shrink_to_fit();
+    m_wvec.clear(); m_wvec.shrink_to_fit();
+    f_svec.clear(); f_svec.shrink_to_fit();
+    
+    stable_sort(m_svec.begin(), m_svec.end(), _younger);
+    
+    for(int i = 0; i < famly.size(); ++i){
+        unit *cur = famly[i];
+        while (cur->avail_ages.size() > 0){
+            int age = cur->avail_ages.back();
+            
+            int pos = binary_search(m_svec, age);
+            if (pos != -1){
+                agent *b = m_svec[pos];
+                
+                cur->child.insert(cur->child.begin(), b);
+                m_svec.erase(m_svec.begin() + pos);
+            }
+            
+            cur->avail_ages.pop_back();
+        }
+    }
+    
+    stable_sort(famly.begin(), famly.end(), _smaller);
+    
+    int pop = int(mblok_pop.size());
+    int allocated = 0;
+    while (famly.size() + m_svec.size() > 0){
+        int h_size = ztpoisson(lambda);        //current hhold size
+        //cout << cbk->mbloksIndexB[mid] << " " << famly.size() << " " << m_svec.size() << " " << h_size << endl;
+        /*for(int i = 0; i < famly.size(); ++i){
+         cout << famly[i]->u_size() << " ";
+         }
+         cout << endl;*/
+        
+        if (pop - allocated <= h_size){
+            hhold *h_hold = new hhold(cbk->next_hid++);
+            
+            while (famly.size() > 0){
+                unit *cur = famly.back();
+                agent *p = cur->father;
+                agent *q = cur->mother;
+                
+                while (cur->avail_ages.size() > 0){
+                    int s = int(cur->avail_ages.size());
+                    int age = cur->avail_ages[s - 1];
+                    
+                    int max = int(q->age / 365) - 15;
+                    if (s >= 2) max = cur->avail_ages[s - 2];
+                    
+                    int min = 15;
+                    if (cur->child.size() > 0) min = int(cur->child.front()->age / 365 + 1);
+                    
+                    int pos = binary_search(m_svec, age);
+                    if (pos == -1){
+                        for (int j = min; j < max; ++j){
+                            pos = binary_search(m_svec, j);
+                            if (pos != -1) break;
+                        }
+                    }
+                    
+                    if (pos != -1){
+                        agent *b = m_svec[pos];
+                        
+                        cur->child.insert(cur->child.begin(), b);
+                        m_svec.erase(m_svec.begin() + pos);
+                    }
+                    
+                    cur->avail_ages.pop_back();
+                }
+                
+                if (p != NULL){
+                    if (h_hold->hldr == NULL) h_hold->hldr = p;
+                    h_hold->add_mmbr(p);
+                    h_hold->add_mmbr(q);
+                }
+                else{
+                    if (h_hold->hldr == NULL) h_hold->hldr = q;
+                    h_hold->add_mmbr(q);
+                }
+                
+                for (int j = 0; j < cur->child.size(); ++j){
+                    agent *b = cur->child[j];
+                    
+                    if (p != NULL){
+                        p->add_child(b);
+                        b->dad = p;
+                    }
+                    
+                    q->add_child(b);
+                    b->mom = q;
+                    
+                    h_hold->add_mmbr(b);
+                }
+                
+                delete cur;
+                famly.pop_back();
+            }
+            
+            while (m_svec.size() > 0){
+                agent *p = m_svec.back();
+                if(h_hold->hldr == NULL) h_hold->hldr = p;
+                h_hold->add_mmbr(p);
+                m_svec.pop_back();
+            }
+            
+            h_hold->siz = int(h_hold->mmbrs.size());
+            allocated += h_hold->siz;
+            add_hhold(h_hold);
+        }
+        else{
+            vector<unit*> u_vec;
+            while (h_size > 0 && famly.size() > 0){
+                unit *cur = NULL;
+                int pos, s_1;
+                
+                if (famly.size() > 0 && h_size < famly.front()->u_size()) break;        //check first element
+                
+                for (pos = int(famly.size()-1); pos >= 0; --pos){
+                    if (famly[pos]->u_size() <= h_size) break;
+                }
+                
+                if (pos != -1){
+                    cur = famly[pos];
+                    s_1 = cur->u_size();
+                    
+                    famly.erase(famly.begin() + pos);
+                    u_vec.push_back(cur);
+                    
+                    h_size -= s_1;
+                }
+            }
+            
+            //cout << "after u_vec: " << h_size << endl;
+            agent *senior = NULL;
+            vector<vector<agent*>> c_vecs;
+            if (h_size > 0){
+                for (int i = 0; i < u_vec.size(); ++i){
+                    unit *cur = u_vec[i];
+                    agent *p = cur->father;
+                    agent *q = cur->mother;
+                    
+                    if (h_size > 0 && senior == NULL){
+                        if (cur->father != NULL){
+                            for (int j = int(m_svec.size()-1); j >= 0; --j){
+                                int age = int(m_svec[j]->age / 365);
+                                if (age >= int(p->age / 365 + 15) && age <= int(p->age / 365 + 44)){
+                                    senior = m_svec[j];
+                                    m_svec.erase(m_svec.begin() + j);
+                                    break;
+                                }
+                            }
+                        }
+                        else{
+                            for (int j = int(m_svec.size()-1); j >= 0; --j){
+                                int age = int(m_svec[j]->age / 365);
+                                if (age >= int(q->age / 365 + 15) && age <= int(q->age / 365 + 44)){
+                                    senior = m_svec[j];
+                                    m_svec.erase(m_svec.begin() + j);
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (senior != NULL) --h_size;
+                    }
+                    
+                    //cout << "after senior: " << h_size << endl;
+                    
+                    if(h_size == 0) break;
+                    
+                    vector<agent*> vec;
+                    for (int j = int(cur->avail_ages.size()-1); j >= 0 && h_size > 0; --j){
+                        int age = cur->avail_ages[j];
+                        
+                        int max = int(q->age / 365) - 15;
+                        if (j > 0) max = cur->avail_ages[j - 1];
+                        
+                        int min = 15;
+                        if (vec.size() > 0) min = int(vec.back()->age / 365 + 1);
+                        else if (cur->child.size() > 0) min = int(cur->child.front()->age / 365 + 1);
+                        
+                        int pos = binary_search(m_svec, age);
+                        if (pos == -1){
+                            for (int j = min; j < max; ++j){
+                                pos = binary_search(m_svec, j);
+                                if (pos != -1) break;
+                            }
+                        }
+                        
+                        if (pos != -1){
+                            agent *b = m_svec[pos];
+                            vec.push_back(b);    --h_size;
+                            m_svec.erase(m_svec.begin() + pos);
+                        }
+                    }
+                    
+                    //cout << "after u_vec_child: " << h_size << endl;
+                    c_vecs.push_back(vec);
+                    
+                    if (h_size == 0) break;
+                }
+            }
+            
+            vector<agent*> a_vec;
+            while (h_size > 0 && m_svec.size() > 0){
+                agent *p = m_svec.back();
+                a_vec.push_back(p);    --h_size;
+                m_svec.pop_back();
+            }
+            
+            //cout << "after a_vec: " << h_size << endl;
+            
+            //not successful
+            if (h_size != 0){
+                for (int j = 0; j < u_vec.size(); ++j){
+                    famly.push_back(u_vec[j]);
+                }
+                stable_sort(famly.begin(), famly.end(), _smaller);
+                u_vec.clear();    u_vec.shrink_to_fit();
+                
+                if (senior != NULL){
+                    m_svec.push_back(senior);
+                    senior = NULL;
+                }
+                
+                for (int i = 0; i < c_vecs.size(); ++i){
+                    for (int j = 0; j < c_vecs[i].size(); ++j){
+                        m_svec.push_back(c_vecs[i][j]);
+                    }
+                    c_vecs[i].clear();    c_vecs[i].shrink_to_fit();
+                }
+                c_vecs.clear();    c_vecs.shrink_to_fit();
+                
+                while(a_vec.size() > 0){
+                    m_svec.push_back(a_vec.back());
+                    a_vec.pop_back();
+                }
+                a_vec.shrink_to_fit();
+                
+                stable_sort(m_svec.begin(), m_svec.end(), _younger);
+            }
+            else{
+                hhold *h_hold = new hhold(cbk->next_hid++);
+                
+                for (int i = 0; i < c_vecs.size(); ++i){
+                    unit *cur = u_vec[i];
+                    
+                    for (int j = 0; j < c_vecs[i].size(); ++j){
+                        agent *b = c_vecs[i][j];
+                        cur->child.push_back(b);
+                    }
+                    c_vecs[i].clear();    c_vecs[i].shrink_to_fit();
+                }
+                c_vecs.clear();    c_vecs.shrink_to_fit();
+                
+                for (int i = 0; i < u_vec.size(); ++i){
+                    unit *cur = u_vec[i];
+                    agent *p = cur->father;
+                    agent *q = cur->mother;
+                    
+                    if (p != NULL){
+                        if (h_hold->hldr == NULL) h_hold->hldr = p;
+                        h_hold->add_mmbr(p);
+                        h_hold->add_mmbr(q);
+                    }
+                    else{
+                        if (h_hold->hldr == NULL) h_hold->hldr = q;
+                        h_hold->add_mmbr(q);
+                    }
+                    
+                    for (int j = 0; j < cur->child.size(); ++j){
+                        agent *b = cur->child[j];
+                        
+                        if (p != NULL){
+                            p->add_child(b);
+                            b->dad = p;
+                        }
+                        
+                        q->add_child(b);
+                        b->mom = q;
+                        
+                        h_hold->add_mmbr(b);
+                    }
+                    
+                    delete cur;
+                }
+                u_vec.clear();    u_vec.shrink_to_fit();
+                
+                if (senior != NULL){
+                    if(h_hold->hldr == NULL) h_hold->hldr = senior;
+                    h_hold->add_mmbr(senior);
+                }
+                
+                for(int i = 0; i < a_vec.size(); ++i){
+                    if(h_hold->hldr == NULL) h_hold->hldr = a_vec[i];
+                    h_hold->add_mmbr(a_vec[i]);
+                }
+                a_vec.clear();  a_vec.shrink_to_fit();
+                
+                h_hold->siz = int(h_hold->mmbrs.size());
+                allocated += h_hold->siz;
+                add_hhold(h_hold);
+            }
+        }
+    }
+    
+    /*if(cbk->mbloksIndexB[mid] == "Avaio"){
+     cout << cbk->mbloksIndexB[mid] << endl;
+     cout << "pop = " << mblok_pop.size() << endl;
+     cout << "hhold = " << mblok_hholds.size() << endl;
+     
+     for(map<int, hhold*>::iterator j = mblok_hholds.begin(); j != mblok_hholds.end(); ++j){
+     agent *holder = j->second->hldr;
+     cout << "h_hold: " << j->first << " " << holder->aid << " " << j->second->siz << endl;
+     for(map<int, agent*>::iterator k = j->second->mmbrs.begin(); k != j->second->mmbrs.end(); ++k){
+     agent *cur = k->second;
+     cout << "member: " << cur->aid << " " << cur->gendr << " " << int(cur->age/365) << " " << cur->margs << " " << cur->chldr.size() << endl;
+     }
+     cout << endl;
+     }
+     }*/
+    
+    m_svec.clear();     m_svec.shrink_to_fit();
+    famly.clear();      famly.shrink_to_fit();
+}
+
+void mblok::bld_pop(int mm, int ff, agrps *pp){
+    int *pop_vg = pp->pop;
+    int *male_vg = pp->male;
+    int *female_vg = pp->female;
+    
+    bool no_data = true;
+    for(int i = 0; i < vg_agrps; ++i){
+        if(male_vg[i] > 0){
+            no_data = false;
+            break;
+        }
+    }
+    
+    //male & female pop by age group in village unavailable
+    if(no_data){
+        for(int i = 0; i < vg_agrps; ++i){
+            if(pop_vg[i] == 0) continue;
+            
+            double males = cbk->mvec[i].size();
+            double fmals = cbk->fvec[i].size();
+            
+            female_vg[i] = int(pop_vg[i]*fmals/(males+fmals)+0.5);  ff -= female_vg[i];
+            male_vg[i] = pop_vg[i] - female_vg[i];                  mm -= male_vg[i];
+        }
+        
+        while(mm < 0){
+            int index = -1, diff = 0;
+            for(int i = 0; i < vg_agrps; ++i){
+                int df = male_vg[i]-female_vg[i];
+                
+                if(index == -1 && female_vg[i] < cbk->fvec[i].size() && male_vg[i] > 0){
+                    diff = df;
+                    index = i;
+                    continue;
+                }
+                
+                if(df > diff && female_vg[i] < cbk->fvec[i].size() && male_vg[i] > 0){
+                    diff = df;
+                    index = i;
+                }
+            }
+            
+            --male_vg[index];       ++mm;
+            ++female_vg[index];     --ff;
+        }
+        
+        while(mm > 0){
+            int index = -1, diff = 0;
+            for(int i = 0; i < vg_agrps; ++i){
+                int df = female_vg[i]-male_vg[i];
+                
+                if(index == -1 && male_vg[i] < cbk->mvec[i].size() && female_vg[i] > 0){
+                    diff = df;
+                    index = i;
+                    continue;
+                }
+                
+                if(df > diff && male_vg[i] < cbk->mvec[i].size() && female_vg[i] > 0){
+                    diff = df;
+                    index = i;
+                }
+            }
+            
+            ++male_vg[index];       --mm;
+            --female_vg[index];     ++ff;
+        }
+    }
+    
+    //build pop based on male/female villagers by age group
+    for(int i = 0; i < vg_agrps; ++i){
+        int cc = male_vg[i];
+        while(cc-- > 0){
+            int index = irandom() % cbk->mvec[i].size();
+            agent *cur = cbk->mvec[i][index];
+            
+            cur->aid = cbk->next_aid++;
+            add_agent(cur);
+            cbk->add_agent(cur);
+            cbk->mvec[i].erase(cbk->mvec[i].begin()+index);
+            
+            if(cbk->mvec[i].size() == 0 && cc > 0){
+                cout << cbk->mbloksIndexB[mid] << " " << i << " " << cc << endl;
+                cout << "err: no enough males to build village pop" << endl;
+                exit(1);
+            }
+        }
+        
+        cc = female_vg[i];
+        while(cc-- > 0){
+            int index = irandom() % cbk->fvec[i].size();
+            agent *cur = cbk->fvec[i][index];
+            
+            cur->aid = cbk->next_aid++;
+            add_agent(cur);
+            cbk->add_agent(cur);
+            cbk->fvec[i].erase(cbk->fvec[i].begin()+index);
+            
+            if(cbk->fvec[i].size() == 0 && cc > 0){
+                cout << cbk->mbloksIndexB[mid] << " " << i << " " << cc << endl;
+                cout << "err: no enough females to build village pop" << endl;
+                exit(1);
+            }
+        }
+    }
+}
+
+void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
+                            vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
+                            vector<agent*> &chld, vector<unit*> &famly){
+    
+    for(map<int, agent*>::iterator j = mblok_pop.begin(); j != mblok_pop.end(); ++j){
+        agent *p = j->second;
+        if(p->age < 15*365){
+            p->margs = 's';
+            chld.push_back(p);
+        }
+        else{
+            if(p->gendr == 'm'){
+                p->margs = 's';
+                m_svec.push_back(p);
+                continue;
+            }
+            
+            rnd_margs(p);   //random margs status for female
+            if(p->margs == 'm') f_mvec.push_back(p);
+            else{
+                p->margs = 's';
+                f_svec.push_back(p);
+            }
+        }
+    }
+    
+    //match couple to build family units
+    match_couple(m_mvec, m_svec, m_dvec, m_wvec, f_mvec, f_svec, f_dvec, f_wvec, famly);
+    
+    //build single parent family - only female
+    while(f_dvec.size() > 0){
+        agent *q = f_dvec.back();
+        q->spw = NULL;
+        famly.push_back(new unit(NULL, q));
+        f_dvec.pop_back();
+    }
+    
+    while(f_wvec.size() > 0){
+        agent *q = f_wvec.back();
+        q->spw = NULL;
+        famly.push_back(new unit(NULL, q));
+        f_wvec.pop_back();
+    }
+    
+    //allocate child into family units
+    allocate_child(chld, famly);
+    
+    chld.shrink_to_fit();
+    
+    m_mvec.shrink_to_fit();
+    m_svec.shrink_to_fit();
+    m_dvec.shrink_to_fit();
+    m_wvec.shrink_to_fit();
+    
+    f_mvec.shrink_to_fit();
+    f_svec.shrink_to_fit();
+    f_dvec.shrink_to_fit();
+    f_wvec.shrink_to_fit();
+    
+}
+
+void mblok::match_couple(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
+                         vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
+                         vector<unit*> &famly){
+    //sort agents by age
+    struct _comp{
+        bool operator() (const agent *p, const agent *q){ return (p->age < q->age);}
+    } _younger;
+    
+    //sort agent by age to simplify matching couples
+    stable_sort(m_svec.begin(), m_svec.end(), _younger);
+    stable_sort(f_mvec.begin(), f_mvec.end(), _younger);
+    
+    //find female's husband
+    while(f_mvec.size() > 0){
+        //no available males
+        if(m_svec.size() == 0 && f_mvec.size() > 0){
+            while(f_mvec.size() > 0){
+                agent *p = f_mvec.back();
+                
+                while(p->margs == 'm') rnd_margs(p);   //random margs status for female
+                
+                if(p->margs == 's') f_svec.push_back(p);
+                else if(p->margs == 'w') f_wvec.push_back(p);
+                else if(p->margs == 'd') f_dvec.push_back(p);
+                
+                f_mvec.pop_back();
+            }
+            break;
+        }
+        
+        agent *q = f_mvec.back();   int q_age = int(q->age/365);
+        agent *p = NULL;            int p_age = 0;
+        
+        int index = -1;
+        if(q_age > int(m_svec.back()->age/365+3)){          //too old
+            while(q->margs == 'm') rnd_margs(q);
+            
+            if(q->margs == 's') f_svec.push_back(q);
+            else if(q->margs == 'w') f_wvec.push_back(q);
+            else if(q->margs == 'd') f_dvec.push_back(q);
+            
+            f_mvec.pop_back();
+            continue;
+        }
+        else if(q_age < int(m_svec.front()->age/365-5)){   //too young
+            while(q->margs == 'm') rnd_margs(q);
+            
+            if(q->margs == 's') f_svec.push_back(q);
+            else if(q->margs == 'w') f_wvec.push_back(q);
+            else if(q->margs == 'd') f_dvec.push_back(q);
+            
+            f_mvec.pop_back();
+            continue;
+        }
+        else{
+            if(q_age > int(m_svec.back()->age/365)) index = int(m_svec.size()-1);
+            else{
+                for(index = int(m_svec.size()-1); index > 0; --index){
+                    if(int(m_svec[index]->age/365) == q_age) break;
+                    
+                    int df_1 = int(m_svec[index]->age/365) - q_age;
+                    int df_2 = int(m_svec[index-1]->age/365) - q_age;
+                    
+                    if(df_1 > 0 && df_2 < 0){
+                        if(df_1 <= 5 || abs(df_2) > 3) break;      //prefer male > female, within 5 yrs diff
+                        else{
+                            --index; break;                 //if m_age - f_age > 5 && f_age - m_age <= 3
+                        }
+                    }
+                }
+            }
+            p = m_svec[index];      p_age = int(p->age/365);
+        }
+        
+        p->margs = 'm';
+        famly.push_back(new unit(p, q));
+        f_mvec.pop_back();
+        m_svec.erase(m_svec.begin()+index);
+    }
+    
+    stable_sort(f_svec.begin(), f_svec.end(), _younger);
+    
+    //redo for male single
+    int jj = int(m_svec.size()-1);
+    while(jj >= 0){
+        agent *p = m_svec[jj];
+        rnd_margs(p);
+        if(p->margs == 'm'){
+            m_mvec.push_back(p);
+            m_svec.erase(m_svec.begin()+jj);
+        }
+        else if(p->margs == 'd'){
+            m_dvec.push_back(p);
+            m_svec.erase(m_svec.begin()+jj);
+        }
+        else if(p->margs == 'w'){
+            m_wvec.push_back(p);
+            m_svec.erase(m_svec.begin()+jj);
+        }
+        --jj;
+    }
+    
+    stable_sort(m_mvec.begin(), m_mvec.end(), _younger);
+    
+    while(m_mvec.size() > 0){
+        //no available females
+        if(m_mvec.size() > 0 && f_svec.size() == 0){
+            while(m_mvec.size() > 0){
+                agent *p = m_mvec.back();
+                while(p->margs == 'm') rnd_margs(p);
+                
+                if(p->margs == 's') m_svec.push_back(p);
+                else if(p->margs == 'w') m_wvec.push_back(p);
+                else if(p->margs == 'd') m_dvec.push_back(p);
+                
+                m_mvec.pop_back();
+            }
+            break;
+        }
+        
+        agent *p = m_mvec.back();       int p_age = int(p->age/365);
+        agent *q = NULL;                int q_age = 0;
+        
+        int index = -1;
+        if(p_age > int(f_svec.back()->age/365+5)){          //too old
+            while(p->margs == 'm') rnd_margs(p);
+            
+            if(p->margs == 's') m_svec.push_back(p);
+            else if(p->margs == 'w') m_wvec.push_back(p);
+            else if(p->margs == 'd') m_dvec.push_back(p);
+            
+            m_mvec.pop_back();
+            continue;
+        }
+        else if(p_age < int(f_svec.front()->age/365-3)){    //too young
+            while(p->margs == 'm') rnd_margs(p);
+            
+            if(p->margs == 's') m_svec.push_back(p);
+            else if(p->margs == 'w') m_wvec.push_back(p);
+            else if(p->margs == 'd') m_dvec.push_back(p);
+            
+            m_mvec.pop_back();
+            continue;
+        }
+        else{
+            if(p_age > int(f_svec.back()->age/365)) index = int(f_svec.size()-1);
+            else{
+                for(index = int(f_svec.size()-1); index > 0; --index){
+                    if(int(f_svec[index]->age/365) == p_age) break;
+                    int df_1 = p_age - int(f_svec[index]->age/365);
+                    int df_2 = p_age - int(f_svec[index-1]->age/365);
+                    
+                    if(df_1 < 0 && df_2 > 0){
+                        if(df_2 <= 5 || abs(df_1) > 3){
+                            -- index; break;
+                        }
+                        else break;
+                    }
+                }
+            }
+            q = f_svec[index];      q_age = int(q->age/365);
+        }
+        
+        q->margs = 'm';
+        famly.push_back(new unit(p, q));
+        m_mvec.pop_back();
+        f_svec.erase(f_svec.begin()+index);
+    }
+    
+    for(int i = 0; i < famly.size(); ++i){
+        unit *cur = famly[i];
+        agent *p = cur->father;
+        agent *q = cur->mother;
+        p->spw = q;
+        q->spw = p;
+    }
+}
+
+void mblok::allocate_child(vector<agent*> &chld_vec, vector<unit*> &famly){
+    //sort agents by age
+    struct _comp{
+        bool operator() (const agent *p, const agent *q){ return (p->age < q->age);}
+    } _younger;
+    
+    //allocate child into family unit
+    stable_sort(chld_vec.begin(), chld_vec.end(), _younger);
+    vector<unit*> family(famly);
+    
+    int birth_age[10];
+    
+    while(chld_vec.size() > 0){
+        int ii = irandom() % family.size();
+        unit *cur = family[ii];
+        
+        agent *q = cur->mother;
+        int q_age = int(q->age/365);
+        
+        //max age with child < 15 yrs is 49+14
+        if(q_age >= 64) continue;
+        
+        int rr = q_age - 15;
+        rr = rr>10 ? 10:rr;
+        
+        double pp = cbk->child_number_by_age[q_age-15]/(double)rr;
+        int num = binomial(rr, pp);
+        
+        if(num <= cur->child.size()) continue;
+        
+        memset(birth_age, -1, sizeof(int)*10);
+        
+        int index = num-1;
+        int age_dn = cbk->live_birth_order_interval[index][0];
+        int age_up = min(cbk->live_birth_order_interval[index][1], q_age-15);
+        
+        if(age_dn > age_up) continue;
+        
+        double total = 0;
+        for(int j = age_dn; j <= age_up; ++j) total += cbk->live_birth_order_by_age[index][j];
+        
+        double r = drandom(), prob = 0;
+        int jj = age_dn;
+        for(jj = age_dn; jj <= age_up; ++jj){
+            prob += cbk->live_birth_order_by_age[index][jj]/total;
+            if(r < prob) break;
+        }
+        
+        double seg = jj/(double)num;
+        int adult_chld = 0;
+        for(int i = 0; i < num; ++i){
+            birth_age[i] = int(seg*(i+1)+0.5);
+            
+            if(q_age - (birth_age[i]+15) >= 15)
+                ++adult_chld;
+        }
+        
+        if(num - adult_chld <= cur->child.size()) continue;
+        
+        for(int i = 0; i < cur->child.size(); ++i){
+            agent *cp = cur->child[i];
+            chld_vec.push_back(cp);
+        }
+        cur->child.clear();
+        cur->avail_ages.clear();
+        stable_sort(chld_vec.begin(), chld_vec.end(), _younger);
+        
+        for(int i = 0; i < num; ++i){
+            int chld_age = q_age - (birth_age[i]+15);
+            if(chld_age >= 15){
+                cur->avail_ages.push_back(chld_age);
+                continue;
+            }
+            
+            int pos = binary_search(chld_vec, chld_age);
+            
+            if(pos == -1 && i > 0){
+                for(int j = birth_age[i-1]+1; j < birth_age[i]; ++j){
+                    chld_age = q_age - (j+15);
+                    pos = binary_search(chld_vec, chld_age);
+                    if(pos != -1){
+                        birth_age[i] = j;
+                        break;
+                    }
+                }
+            }
+            
+            if(pos == -1 && i < num-1){
+                for(int j = birth_age[i]+1; j < birth_age[i+1]; ++j){
+                    chld_age = q_age - (j+15);
+                    pos = binary_search(chld_vec, chld_age);
+                    if(pos != -1){
+                        birth_age[i] = j;
+                        break;
+                    }
+                }
+            }
+            
+            if(pos != -1){
+                agent *cp = chld_vec[pos];
+                cur->child.push_back(cp);
+                chld_vec.erase(chld_vec.begin()+pos);
+            }
+        }
+        cur->child.shrink_to_fit();
+        cur->avail_ages.shrink_to_fit();
+        if(cur->child.size() == rr) family.erase(family.begin()+ii);
+    }
+    
+    for(int i = 0; i < famly.size(); ++i){
+        unit *cur = famly[i];
+        agent *p = cur->father;
+        agent *q = cur->mother;
+        for(int j = 0; j < cur->child.size(); ++j){
+            agent *b = cur->child[j];
+            
+            if(p != NULL){
+                p->add_child(b);
+                b->dad = p;
+            }
+            
+            q->add_child(b);
+            b->mom = q;
+        }
+    }
+    
+    family.clear();
+    family.shrink_to_fit();
+    chld_vec.shrink_to_fit();
+}
+
+int mblok::binary_search(vector<agent*> &vec, int age){
+    if(int(vec.front()->age/365) > age || int(vec.back()->age/365) < age) return -1;
+    
+    int ll = 0, hh = int(vec.size()-1), mid = int((ll+hh)/2);
+    while(true){
+        if(int(vec[mid]->age/365) > age){
+            hh = mid;
+            mid = int((ll+hh)/2);
+        }
+        
+        if(int(vec[mid]->age/365) < age){
+            ll = mid;
+            mid = int((ll+hh)/2);
+        }
+        
+        if(int(vec[mid]->age/365) == age) break;
+        
+        if(ll == mid || hh == mid) break;
+    }
+    
+    int pos = -1;
+    if(int(vec[mid]->age/365) == age) pos = mid;
+    else if(int(vec[ll]->age/365) == age) pos = ll;
+    else if(int(vec[hh]->age/365) == age) pos = hh;
+    
+    while(pos > 0 && int(vec[pos-1]->age/365) == int(vec[pos]->age/365)) --pos;
+    
+    return pos;
+}
+
