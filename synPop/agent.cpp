@@ -7,18 +7,24 @@
 //
 #include "agent.h"
 
-agent::agent(int aid, int age, char gendr, char margs, hhold *hd, workp *wp, schol *sh){
+agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, schol *s_h){
     this->aid = aid;
     this->age = age;
     this->gendr = gendr;
     this->margs = margs;
    
-    this->hd = hd;
-    this->wp = wp;
-    this->sh = sh;
+    this->h_d = h_d;
+    this->w_p = w_p;
+    this->s_h = s_h;
+    
+    spw = NULL;
+    mom = NULL;
+    dad = NULL;
+    mom_law = NULL;
+    dad_law = NULL;
     
     works = '-';
-    bthwind = 0;
+    bth_wind = 0;
     epids = 'S';
 }
 
@@ -28,9 +34,9 @@ agent::~agent(){
     dad = NULL;
     mom_law = NULL;
     dad_law = NULL;
-    hd = NULL;
-    wp = NULL;
-    sh = NULL;
+    h_d = NULL;
+    w_p = NULL;
+    s_h = NULL;
     
     chldr.clear();
 }

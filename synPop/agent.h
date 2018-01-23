@@ -14,16 +14,9 @@ using namespace std;
 
 //individuals
 class agent;
-
-//sites
-class hhold;        //household
-class workp;        //workplace
-class schol;        //school
-
-//buildings
-class rbldg;        //residential
-class wbldg;        //work buildings
-class sbldg;        //school bldgs
+class hhold;
+class workp;
+class schol;
 
 class agent{
 public:
@@ -33,7 +26,7 @@ public:
     
     char works;     //W - working, S - schooling, H - housing
     char margs;     //m - married, s - single, d - divorce, w - widowed
-    int bthwind;      //birth window closed for female just having a baby
+    int bth_wind;      //birth window closed for female just having a baby
     
     char epids;     //S - susceptible, E - exposed, I - infectious, R - removed, D - dead
     
@@ -42,13 +35,14 @@ public:
     agent *mom;
     agent *dad_law;
     agent *mom_law;
+    
     map<int, agent*> chldr;
     
-    hhold *hd;      //household
-    workp *wp;      //workplace
-    schol *sh;      //school
+    hhold *h_d;      //household
+    workp *w_p;      //workplace
+    schol *s_h;      //school
     
-    agent(int aid, int age = -1, char gendr = '-', char margs = 's', hhold *hd = NULL, workp *wp = NULL, schol *sh = NULL);
+    agent(int aid, int age = -1, char gendr = '-', char margs = 's', hhold *h_d = NULL, workp *w_p = NULL, schol *s_h = NULL);
     
     ~agent();
     

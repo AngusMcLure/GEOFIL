@@ -9,7 +9,7 @@
 #ifndef main_h
 #define main_h
 
-#include "blocks.h"
+#include "block.h"
 
 #define as_cid      96799
 #define as_lat      -14.2710

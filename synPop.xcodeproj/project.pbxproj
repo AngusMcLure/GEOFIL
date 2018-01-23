@@ -31,6 +31,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9D3517C62015A54D00EA8AE0 /* bldg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bldg.h; sourceTree = "<group>"; };
+		9D3517C72015A64100EA8AE0 /* social_cell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = social_cell.h; sourceTree = "<group>"; };
 		9D7B63441FAAC3F70044FD3F /* synPop */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = synPop; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D7B63471FAAC3F70044FD3F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9D7B63511FAAC4490044FD3F /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
@@ -39,7 +41,7 @@
 		9DEF232D1FAACE10008F520B /* agent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = agent.h; sourceTree = "<group>"; };
 		9DEF232F1FAE88E5008F520B /* paras.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = paras.h; sourceTree = "<group>"; };
 		9DEF23301FAE8C3C008F520B /* dynamic_pop.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_pop.cpp; sourceTree = "<group>"; };
-		9DEF23311FAE8C3C008F520B /* blocks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = blocks.h; sourceTree = "<group>"; };
+		9DEF23311FAE8C3C008F520B /* block.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = block.h; sourceTree = "<group>"; };
 		9DEF23361FAE8D2E008F520B /* dynamic_hhold.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_hhold.cpp; sourceTree = "<group>"; };
 		9DEF23391FAEA256008F520B /* agrps.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = agrps.h; sourceTree = "<group>"; };
 		9DEF233A1FAFE03C008F520B /* initialize_pop.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = initialize_pop.cpp; sourceTree = "<group>"; };
@@ -82,14 +84,16 @@
 				9DEF23361FAE8D2E008F520B /* dynamic_hhold.cpp */,
 				9DEF23421FB13045008F520B /* dynamic_mblok.cpp */,
 				9DEF23301FAE8C3C008F520B /* dynamic_pop.cpp */,
-				9D7B63521FAAC4610044FD3F /* rand_distribution.cpp */,
 				9DEF233A1FAFE03C008F520B /* initialize_pop.cpp */,
 				9D7B63471FAAC3F70044FD3F /* main.cpp */,
 				9DEF233F1FAFE1A6008F520B /* model_mobility.cpp */,
+				9D7B63521FAAC4610044FD3F /* rand_distribution.cpp */,
 				9DEF233C1FAFE162008F520B /* statistics.cpp */,
 				9DEF232D1FAACE10008F520B /* agent.h */,
 				9DEF23391FAEA256008F520B /* agrps.h */,
-				9DEF23311FAE8C3C008F520B /* blocks.h */,
+				9DEF23311FAE8C3C008F520B /* block.h */,
+				9D3517C62015A54D00EA8AE0 /* bldg.h */,
+				9D3517C72015A64100EA8AE0 /* social_cell.h */,
 				9D7B63511FAAC4490044FD3F /* main.h */,
 				9DEF232F1FAE88E5008F520B /* paras.h */,
 			);
@@ -285,6 +289,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				ONLY_ACTIVE_ARCH = YES;
+				"OTHER_LDFLAGS[arch=*]" = (
+					"-std=c99",
+					"-Weverything",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

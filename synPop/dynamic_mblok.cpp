@@ -6,7 +6,7 @@
 //  Copyright © 2017 Sting Xu. All rights reserved.
 //
 
-#include "blocks.h"
+#include "block.h"
 
 void mblok::add_hhold(hhold *p){
     mblok_hholds.insert(pair<int, hhold*>(p->hid, p));
@@ -93,8 +93,8 @@ void mblok::adpt_chldrs(hhold *p){
         }
         
         p->rmv_mmbr(cur);
-        pp->hd->add_mmbr(cur);
+        pp->h_d->add_mmbr(cur);
     }
     
-    pp->hd->updt_hhold();
+    pp->h_d->updt_hhold();
 }

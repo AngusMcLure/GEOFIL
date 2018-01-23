@@ -9,169 +9,13 @@
 #ifndef blocks_hpp
 #define blocks_hpp
 
-#include "agent.h"
+#include "social_cell.h"
 #include "agrps.h"
 using namespace std;
 
 //census blocks
 class mblok;   //meshblock, smallest census unit
 class cblok;   //cities or other large census area
-
-class rbldg;        //residential
-class wbldg;        //work buildings
-class sbldg;        //school bldgs
-
-class hhold{
-public:
-    int hid;                            //hhold id
-    char typ;                           // c-couple, f-female, m-male, a-alone, o-organizational
-    int siz;
-    
-    double lat, log;
-    double area;
-    rbldg *rdg;
-    
-    agent *hldr;                        //hhold holder
-    map<int, agent*> mmbrs;             //hhold members
-    
-    hhold(int hid, int siz = 0, char typ = '-');
-    ~hhold();
-    
-    void asg_bldg(rbldg *rdg);
-    void add_mmbr(agent *p);
-    bool asg_hldr(agent *p);
-    void rmv_mmbr(agent *p);
-    void updt_hhold();
-};
-
-class rbldg{
-public:
-    int bid;
-    double log, lat;
-    double area;
-    hhold *hd;
-    mblok *mbk;
-    cblok *cbk;
-    
-    rbldg(int bid, double log, double lat, double area, mblok *mbk, cblok *cbk);
-    ~rbldg();
-};
-
-class workp{
-public:
-    int wid;
-    int siz;
-    map<int, agent*> emplys;             //employees members
-    double lat, log;
-    double area;
-    
-    map<int, wbldg*> wdg;                         //building list
-    
-    workp(int wid, int siz);
-    ~workp();
-    
-    void add_bldg(wbldg *wdg);
-    void add_mmbr(agent *p);
-    void rmv_mmbr(agent *p);
-    void update();
-    void removd();
-};
-
-class wbldg{
-public:
-    int bid;
-    double lat, log;
-    double area;
-    workp *wkp;
-    mblok *mbk;
-    cblok *cbk;
-    
-    wbldg(int bid, double lat, double log, double area, workp *wkp, mblok *mbk, cblok *cbk){
-        this->bid = bid;
-        this->lat = lat;
-        this->log = log;
-        this->area = area;
-        this->wkp = wkp;
-        this->mbk = mbk;
-        this->cbk = cbk;
-    }
-    
-    ~wbldg(){
-        wkp = NULL;
-        mbk = NULL;
-        cbk = NULL;
-    }
-};
-
-class schol{
-public:
-    int sid;
-    int siz;
-    double lat, log;
-    double area;
-    
-    map<int, sbldg*> sdg;
-    
-    map<int, agent*> tchrs;
-    map<int, agent*> stdts;
-    
-    void add_bldg(sbldg *sdg);
-    void add_tchr(agent *p);
-    void add_stdt(agent *p);
-    void rmv_tchr(agent *p);
-    void rmv_stdt(agent *p);
-    void update();
-    void removd();
-};
-
-class sbldg{
-    int bid;
-    double lat, log;
-    double area;
-    schol *sch;
-    mblok *mbk;
-    cblok *cbk;
-    
-    sbldg(int bid, double lat, double log, double area, schol *sch, mblok *mbk, cblok *cbk){
-        this->bid = bid;
-        this->lat = lat;
-        this->log = log;
-        this->area = area;
-        this->sch = sch;
-        this->mbk = mbk;
-        this->cbk = cbk;
-    }
-    
-    ~sbldg(){
-        sch = NULL;
-        mbk = NULL;
-        cbk = NULL;
-    }
-};
-
-//family units
-struct unit{
-	agent *father;
-	agent *mother;
-	vector<agent*> child;
-	vector<int> avail_ages;
-
-	unit(agent *p = NULL, agent *q = NULL){ father = p;  mother = q;  child.clear();  avail_ages.clear(); }
-	~unit(){
-		father = NULL;
-		mother = NULL;
-		child.clear();
-		child.shrink_to_fit();
-		avail_ages.clear();
-		avail_ages.shrink_to_fit();
-	}
-	int u_size(){
-		int n = int(child.size());
-		if (father != NULL) ++n;
-		if (mother != NULL) ++n;
-		return n;
-	}
-};
 
 class mblok{
 public:
@@ -187,7 +31,7 @@ public:
     map<int, rbldg*> mblok_rbldgs;
     map<int, wbldg*> mblok_wbldgs;
     
-    void intlz_pop();
+    void bld_mblok_pop();
     void add_hhold(hhold *p);
     void add_agent(agent *p);
     void rmv_hhold(hhold *p);
@@ -223,7 +67,7 @@ public:
     
     int cpop;
     int next_aid;
-    map<int, agent*> cblok_pop;
+    //map<int, agent*> cblok_pop;
     map<int, agent*> fmal_marrd;       //married females
     
     bool init;                         //for creating pop
@@ -287,8 +131,8 @@ public:
     void reset_cpop();
     void bld_mbloks();
     void bld_cblok_pop();
-    void add_agent(agent *p);
-    void rmv_agent(agent *p);
+    //void add_agent(agent *p);
+    //void rmv_agent(agent *p);
     void add_vcnt_rbldg(rbldg *p);
     void rmv_vcnt_rbldg(rbldg *p);
     void bld_cblok_hhold();

@@ -6,15 +6,7 @@
 //  Copyright © 2017 Sting Xu. All rights reserved.
 //
 
-#include "blocks.h"
-
-void cblok::add_agent(agent *p){
-    cblok_pop.insert(pair<int, agent*>(p->aid, p));
-}
-
-void cblok::rmv_agent(agent *p){
-    
-}
+#include "block.h"
 
 void cblok::add_vcnt_rbldg(rbldg *p){
     cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));

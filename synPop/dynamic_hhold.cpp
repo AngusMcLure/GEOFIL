@@ -7,14 +7,12 @@
 //
 
 #include "agent.h"
-#include "blocks.h"
+#include "block.h"
 
-hhold::hhold(int hid, int siz, char typ){
+hhold::hhold(int hid, int siz, agent *holder){
     this->hid = hid;
     this->siz = siz;
-    this->typ = typ;
-    
-    hldr = NULL;
+    hldr = holder;
 }
 
 hhold::~hhold(){
@@ -57,28 +55,18 @@ bool hhold::asg_hldr(agent *p){
 }
 
 void hhold::add_mmbr(agent *p){
-    p->hd = this;
+    p->h_d = this;
     mmbrs.insert(pair<int, agent*>(p->aid, p));
 }
 
 void hhold::rmv_mmbr(agent *p){
-    p->hd = NULL;
+    p->h_d = NULL;
     if(hldr->aid == p->aid) hldr = NULL;
     mmbrs.erase(p->aid);
 }
 
 void hhold::updt_hhold(){
     siz = (int)mmbrs.size();
-    if(siz != 0 && typ != 'N'){
-        if(mmbrs.size() == 1) typ = 'A';
-        else{
-            if(hldr->margs != 'M'){
-                if(hldr->gendr == 'F') typ = 'F';
-                else typ = 'M';
-            }
-            else typ = 'C';
-        }
-    }
 }
 
 rbldg::rbldg(int bid, double lat, double log, double area, mblok *mbk, cblok *cbk){

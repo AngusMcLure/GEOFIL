@@ -20,9 +20,7 @@ int main(int argc, const char * argv[]) {
     // insert code here...
     cblok *asamoa = new cblok(as_cid, "American Samoa", as_lat, as_long);
     cout << "total pop: " << asamoa->cpop << endl;
-    cout << "total villages: " << asamoa->mbloks.size() << endl;
-    cout << "total agents: " << asamoa->cblok_pop.size() << endl;
-    
+    cout << "total villages: " << asamoa->mbloks.size() << endl;    
     cout << "available aid: " << asamoa->next_aid << endl;
     cout << "available hid: " << asamoa->next_hid << endl;
     cout << "available mid: " << asamoa->next_mid << endl;

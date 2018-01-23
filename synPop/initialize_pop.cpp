@@ -6,7 +6,7 @@
 //  Copyright © 2017 Sting Xu. All rights reserved.
 //
 
-#include "blocks.h"
+#include "block.h"
 using namespace std;
 
 cblok::cblok(int cid, string cname, double lat, double log){
@@ -23,20 +23,82 @@ cblok::cblok(int cid, string cname, double lat, double log){
     
     init = pop_reload();
     
-    if(!init) read_demgrphcs(); //population not created
-    read_parmtrs();
-    bld_mbloks();
-    bld_cblok_pop();
-    bld_cblok_hhold();
+    if(!init){
+        read_demgrphcs(); //population not created
+        bld_mbloks();
+        bld_cblok_pop();
+        bld_cblok_hhold();
+        
+        string file = config;   file = file + cname;    file = file + ".init";
+        ofstream out(file.c_str());
+        
+        out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
+        
+        out << "TRUE" << endl;
+        out << cpop << endl;
+        out << next_aid << endl;
+        out << next_hid << endl;
+        out << next_mid << endl;
+        out << meshblocks << endl;
+        
+        for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+            out << j->first << "," << mbloksIndexB[j->first] << "," << j->second->log << "," << j->second->lat << endl;
+        }
+        out.close();
+        
+        for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+            mblok *mbk = j->second;
+            
+            //out population
+            file = config;   file = file + mbloksIndexB[mbk->mid];   file = file + "_pop.init";
+            out.open(file.c_str());
+            out << "ID,age,gender,marriage" << endl;
+            for(map<int, agent*>::iterator k = mbk->mblok_pop.begin(); k != mbk->mblok_pop.end(); ++k){
+                agent *cur = k->second;
+                out << cur->aid << "," << cur->age << "," << cur->gendr << "," << cur->margs << endl;
+            }
+            out.close();
+            
+            file = config;   file = file + mbloksIndexB[mbk->mid];   file = file + "_hhold.init";
+            out.open(file.c_str());
+            
+            out << "hhold_ID,size,holder_ID" << endl;
+            for(map<int, hhold*>::iterator k = mbk->mblok_hholds.begin(); k != mbk->mblok_hholds.end(); ++k){
+                hhold *cur = k->second;
+                out << cur->hid << "," << cur->siz << "," << cur->hldr->aid << endl;
+                for(map<int, agent*>::iterator r = cur->mmbrs.begin(); r != cur->mmbrs.end(); ++r){
+                    out << r->first << endl;
+                }
+            }
+            out.close();
+            
+            //out family unit
+            file = config;  file = file + mbloksIndexB[mbk->mid];   file = file + "_unit.init";
+            out.open(file.c_str());
+            out << "ID, spw_ID, child_num" << endl;
+            for(map<int, agent*>::iterator k = mbk->mblok_pop.begin(); k != mbk->mblok_pop.end(); ++k){
+                agent *cur = k->second;
+                out << cur->aid << ",";
+                
+                if(cur->spw != NULL) out << cur->spw->aid << ",";
+                else out << "-" << ",";
+                
+                out << cur->chldr.size() << endl;
+                
+                for(map<int, agent*>::iterator r = cur->chldr.begin(); r != cur->chldr.end();++r){
+                    out << r->first << "," << mbloksIndexB[mbk->mid] << endl;
+                }
+            }
+            out.close();
+        }
+    }
     
     hndl_land_data();
+    read_parmtrs();
 }
 
 bool cblok::pop_reload(){
-    string file = config;
-    file = file + cname;
-    file = file + "_pop.init";
-    
+    string file = config;   file = file + cname;    file = file + ".init";
     ifstream in(file.c_str());
     
     if(!in) return false;
@@ -51,15 +113,137 @@ bool cblok::pop_reload(){
     getline(in, line);      next_mid = atoi(line.c_str());
     getline(in, line);      meshblocks = atoi(line.c_str());
     
+    while(getline(in, line)){
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        char *p = std::strtok(str, ",");        int id = atoi(p);
+        p = std::strtok(NULL, ",");             string mbk = p;
+        p = std::strtok(NULL, ",");             double log = atof(p);
+        p = std::strtok(NULL, ",");             double lat = atof(p);
+        
+        mbloksIndexA.insert(pair<string, int>(mbk, id));
+        mbloksIndexB.insert(pair<int, string>(id, mbk));
+        mbloks.insert(pair<int, mblok*>(id, new mblok(id, this, lat, log)));
+        
+        delete []str;
+    }
+    in.close();
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        file = config;   file = file + mbloksIndexB[j->first];   file = file + "_pop.init";
+        in.open(file.c_str());
+        
+        string line;
+        getline(in, line);
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");        int id = atoi(p);
+            p = std::strtok(NULL, ",");             int age = atoi(p);
+            p = std::strtok(NULL, ",");             char gender = p[0];
+            p = std::strtok(NULL, ",");             char mrgs = p[0];
+            
+            j->second->add_agent(new agent(id, age, gender, mrgs));
+            delete []str;
+        }
+        in.close();
+    }
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        file = config;   file = file + mbloksIndexB[j->first];   file = file + "_unit.init";
+        in.open(file.c_str());
+        
+        string line;
+        getline(in, line);
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");
+            int id = atoi(p);
+            
+            p = std::strtok(NULL, ",");
+            int spw_id = -1;
+            if(p[0] != '-') spw_id = atoi(p);
+            
+            agent *p_m = j->second->mblok_pop[id];
+            agent *p_s = NULL;
+            if(spw_id != -1) p_s = j->second->mblok_pop[spw_id];
+            
+            p = std::strtok(NULL, ",");
+            int child_num = atoi(p);
+            
+            delete []str;
+            
+            while(child_num-- > 0){
+                getline(in, line);
+                str = new char[line.size()+1];
+                std::strcpy(str, line.c_str());
+                
+                p = std::strtok(str, ",");      int c_id = atoi(p);
+                p = std::strtok(NULL, ",");     string mbk = p;
+                
+                agent *p_c = mbloks[mbloksIndexA[mbk]]->mblok_pop[c_id];
+                p_m->add_child(p_c);
+                if(p_m->gendr == 'm') p_c->dad = p_m;
+                else p_c->mom = p_m;
+                
+                if(p_s != NULL){
+                    p_s->add_child(p_c);
+                    if(p_s->gendr == 'm') p_c->dad = p_s;
+                    else p_c->mom = p_s;
+                }
+                
+                delete []str;
+            }
+        }
+        in.close();
+    }
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        file = config;   file = file + mbloksIndexB[j->first];   file = file + "_hhold.init";
+        in.open(file.c_str());
+        
+        string line;
+        getline(in, line);
+        
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");        int id = atoi(p);
+            p = std::strtok(NULL, ",");             int size = atoi(p);
+            p = std::strtok(NULL, ",");             int holder = atoi(p);
+            
+            agent *h_holder = j->second->mblok_pop[holder];
+            hhold *h_hold = new hhold(id, size, h_holder);
+            
+            j->second->add_hhold(h_hold);
+            delete []str;
+            
+            while(size-- > 0){
+                getline(in, line);
+                int id = atoi(line.c_str());
+                
+                h_hold->add_mmbr(j->second->mblok_pop[id]);
+            }
+            
+            h_hold->hldr = h_holder;
+        }
+        in.close();
+    }
+    
     return true;
 }
 
 void cblok::reset_cpop(){
     //clear population
-    for(map<int, agent*>::iterator j = cblok_pop.begin(); j != cblok_pop.end(); ++j)
-        delete j->second;
+    /*for(map<int, agent*>::iterator j = cblok_pop.begin(); j != cblok_pop.end(); ++j)
+        delete j->second;*/
     fmal_marrd.clear();
-    cblok_pop.clear();
+    //cblok_pop.clear();
     
     //clear meshblocks, households, buildings
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j)
@@ -567,7 +751,7 @@ void cblok::bld_cblok_pop(){
     
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
-        mbk->intlz_pop();
+        mbk->bld_mblok_pop();
     }
     
     for(int i = 0; i < vg_agrps; ++i){
@@ -599,7 +783,9 @@ void cblok::hndl_land_data(){
         hndl_rbldg(data, 30, 300, 20);
         allct_rbldgs();
     }
-    
+    else{
+        //todo
+    }
 }
 
 void cblok::hndl_rbldg(string ff, int low, int upper, int min_dist){
@@ -922,40 +1108,10 @@ mblok::~mblok(){
     mblok_wbldgs.clear();
 }
 
-void mblok::intlz_pop(){
-    if(!cbk->init){
-        int mm = cbk->mblok_mpops[mid], ff = cbk->mblok_fpops[mid];
-        agrps *pp = cbk->mblok_agrps[mid];
-        bld_pop(mm, ff, pp);
-    }
-    else{
-        string file = config;
-        file = file + cbk->mbloksIndexB[mid];
-        file = file + "_pop";
-        
-        ifstream in(file.c_str());
-        
-        string line;
-        while(getline(in, line)){
-            char *str = new char[line.size()+1];
-            std::strcpy(str, line.c_str());
-            
-            char *p = std::strtok(str, ",");
-            int aid = atoi(p);
-            
-            p = std::strtok(NULL, ",");
-            int age = std::atoi(p);
-            
-            p = std::strtok(NULL, ",");
-            char gender = p[0];
-            
-            agent *g = new agent(aid, age, gender);
-            add_agent(g);
-            
-            delete []str;
-        }
-        in.close();
-    }
+void mblok::bld_mblok_pop(){
+    int mm = cbk->mblok_mpops[mid], ff = cbk->mblok_fpops[mid];
+    agrps *pp = cbk->mblok_agrps[mid];
+    bld_pop(mm, ff, pp);
 }
 
 void mblok::bld_hhold(){
@@ -1026,11 +1182,6 @@ void mblok::bld_hhold(){
     int allocated = 0;
     while (famly.size() + m_svec.size() > 0){
         int h_size = ztpoisson(lambda);        //current hhold size
-        //cout << cbk->mbloksIndexB[mid] << " " << famly.size() << " " << m_svec.size() << " " << h_size << endl;
-        /*for(int i = 0; i < famly.size(); ++i){
-         cout << famly[i]->u_size() << " ";
-         }
-         cout << endl;*/
         
         if (pop - allocated <= h_size){
             hhold *h_hold = new hhold(cbk->next_hid++);
@@ -1304,22 +1455,6 @@ void mblok::bld_hhold(){
         }
     }
     
-    /*if(cbk->mbloksIndexB[mid] == "Avaio"){
-     cout << cbk->mbloksIndexB[mid] << endl;
-     cout << "pop = " << mblok_pop.size() << endl;
-     cout << "hhold = " << mblok_hholds.size() << endl;
-     
-     for(map<int, hhold*>::iterator j = mblok_hholds.begin(); j != mblok_hholds.end(); ++j){
-     agent *holder = j->second->hldr;
-     cout << "h_hold: " << j->first << " " << holder->aid << " " << j->second->siz << endl;
-     for(map<int, agent*>::iterator k = j->second->mmbrs.begin(); k != j->second->mmbrs.end(); ++k){
-     agent *cur = k->second;
-     cout << "member: " << cur->aid << " " << cur->gendr << " " << int(cur->age/365) << " " << cur->margs << " " << cur->chldr.size() << endl;
-     }
-     cout << endl;
-     }
-     }*/
-    
     m_svec.clear();     m_svec.shrink_to_fit();
     famly.clear();      famly.shrink_to_fit();
 }
@@ -1401,7 +1536,6 @@ void mblok::bld_pop(int mm, int ff, agrps *pp){
             
             cur->aid = cbk->next_aid++;
             add_agent(cur);
-            cbk->add_agent(cur);
             cbk->mvec[i].erase(cbk->mvec[i].begin()+index);
             
             if(cbk->mvec[i].size() == 0 && cc > 0){
@@ -1418,7 +1552,6 @@ void mblok::bld_pop(int mm, int ff, agrps *pp){
             
             cur->aid = cbk->next_aid++;
             add_agent(cur);
-            cbk->add_agent(cur);
             cbk->fvec[i].erase(cbk->fvec[i].begin()+index);
             
             if(cbk->fvec[i].size() == 0 && cc > 0){
