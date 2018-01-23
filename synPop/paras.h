@@ -42,6 +42,7 @@
 #define lambda              6.47          //household Poisson
 
 #define max_child_number    10
+#define birth_window        365
 
 //functions
 int gaussian(double m_mu, double s_sigma);

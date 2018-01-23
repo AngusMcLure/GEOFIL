@@ -49,44 +49,67 @@ cblok::cblok(int cid, string cname, double lat, double log){
         for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
             mblok *mbk = j->second;
             
+            string mbk_str = mbloksIndexB[mbk->mid];
+            int pos = int(mbk_str.find('/'));
+            if(pos != string::npos) mbk_str[pos] = '_';
+            
             //out population
-            file = config;   file = file + mbloksIndexB[mbk->mid];   file = file + "_pop.init";
+            file = config;  file = file + mbk_str;  file = file + "_pop.init";
+            
             out.open(file.c_str());
             out << "ID,age,gender,marriage" << endl;
-            for(map<int, agent*>::iterator k = mbk->mblok_pop.begin(); k != mbk->mblok_pop.end(); ++k){
+            for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
+                agent *cur = k->second;
+                out << cur->aid << "," << cur->age << "," << cur->gendr << "," << cur->margs << endl;
+            }
+            
+            for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
                 agent *cur = k->second;
                 out << cur->aid << "," << cur->age << "," << cur->gendr << "," << cur->margs << endl;
             }
             out.close();
             
-            file = config;   file = file + mbloksIndexB[mbk->mid];   file = file + "_hhold.init";
+            file = config;  file = file + mbk_str;   file = file + "_hhold.init";
             out.open(file.c_str());
             
-            out << "hhold_ID,size,holder_ID" << endl;
+            out << "hhold_ID,size,holder_ID,gender" << endl;
             for(map<int, hhold*>::iterator k = mbk->mblok_hholds.begin(); k != mbk->mblok_hholds.end(); ++k){
                 hhold *cur = k->second;
-                out << cur->hid << "," << cur->siz << "," << cur->hldr->aid << endl;
+                out << cur->hid << "," << cur->siz << "," << cur->hldr->aid << "," << cur->hldr->gendr << endl;
                 for(map<int, agent*>::iterator r = cur->mmbrs.begin(); r != cur->mmbrs.end(); ++r){
-                    out << r->first << endl;
+                    out << r->first << "," << r->second->gendr << endl;
                 }
             }
             out.close();
             
             //out family unit
-            file = config;  file = file + mbloksIndexB[mbk->mid];   file = file + "_unit.init";
+            file = config;  file = file + mbk_str;   file = file + "_unit.init";
             out.open(file.c_str());
-            out << "ID, spw_ID, child_num" << endl;
-            for(map<int, agent*>::iterator k = mbk->mblok_pop.begin(); k != mbk->mblok_pop.end(); ++k){
+            out << "ID,gender,spw_ID,gender,child_num" << endl;
+            for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
                 agent *cur = k->second;
-                out << cur->aid << ",";
+                out << cur->aid << "," << cur->gendr << ",";
                 
-                if(cur->spw != NULL) out << cur->spw->aid << ",";
-                else out << "-" << ",";
+                if(cur->spw != NULL) out << cur->spw->aid << "," << cur->spw->gendr << ",";
+                else out << "-" << "," << "-" << ",";
                 
                 out << cur->chldr.size() << endl;
                 
                 for(map<int, agent*>::iterator r = cur->chldr.begin(); r != cur->chldr.end();++r){
-                    out << r->first << "," << mbloksIndexB[mbk->mid] << endl;
+                    out << r->first << "," << r->second->gendr << "," << mbloksIndexB[mbk->mid] << endl;
+                }
+            }
+            
+            for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
+                agent *cur = k->second;
+                if(cur->spw != NULL) continue;      //already output by males
+                
+                out << cur->aid << "," << cur->gendr << ",-,-,";
+                
+                out << cur->chldr.size() << endl;
+                
+                for(map<int, agent*>::iterator r = cur->chldr.begin(); r != cur->chldr.end();++r){
+                    out << r->first << "," << r->second->gendr << "," << mbloksIndexB[mbk->mid] << endl;
                 }
             }
             out.close();
@@ -131,7 +154,11 @@ bool cblok::pop_reload(){
     in.close();
     
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        file = config;   file = file + mbloksIndexB[j->first];   file = file + "_pop.init";
+        string mbk_str = mbloksIndexB[j->first];
+        int pos = int(mbk_str.find('/'));
+        if(pos != string::npos) mbk_str[pos] = '_';
+        
+        file = config;   file = file + mbk_str;   file = file + "_pop.init";
         in.open(file.c_str());
         
         string line;
@@ -145,14 +172,22 @@ bool cblok::pop_reload(){
             p = std::strtok(NULL, ",");             char gender = p[0];
             p = std::strtok(NULL, ",");             char mrgs = p[0];
             
-            j->second->add_agent(new agent(id, age, gender, mrgs));
+            agent *pp = new agent(id, age, gender, mrgs);
+            j->second->add_agent(pp);
+            
+            if(mrgs == 'm' && gender == 'f') fmal_marrd.insert(pair<int, agent*>(id, pp));
+                
             delete []str;
         }
         in.close();
     }
     
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        file = config;   file = file + mbloksIndexB[j->first];   file = file + "_unit.init";
+        string mbk_str = mbloksIndexB[j->first];
+        int pos = int(mbk_str.find('/'));
+        if(pos != string::npos) mbk_str[pos] = '_';
+        
+        file = config;   file = file + mbk_str;   file = file + "_unit.init";
         in.open(file.c_str());
         
         string line;
@@ -161,16 +196,20 @@ bool cblok::pop_reload(){
             char *str = new char[line.size()+1];
             std::strcpy(str, line.c_str());
             
-            char *p = std::strtok(str, ",");
-            int id = atoi(p);
+            char *p = std::strtok(str, ",");    int id = atoi(p);
+            p = std::strtok(NULL, ",");         char gender = p[0];
+            p = std::strtok(NULL, ",");         int spw_id = -1;        if(p[0] != '-') spw_id = atoi(p);
+            p = std::strtok(NULL, ",");         char spw_gender = p[0];
             
-            p = std::strtok(NULL, ",");
-            int spw_id = -1;
-            if(p[0] != '-') spw_id = atoi(p);
+            agent *p_m = NULL;
+            if(gender == 'm') p_m = j->second->mblok_males[id];
+            else p_m = j->second->mblok_fmals[id];
             
-            agent *p_m = j->second->mblok_pop[id];
             agent *p_s = NULL;
-            if(spw_id != -1) p_s = j->second->mblok_pop[spw_id];
+            if(spw_id != -1){
+                if(spw_gender == 'm') p_s = j->second->mblok_males[spw_id];
+                else p_s = j->second->mblok_fmals[spw_id];
+            }
             
             p = std::strtok(NULL, ",");
             int child_num = atoi(p);
@@ -183,9 +222,13 @@ bool cblok::pop_reload(){
                 std::strcpy(str, line.c_str());
                 
                 p = std::strtok(str, ",");      int c_id = atoi(p);
+                p = std::strtok(NULL, ",");     char gender = p[0];
                 p = std::strtok(NULL, ",");     string mbk = p;
                 
-                agent *p_c = mbloks[mbloksIndexA[mbk]]->mblok_pop[c_id];
+                agent *p_c = NULL;
+                if(gender == 'm') p_c = mbloks[mbloksIndexA[mbk]]->mblok_males[c_id];
+                else p_c = mbloks[mbloksIndexA[mbk]]->mblok_fmals[c_id];
+                
                 p_m->add_child(p_c);
                 if(p_m->gendr == 'm') p_c->dad = p_m;
                 else p_c->mom = p_m;
@@ -203,7 +246,11 @@ bool cblok::pop_reload(){
     }
     
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        file = config;   file = file + mbloksIndexB[j->first];   file = file + "_hhold.init";
+        string mbk_str = mbloksIndexB[j->first];
+        int pos = int(mbk_str.find('/'));
+        if(pos != string::npos) mbk_str[pos] = '_';
+        
+        file = config;   file = file + mbk_str;   file = file + "_hhold.init";
         in.open(file.c_str());
         
         string line;
@@ -216,8 +263,12 @@ bool cblok::pop_reload(){
             char *p = std::strtok(str, ",");        int id = atoi(p);
             p = std::strtok(NULL, ",");             int size = atoi(p);
             p = std::strtok(NULL, ",");             int holder = atoi(p);
+            p = std::strtok(NULL, ",");             char gender = p[0];
             
-            agent *h_holder = j->second->mblok_pop[holder];
+            agent *h_holder = NULL;
+            if(gender == 'm') h_holder = j->second->mblok_males[holder];
+            else h_holder = j->second->mblok_fmals[holder];
+            
             hhold *h_hold = new hhold(id, size, h_holder);
             
             j->second->add_hhold(h_hold);
@@ -225,9 +276,19 @@ bool cblok::pop_reload(){
             
             while(size-- > 0){
                 getline(in, line);
-                int id = atoi(line.c_str());
+                char *str = new char[line.size()+1];
+                std::strcpy(str, line.c_str());
                 
-                h_hold->add_mmbr(j->second->mblok_pop[id]);
+                char *p = std::strtok(str, ",");        int m_id = atoi(p);
+                p = std::strtok(NULL, ",");             char m_gender = p[0];
+                
+                agent *p_m = NULL;
+                if(m_gender == 'm') p_m = j->second->mblok_males[m_id];
+                else p_m = j->second->mblok_fmals[m_id];
+                
+                h_hold->add_mmbr(p_m);
+                
+                delete []str;
             }
             
             h_hold->hldr = h_holder;
@@ -240,10 +301,7 @@ bool cblok::pop_reload(){
 
 void cblok::reset_cpop(){
     //clear population
-    /*for(map<int, agent*>::iterator j = cblok_pop.begin(); j != cblok_pop.end(); ++j)
-        delete j->second;*/
     fmal_marrd.clear();
-    //cblok_pop.clear();
     
     //clear meshblocks, households, buildings
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j)
@@ -261,10 +319,10 @@ void cblok::reset_cpop(){
     mbloksIndexB.clear();
     
     //clear meshblock distance matrix
-    for(int i = 0; i < meshblocks; ++i){
+    /*for(int i = 0; i < meshblocks; ++i){
         delete [] euclid_dist[i];
         delete [] road_dist[i];
-    }
+    }*/
     
     //clear age groups data
     for(map<int, agrps*>::iterator j = mblok_agrps.begin(); j != mblok_agrps.end(); ++j)
@@ -282,10 +340,13 @@ void cblok::reset_cpop(){
     next_mid = 1;
     meshblocks = 0;
     
-    if(pop_reload()) read_demgrphcs(); //population not created
+    if(!pop_reload()){
+        cout << "reload pop err" << endl;
+        exit(1);
+    }
+    
+    hndl_land_data();
     read_parmtrs();
-    bld_mbloks();
-    bld_cblok_pop();
 }
 
 void cblok::read_demgrphcs(){
@@ -782,9 +843,48 @@ void cblok::hndl_land_data(){
         data = datadir;     data = data + AS_rbldgs_origin;
         hndl_rbldg(data, 30, 300, 20);
         allct_rbldgs();
+        
+        data = config;  data = data + AS_rbldgs;
+        ofstream out(data.c_str());
+        out << "bldg_id,log,lat,area,meshblock,hhold_id" << endl;
+        out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
+        
+        for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+            mblok *mbk = j->second;
+            for(map<int, rbldg*>::iterator k = mbk->mblok_rbldgs.begin(); k != mbk->mblok_rbldgs.end(); ++k){
+                rbldg *p = k->second;
+                out << p->bid << "," << p->log << "," << p->lat << "," << p->area << "," << mbk->cbk->mbloksIndexB[mbk->mid] << ",";
+                if(p->hd == NULL) out << "-1" << endl;
+                else out << p->hd->hid << endl;
+            }
+        }
+        out.close();
     }
     else{
-        //todo
+        string line;
+        getline(in, line);  //skip the header
+        
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");    int bid = atoi(p);
+            p = std::strtok(NULL, ",");         double log = atof(p);
+            p = std::strtok(NULL, ",");         double lat = atof(p);
+            p = std::strtok(NULL, ",");         double area = atof(p);
+            p = std::strtok(NULL, ",");         string mbk = p;
+            p = std::strtok(NULL, ",");         int hid = atoi(p);
+            
+            mblok *mbk_p = mbloks[mbloksIndexA[mbk]];
+            rbldg *bg = new rbldg(bid, log, lat, area, mbk_p, this);
+            
+            if(hid != -1) bg->hd = mbk_p->mblok_hholds[hid];
+            else add_vcnt_rbldg(bg);
+            
+            mbk_p->add_rbldg(bg);
+            delete []str;
+        }
+        in.close();
     }
 }
 
@@ -964,22 +1064,6 @@ void cblok::allct_rbldgs(){
         v_1.clear(); v_1.shrink_to_fit();
         v_2.clear(); v_2.shrink_to_fit();
     }
-    
-    string data = config;  data = data + AS_rbldgs;
-    ofstream out(data.c_str());
-    out << "bldg_id,log,lat,area,meshblock,hhold_id" << endl;
-    out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
-    
-    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        mblok *mbk = j->second;
-        for(map<int, rbldg*>::iterator k = mbk->mblok_rbldgs.begin(); k != mbk->mblok_rbldgs.end(); ++k){
-            rbldg *p = k->second;
-            out << p->bid << "," << p->log << "," << p->lat << "," << p->area << "," << mbk->cbk->mbloksIndexB[mbk->mid] << ",";
-            if(p->hd == NULL) out << "N/A" << endl;
-            else out << p->hd->hid << endl;
-        }
-    }
-    out.close();
 }
 
 void cblok::allct_bbldgs(){
@@ -1093,7 +1177,8 @@ mblok::mblok(int mid, cblok *cbk, double lat, double log){
 
 mblok::~mblok(){
     cbk = NULL;
-    mblok_pop.clear();
+    mblok_males.clear();
+    mblok_fmals.clear();
     
     for(map<int, hhold*>::iterator j = mblok_hholds.begin(); j != mblok_hholds.end(); ++j)
         delete j->second;
@@ -1178,7 +1263,7 @@ void mblok::bld_hhold(){
     
     stable_sort(famly.begin(), famly.end(), _smaller);
     
-    int pop = int(mblok_pop.size());
+    int pop = int(mblok_males.size() + mblok_fmals.size());
     int allocated = 0;
     while (famly.size() + m_svec.size() > 0){
         int h_size = ztpoisson(lambda);        //current hhold size
@@ -1567,19 +1652,25 @@ void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vect
                             vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
                             vector<agent*> &chld, vector<unit*> &famly){
     
-    for(map<int, agent*>::iterator j = mblok_pop.begin(); j != mblok_pop.end(); ++j){
+    for(map<int, agent*>::iterator j = mblok_males.begin(); j != mblok_males.end(); ++j){
         agent *p = j->second;
         if(p->age < 15*365){
             p->margs = 's';
             chld.push_back(p);
         }
         else{
-            if(p->gendr == 'm'){
-                p->margs = 's';
-                m_svec.push_back(p);
-                continue;
-            }
-            
+            p->margs = 's';         //all male adults are first put into single vector
+            m_svec.push_back(p);
+        }
+    }
+    
+    for(map<int, agent*>::iterator j = mblok_fmals.begin(); j != mblok_fmals.end(); ++j){
+        agent *p = j->second;
+        if(p->age < 15*365){
+            p->margs = 's';
+            chld.push_back(p);
+        }
+        else{
             rnd_margs(p);   //random margs status for female
             if(p->margs == 'm') f_mvec.push_back(p);
             else{
@@ -1799,6 +1890,13 @@ void mblok::match_couple(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<
         agent *q = cur->mother;
         p->spw = q;
         q->spw = p;
+        
+        if(q->gendr != 'f' && q->margs != 'm'){
+            cout << q->aid << " " << int(q->age/365) << " " << q->gendr << " " << q->margs << endl;
+            exit(1);
+        }
+        
+        cbk->fmal_marrd.insert(pair<int, agent*>(q->aid, q));
     }
 }
 

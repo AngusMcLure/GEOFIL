@@ -23,7 +23,9 @@ public:
     double lat, log;                    //latitude & longitude
     cblok *cbk;                          //city block
     
-    map<int, agent*> mblok_pop;         //population
+    //map<int, agent*> mblok_pop;         //population
+    map<int, agent*> mblok_males;
+    map<int, agent*> mblok_fmals;
     map<int, hhold*> mblok_hholds;
     
     //map<int, rbldg*> mblok_rbldgs_occupy;
@@ -131,16 +133,22 @@ public:
     void reset_cpop();
     void bld_mbloks();
     void bld_cblok_pop();
-    //void add_agent(agent *p);
-    //void rmv_agent(agent *p);
-    void add_vcnt_rbldg(rbldg *p);
-    void rmv_vcnt_rbldg(rbldg *p);
     void bld_cblok_hhold();
     void hndl_land_data();
     void allct_rbldgs();
     void allct_bbldgs();
     void calc_bldg_dist();
+    void calc_marital_prob();
+    void vldt_hhold(string str);
+    void add_vcnt_rbldg(rbldg *p);
+    void rmv_vcnt_rbldg(rbldg *p);
+    void hndl_rbldg(string ff, int low, int upper, int min_dist);
+    void hndl_bbldg(string ff, int low, int upper, int min_dist);
+    void calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL);
+    void calc_smoothed_agrp(double *p, int pL, double *res, int rL);
+    
     void radt_model(char d);
+    
     void hndl_birth(int t);
     void hndl_death(int t);
     void hndl_marrg(int t);
@@ -149,20 +157,16 @@ public:
     void hndl_mvout(int t);
     void hndl_mvgin(int t);
     void hndl_hldfrc(int t);
-    void calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL);
-    void calc_smoothed_agrp(double *p, int pL, double *res, int rL);
-    void calc_marital_prob();
+    
     void sim_pop(int t);
+    
     void get_pop(int t);
     void get_hhold(int t);
     void get_sexratio(int t);
     void get_sexratiob(int t);
     void get_geographic(int t);
     void get_bbldgarea();
-    void vldt_hhold(string str);
     void prt_hhold(std::ofstream &out, hhold* hh);
-    void hndl_rbldg(string ff, int low, int upper, int min_dist);
-    void hndl_bbldg(string ff, int low, int upper, int min_dist);
 };
 
 #endif /* blocks_hpp */

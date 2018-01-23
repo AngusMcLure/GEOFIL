@@ -84,3 +84,11 @@ rbldg::~rbldg(){
     mbk = NULL;
     cbk = NULL;
 }
+
+void cblok::add_vcnt_rbldg(rbldg *p){
+    cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
+}
+
+void cblok::rmv_vcnt_rbldg(rbldg *p){
+    cblok_vcnt_rbldgs.erase(p->bid);
+}

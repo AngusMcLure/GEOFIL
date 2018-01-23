@@ -8,16 +8,16 @@
 
 #include "block.h"
 
-void cblok::add_vcnt_rbldg(rbldg *p){
-    cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
-}
-
-void cblok::rmv_vcnt_rbldg(rbldg *p){
-    cblok_vcnt_rbldgs.erase(p->bid);
-}
-
 void cblok::hndl_birth(int t){
+    int year = int(t/365);
     
+    int total_birth = 0;
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
+            
+        }
+    }
 }
 
 void cblok::hndl_death(int t){

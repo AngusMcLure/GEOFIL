@@ -13,7 +13,8 @@ void mblok::add_hhold(hhold *p){
 }
 
 void mblok::add_agent(agent *p){
-    mblok_pop.insert(pair<int, agent*>(p->aid, p));
+    if(p->gendr == 'm') mblok_males.insert(pair<int, agent*>(p->aid, p));
+    else mblok_fmals.insert(pair<int, agent*>(p->aid, p));
 }
 
 void mblok::rmv_hhold(hhold *p){
@@ -26,7 +27,8 @@ void mblok::rmv_hhold(hhold *p){
 }
 
 void mblok::rmv_agent(agent *p){
-    mblok_pop.erase(p->aid);
+    if(p->gendr == 'm') mblok_males.erase(p->aid);
+    else mblok_fmals.erase(p->aid);
 }
 
 void mblok::add_rbldg(rbldg *p){
