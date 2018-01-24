@@ -12,21 +12,21 @@ void mblok::add_hhold(hhold *p){
     mblok_hholds.insert(pair<int, hhold*>(p->hid, p));
 }
 
-void mblok::add_agent(agent *p){
+void mblok::add_member(agent *p){
     if(p->gendr == 'm') mblok_males.insert(pair<int, agent*>(p->aid, p));
     else mblok_fmals.insert(pair<int, agent*>(p->aid, p));
 }
 
 void mblok::rmv_hhold(hhold *p){
     mblok_hholds.erase(p->hid);
-    p->rdg->hd = NULL;
+    p->rdg->h_d = NULL;
     cbk->cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->rdg->bid, p->rdg));
     p->rdg = NULL;
     
     delete p;
 }
 
-void mblok::rmv_agent(agent *p){
+void mblok::rmv_member(agent *p){
     if(p->gendr == 'm') mblok_males.erase(p->aid);
     else mblok_fmals.erase(p->aid);
 }
@@ -53,7 +53,7 @@ void mblok::rnd_margs(agent *p){
         d_p = cbk->fmal_divorce[index];
     }
     
-    double r = drandom();
+    double r = drand48();
     if(r <= s_p) p->margs = 's';
     else if(r <= s_p + m_p) p->margs = 'm';
     else if(r <= s_p + m_p + w_p) p->margs = 'w';
@@ -94,8 +94,8 @@ void mblok::adpt_chldrs(hhold *p){
             cur->dad = pp->spw;
         }
         
-        p->rmv_mmbr(cur);
-        pp->h_d->add_mmbr(cur);
+        p->rmv_member(cur);
+        pp->h_d->add_member(cur);
     }
     
     pp->h_d->updt_hhold();

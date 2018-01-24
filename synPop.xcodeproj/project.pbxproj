@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9D7B63481FAAC3F70044FD3F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63471FAAC3F70044FD3F /* main.cpp */; };
-		9D7B63531FAAC4610044FD3F /* rand_distribution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63521FAAC4610044FD3F /* rand_distribution.cpp */; };
+		9D7B63531FAAC4610044FD3F /* rand_func.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D7B63521FAAC4610044FD3F /* rand_func.cpp */; };
 		9DEF232E1FAACE10008F520B /* agent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF232C1FAACE10008F520B /* agent.cpp */; };
 		9DEF23321FAE8C3C008F520B /* dynamic_pop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23301FAE8C3C008F520B /* dynamic_pop.cpp */; };
 		9DEF23381FAE8D2E008F520B /* dynamic_hhold.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23361FAE8D2E008F520B /* dynamic_hhold.cpp */; };
@@ -36,7 +36,7 @@
 		9D7B63441FAAC3F70044FD3F /* synPop */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = synPop; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D7B63471FAAC3F70044FD3F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9D7B63511FAAC4490044FD3F /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
-		9D7B63521FAAC4610044FD3F /* rand_distribution.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = rand_distribution.cpp; sourceTree = "<group>"; };
+		9D7B63521FAAC4610044FD3F /* rand_func.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = rand_func.cpp; sourceTree = "<group>"; };
 		9DEF232C1FAACE10008F520B /* agent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = agent.cpp; sourceTree = "<group>"; };
 		9DEF232D1FAACE10008F520B /* agent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = agent.h; sourceTree = "<group>"; };
 		9DEF232F1FAE88E5008F520B /* paras.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = paras.h; sourceTree = "<group>"; };
@@ -87,7 +87,7 @@
 				9DEF233A1FAFE03C008F520B /* initialize_pop.cpp */,
 				9D7B63471FAAC3F70044FD3F /* main.cpp */,
 				9DEF233F1FAFE1A6008F520B /* model_mobility.cpp */,
-				9D7B63521FAAC4610044FD3F /* rand_distribution.cpp */,
+				9D7B63521FAAC4610044FD3F /* rand_func.cpp */,
 				9DEF233C1FAFE162008F520B /* statistics.cpp */,
 				9DEF232D1FAACE10008F520B /* agent.h */,
 				9DEF23391FAEA256008F520B /* agrps.h */,
@@ -157,7 +157,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9D7B63531FAAC4610044FD3F /* rand_distribution.cpp in Sources */,
+				9D7B63531FAAC4610044FD3F /* rand_func.cpp in Sources */,
 				9DEF23321FAE8C3C008F520B /* dynamic_pop.cpp in Sources */,
 				9D7B63481FAAC3F70044FD3F /* main.cpp in Sources */,
 				9DEF233E1FAFE162008F520B /* statistics.cpp in Sources */,

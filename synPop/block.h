@@ -35,9 +35,9 @@ public:
     
     void bld_mblok_pop();
     void add_hhold(hhold *p);
-    void add_agent(agent *p);
     void rmv_hhold(hhold *p);
-    void rmv_agent(agent *p);
+    void add_member(agent *p);
+    void rmv_member(agent *p);
     void rnd_margs(agent *p);
     void add_rbldg(rbldg *p);
     
@@ -139,6 +139,7 @@ public:
     void allct_bbldgs();
     void calc_bldg_dist();
     void calc_marital_prob();
+    void rmv_agent(agent *p);
     void vldt_hhold(string str);
     void add_vcnt_rbldg(rbldg *p);
     void rmv_vcnt_rbldg(rbldg *p);

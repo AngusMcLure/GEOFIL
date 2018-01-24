@@ -24,7 +24,7 @@ public:
     int bid;
     double log, lat;
     double area;
-    hhold *hd;
+    hhold *h_d;
     mblok *mbk;
     cblok *cbk;
     

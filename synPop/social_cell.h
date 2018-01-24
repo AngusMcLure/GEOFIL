@@ -39,7 +39,7 @@ struct unit{
 class hhold{
 public:
     int hid;                            //hhold id
-    int siz;
+    int size;
     
     double lat, log;
     double area;
@@ -48,14 +48,16 @@ public:
     agent *hldr;                        //hhold holder
     map<int, agent*> mmbrs;             //hhold members
     
-    hhold(int hid, int siz = 0, agent *holder = NULL);
+    hhold(int hid, int size = 0, agent *holder = NULL);
     ~hhold();
     
-    void asg_bldg(rbldg *rdg);
-    void add_mmbr(agent *p);
-    bool asg_hldr(agent *p);
-    void rmv_mmbr(agent *p);
-    void updt_hhold();
+    void asg_holder();
+    void asg_rbldg(rbldg *rdg);
+    void add_member(agent *p);
+    bool asg_holder(agent *p);
+    void rmv_member(agent *p);
+    bool is_member(agent *p);
+    
 };
 
 class workp{

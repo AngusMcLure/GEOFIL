@@ -18,6 +18,7 @@
 #include <random>
 #include <chrono>
 #include <ctime>
+#include <set>
 #include <map>
 
 #define sim_bg              2010
@@ -43,13 +44,13 @@
 
 #define max_child_number    10
 #define birth_window        365
+#define male_born           0.522         //probablity of newborn to be male
+#define mortality_improve   0.99
 
 //functions
 int gaussian(double m_mu, double s_sigma);
 int ztpoisson(double l_lambda);
 int binomial(int r, double p);
-double drandom();
-int irandom();
 
 //files ----------------------------------------------------------------------------------
 //paths

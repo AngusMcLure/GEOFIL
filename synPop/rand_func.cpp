@@ -17,7 +17,7 @@ int gaussian(double m_mu, double s_sigma){
 }
 
 int ztpoisson(double l_lambda){
-    double r = drandom();
+    double r = drand48();
     
     int k = 1;
     double t = l_lambda/(exp(l_lambda)-1), s = t;
@@ -35,13 +35,4 @@ int binomial(int r, double p){
     std::binomial_distribution<int> distribution(r, p);
     
     return distribution(generator);
-}
-
-double drandom(){
-	//return drand48();
-	return rand() / (double)RAND_MAX;
-}
-
-int irandom(){
-    return rand();
 }
