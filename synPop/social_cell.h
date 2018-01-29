@@ -51,7 +51,8 @@ public:
     hhold(int hid, int size = 0, agent *holder = NULL);
     ~hhold();
     
-    void asg_holder();
+    void adopted();
+    void update_hhold();
     void asg_rbldg(rbldg *rdg);
     void add_member(agent *p);
     bool asg_holder(agent *p);
@@ -64,7 +65,7 @@ class workp{
 public:
     int wid;
     int siz;
-    map<int, agent*> emplys;             //employees members
+    map<int, agent*> employee;             //employees members
     double lat, log;
     double area;
     
@@ -89,8 +90,8 @@ public:
     
     map<int, sbldg*> sdg;
     
-    map<int, agent*> tchrs;
-    map<int, agent*> stdts;
+    map<int, agent*> teacher;
+    map<int, agent*> student;
     
     void add_bldg(sbldg *sdg);
     void add_tchr(agent *p);

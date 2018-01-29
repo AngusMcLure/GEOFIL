@@ -109,8 +109,9 @@ public:
     double fmal_divorce[marital_agrps];
     double male_single[marital_agrps];
     double fmal_single[marital_agrps];
-    double male_marital_prob[marital_ages];    //male marriage probability by age
-    double fmal_marital_prob[marital_ages];    //female marriage probability by age
+    
+    double male_mrg_prob[marital_ages];    //male marriage probability by age
+    double fmal_mrg_prob[marital_ages];    //female marriage probability by age
     
     double child_number_by_agrps[10];       //children ever born by age groups
     double child_number_by_age[50];         //smoothed children ever born
@@ -143,6 +144,7 @@ public:
     void vldt_hhold(string str);
     void add_vcnt_rbldg(rbldg *p);
     void rmv_vcnt_rbldg(rbldg *p);
+    void re_location(agent *p, hhold* h_hold);
     void hndl_rbldg(string ff, int low, int upper, int min_dist);
     void hndl_bbldg(string ff, int low, int upper, int min_dist);
     void calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL);

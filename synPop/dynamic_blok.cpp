@@ -18,9 +18,15 @@ void mblok::add_member(agent *p){
 }
 
 void mblok::rmv_hhold(hhold *p){
+    if(p->mmbrs.size() > 0 || p->hldr != NULL){
+        cout << "err: hhold not empty to be removed" << endl;
+        exit(1);
+    }
+    
+    cbk->cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->rdg->bid, p->rdg));
+    
     mblok_hholds.erase(p->hid);
     p->rdg->h_d = NULL;
-    cbk->cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->rdg->bid, p->rdg));
     p->rdg = NULL;
     
     delete p;
@@ -98,5 +104,5 @@ void mblok::adpt_chldrs(hhold *p){
         pp->h_d->add_member(cur);
     }
     
-    pp->h_d->updt_hhold();
+    pp->h_d->update_hhold();
 }

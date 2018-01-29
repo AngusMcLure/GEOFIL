@@ -75,7 +75,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
             out << "hhold_ID,size,holder_ID,gender" << endl;
             for(map<int, hhold*>::iterator k = mbk->mblok_hholds.begin(); k != mbk->mblok_hholds.end(); ++k){
                 hhold *cur = k->second;
-                out << cur->hid << "," << cur->siz << "," << cur->hldr->aid << "," << cur->hldr->gendr << endl;
+                out << cur->hid << "," << cur->size << "," << cur->hldr->aid << "," << cur->hldr->gendr << endl;
                 for(map<int, agent*>::iterator r = cur->mmbrs.begin(); r != cur->mmbrs.end(); ++r){
                     out << r->first << "," << r->second->gendr << endl;
                 }
@@ -758,6 +758,27 @@ void cblok::read_parmtrs(){
     }
     in.close();
     
+    file = datadir;    file = file + marital_male;
+    in.open(file.c_str());
+    
+    //skip the description
+    getline(in, line);          //header
+    
+    ii = 0;
+    while(getline(in, line)){
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        char *p = std::strtok(str, ",");
+        p = std::strtok(NULL, ",");     male_single[ii] = atof(p);
+        p = std::strtok(NULL, ",");     male_married[ii] = atof(p);
+        p = std::strtok(NULL, ",");     male_widowed[ii] = atof(p);
+        p = std::strtok(NULL, ",");     male_divorce[ii] = atof(p);
+        ++ii;
+        delete []str;
+    }
+    in.close();
+    
     //calculate marital probability by age
     calc_marital_prob();
 }
@@ -1029,7 +1050,7 @@ void cblok::allct_rbldgs(){
     
     struct _comp_hhold{
         bool operator() (const hhold *lhs, const hhold *rhs){
-            return lhs->siz > rhs->siz;
+            return lhs->size > rhs->size;
         }
     } _bigger_size;
     
@@ -1150,20 +1171,22 @@ void cblok::calc_smoothed_agrp(double *p, int pL, double *res, int rL){
 }
 
 void cblok::calc_marital_prob(){
+    //calculate prob with power-law fitted line
     for(int i = 0; i < marital_ages; ++i){
-        male_marital_prob[i] = 1 - marital_b_m;
-        fmal_marital_prob[i] = 1 - marital_b_f;
+        male_mrg_prob[i] = 1 - marital_b_m;
+        fmal_mrg_prob[i] = 1 - marital_b_f;
     }
     
+    //re-calculate with real marital data, martial at center of interval
     for(int i = 0; i < marital_ages; ++i){
-        if(i < 2){
-            male_marital_prob[i] = 1 - sqrt(male_single[0]);
-            fmal_marital_prob[i] = 1 - sqrt(fmal_single[0]);
+        if(i < 3){
+            male_mrg_prob[i] = 1 - pow(male_single[0], double(1/3));
+            fmal_mrg_prob[i] = 1 - pow(fmal_single[0], double(1/3));
         }
-        else if(i < 42){
-            int j = int((i-2)/5), k = j + 1;
-            if(male_single[k] < male_single[j]) male_marital_prob[i] = 1 - pow(male_single[k]/male_single[j], 0.2);
-            if(fmal_single[k] < fmal_single[j]) fmal_marital_prob[i] = 1 - pow(fmal_single[k]/fmal_single[j], 0.2);
+        else if(i < 43){
+            int j = int((i-3)/5), k = j + 1;
+            if(male_single[k] < male_single[j]) male_mrg_prob[i] = 1 - pow(male_single[k]/male_single[j], 0.2);
+            if(fmal_single[k] < fmal_single[j]) fmal_mrg_prob[i] = 1 - pow(fmal_single[k]/fmal_single[j], 0.2);
         }
     }
 }
@@ -1339,8 +1362,8 @@ void mblok::bld_hhold(){
                 m_svec.pop_back();
             }
             
-            h_hold->siz = int(h_hold->mmbrs.size());
-            allocated += h_hold->siz;
+            h_hold->size = int(h_hold->mmbrs.size());
+            allocated += h_hold->size;
             add_hhold(h_hold);
         }
         else{
@@ -1533,8 +1556,8 @@ void mblok::bld_hhold(){
                 }
                 a_vec.clear();  a_vec.shrink_to_fit();
                 
-                h_hold->siz = int(h_hold->mmbrs.size());
-                allocated += h_hold->siz;
+                h_hold->size = int(h_hold->mmbrs.size());
+                allocated += h_hold->size;
                 add_hhold(h_hold);
             }
         }

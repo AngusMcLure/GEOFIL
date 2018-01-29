@@ -15,7 +15,7 @@
 		9DEF233B1FAFE03C008F520B /* initialize_pop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233A1FAFE03C008F520B /* initialize_pop.cpp */; };
 		9DEF233E1FAFE162008F520B /* statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233C1FAFE162008F520B /* statistics.cpp */; };
 		9DEF23401FAFE1A6008F520B /* model_mobility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233F1FAFE1A6008F520B /* model_mobility.cpp */; };
-		9DEF23431FB13045008F520B /* dynamic_mblok.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23421FB13045008F520B /* dynamic_mblok.cpp */; };
+		9DEF23431FB13045008F520B /* dynamic_blok.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23421FB13045008F520B /* dynamic_blok.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -47,7 +47,7 @@
 		9DEF233A1FAFE03C008F520B /* initialize_pop.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = initialize_pop.cpp; sourceTree = "<group>"; };
 		9DEF233C1FAFE162008F520B /* statistics.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = statistics.cpp; sourceTree = "<group>"; };
 		9DEF233F1FAFE1A6008F520B /* model_mobility.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = model_mobility.cpp; sourceTree = "<group>"; };
-		9DEF23421FB13045008F520B /* dynamic_mblok.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_mblok.cpp; sourceTree = "<group>"; };
+		9DEF23421FB13045008F520B /* dynamic_blok.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_blok.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,7 +82,7 @@
 			children = (
 				9DEF232C1FAACE10008F520B /* agent.cpp */,
 				9DEF23361FAE8D2E008F520B /* dynamic_hhold.cpp */,
-				9DEF23421FB13045008F520B /* dynamic_mblok.cpp */,
+				9DEF23421FB13045008F520B /* dynamic_blok.cpp */,
 				9DEF23301FAE8C3C008F520B /* dynamic_pop.cpp */,
 				9DEF233A1FAFE03C008F520B /* initialize_pop.cpp */,
 				9D7B63471FAAC3F70044FD3F /* main.cpp */,
@@ -163,7 +163,7 @@
 				9DEF233E1FAFE162008F520B /* statistics.cpp in Sources */,
 				9DEF233B1FAFE03C008F520B /* initialize_pop.cpp in Sources */,
 				9DEF23381FAE8D2E008F520B /* dynamic_hhold.cpp in Sources */,
-				9DEF23431FB13045008F520B /* dynamic_mblok.cpp in Sources */,
+				9DEF23431FB13045008F520B /* dynamic_blok.cpp in Sources */,
 				9DEF23401FAFE1A6008F520B /* model_mobility.cpp in Sources */,
 				9DEF232E1FAACE10008F520B /* agent.cpp in Sources */,
 			);

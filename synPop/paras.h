@@ -45,6 +45,8 @@
 #define max_child_number    10
 #define birth_window        365
 #define male_born           0.522         //probablity of newborn to be male
+#define marg_relocation     0.5
+#define adult_relocation    0.2
 #define mortality_improve   0.99
 
 //functions

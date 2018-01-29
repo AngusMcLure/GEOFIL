@@ -18,14 +18,16 @@ int main(int argc, const char * argv[]) {
 	srand48(seed);
 
     // insert code here...
-    cblok *asamoa = new cblok(as_cid, "American Samoa", as_lat, as_long);
-    cout << "total pop: " << asamoa->cpop << endl;
-    cout << "married female: " << asamoa->fmal_marrd.size() << endl;
-    cout << "total villages: " << asamoa->mbloks.size() << endl;    
-    cout << "available aid: " << asamoa->next_aid << endl;
-    cout << "available hid: " << asamoa->next_hid << endl;
-    cout << "available mid: " << asamoa->next_mid << endl;
-    cout << "vacant blding: " << asamoa->cblok_vcnt_rbldgs.size() << endl;
+    cblok *cbk = new cblok(as_cid, "American Samoa", as_lat, as_long);
+    cout << "total pop: " << cbk->cpop << endl;
+    cout << "married female: " << cbk->fmal_marrd.size() << endl;
+    cout << "total villages: " << cbk->mbloks.size() << endl;
+    cout << "available aid: " << cbk->next_aid << endl;
+    cout << "available hid: " << cbk->next_hid << endl;
+    cout << "available mid: " << cbk->next_mid << endl;
+    cout << "vacant blding: " << cbk->cblok_vcnt_rbldgs.size() << endl;
+    
+    cbk->calc_marital_prob();
     
     return 0;
 }
