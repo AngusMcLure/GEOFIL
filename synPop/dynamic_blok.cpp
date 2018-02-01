@@ -23,7 +23,9 @@ void mblok::rmv_hhold(hhold *p){
         exit(1);
     }
     
-    cbk->cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->rdg->bid, p->rdg));
+    cbk->add_vcnt_rbldg(p->rdg);
+    mblok_ocpy_rbldgs.erase(p->rdg->bid);
+    mblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->rdg->bid, p->rdg));
     
     mblok_hholds.erase(p->hid);
     p->rdg->h_d = NULL;
@@ -37,8 +39,12 @@ void mblok::rmv_member(agent *p){
     else mblok_fmals.erase(p->aid);
 }
 
-void mblok::add_rbldg(rbldg *p){
-    mblok_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
+void mblok::add_rbldg(rbldg *p, hhold* h_hold){
+    if(h_hold == NULL){
+        mblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
+        cbk->add_vcnt_rbldg(p);
+    }
+    else mblok_ocpy_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
 }
 
 void mblok::rnd_margs(agent *p){
@@ -68,12 +74,7 @@ void mblok::rnd_margs(agent *p){
 
 void mblok::adpt_chldrs(hhold *p){
     agent *pp = NULL;
-    for(map<int, agent*>::iterator j = cbk->fmal_marrd.begin(); j != cbk->fmal_marrd.end(); ++j){
-        if(j->second->chldr.size() == 0){
-            pp = j->second;
-            break;
-        }
-    }
+    if(cbk->fmal_cbrs[0].size() > 0) pp = cbk->fmal_cbrs[0].begin()->second;
     
     if(pp == NULL){
         cout << "err no suitable family for adopted kids in mblok::adpt_chldrs" << endl;
@@ -106,3 +107,60 @@ void mblok::adpt_chldrs(hhold *p){
     
     pp->h_d->update_hhold();
 }
+
+void cblok::add_vcnt_rbldg(rbldg *p){
+    cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
+}
+
+void cblok::rmv_vcnt_rbldg(rbldg *p){
+    cblok_vcnt_rbldgs.erase(p->bid);
+}
+
+void cblok::sim_pop(int year){
+    for(int day = 0; day < 365; ++day){
+        //validate_pop(year, day);
+        renew_pop(year, day);
+        hndl_birth(year, day);
+    }
+    
+    hndl_marrg(year);
+    hndl_divrc(year);
+    hndl_migrt(year);
+}
+
+void cblok::validate_pop(int year, int day){
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
+            agent *cur = k->second;
+            if(cur->margs == 'm'){
+                if(int(cur->age/365) < 50 && fmal_cbrs[cur->births].find(cur->aid) == fmal_cbrs[cur->births].end()){
+                    cout << "year = " << year << " day = " << day << endl;
+                    cout << "err: " << cur->aid << " " << int(cur->age/365) << " " << cur->margs << " not in fmal_marrd" << endl;
+                    exit(1);
+                }
+                else if(int(cur->age/365) >= 50 && fmal_marry.find(cur->aid) == fmal_marry.end()){
+                    cout << "year = " << year << " day = " << day << endl;
+                    cout << "err: " << cur->aid << " " << int(cur->age/365) << " " << cur->margs << " not in fmal_marrd" << endl;
+                    exit(1);
+                }
+            }
+            
+            if(cur->margs == 'm' && cur->spw == NULL){
+                cout << "year = " << year << " day = " << day << endl;
+                cout << "err: " << cur->aid << " " << int(cur->age/365) << " " << cur->margs << " " << mbloksIndexB[mbk->mid] << " spw = NULL" << endl;
+                exit(1);
+            }
+        }
+        
+        for(map<int, hhold*>::iterator k = mbk->mblok_hholds.begin(); k != mbk->mblok_hholds.end(); ++k){
+            hhold *cur = k->second;
+            if(cur->rdg == NULL){
+                cout << "year = " << year << " day = " << day << endl;
+                cout << "err: " << cur->hid << " " << cur->size << " " << mbloksIndexB[mbk->mid] << " rbldg = NULL" << endl;
+                exit(1);
+            }
+        }
+    }
+}
+

@@ -42,12 +42,13 @@
 #define sigma               2.86
 #define lambda              6.47          //household Poisson
 
-#define max_child_number    10
+#define max_births          10
 #define birth_window        365
 #define male_born           0.522         //probablity of newborn to be male
-#define marg_relocation     0.5
-#define adult_relocation    0.2
+#define marg_relocation     0.4
+#define adult_relocation    0.0
 #define mortality_improve   0.99
+#define annual_divorce      0.0001
 
 //functions
 int gaussian(double m_mu, double s_sigma);
@@ -102,8 +103,8 @@ int binomial(int r, double p);
 #define syn_units               "syn_units.dat"
 #define syn_hhold_members       "syn_hhold_members.dat"
 #define syn_relationship        "syn_relationship.dat"
-#define syn_pop_stat            "syn_pop_stat.dat"
-#define syn_hhold_stat          "syn_hhold_stat.dat"
+#define syn_pop_stat            "syn_pop_stat.csv"
+#define syn_hhold_stat          "syn_hhold_stat.csv"
 #define syn_sex_ratios          "syn_sex_ratios.dat"
 #define syn_sex_ratios_broad    "syn_sex_ratios_broad.dat"
 #define syn_geo_stat            "syn_geo_stat.dat"

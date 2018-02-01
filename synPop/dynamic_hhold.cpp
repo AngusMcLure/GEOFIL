@@ -13,6 +13,15 @@ hhold::hhold(int hid, int size, agent *holder){
     this->hid = hid;
     this->size = size;
     hldr = holder;
+    
+    lat = 0;
+    log = 0;
+    area = 0;
+    rdg = NULL;
+    
+    mmbrs.clear();
+    
+    if(holder != NULL) add_member(holder);
 }
 
 hhold::~hhold(){
@@ -29,6 +38,8 @@ void hhold::asg_rbldg(rbldg *rdg){
     area = rdg->area;
     
     rdg->h_d = this;
+    rdg->mbk->mblok_vcnt_rbldgs.erase(rdg->bid);
+    rdg->mbk->mblok_ocpy_rbldgs.insert(pair<int, rbldg*>(rdg->bid, rdg));
     rdg->cbk->rmv_vcnt_rbldg(rdg);
 }
 
@@ -38,7 +49,7 @@ bool hhold::asg_holder(agent *p){
         //choose the most aged & married one to be new householder
         map<int, agent*>::iterator it = mmbrs.begin();
         for(map<int, agent*>::iterator k = mmbrs.begin(); k != mmbrs.end(); ++k){
-            if(it->second->age < k->second->age || (it->second->margs != 'M' && k->second->margs == 'M'))
+            if(it->second->age < k->second->age || (it->second->margs != 'm' && k->second->margs == 'm'))
                 it = k;
         }
         
@@ -48,7 +59,7 @@ bool hhold::asg_holder(agent *p){
         hldr = it->second;
     }
     
-    if(hldr->spw != NULL && hldr->gendr == 'F')
+    if(hldr->spw != NULL && hldr->gendr == 'f')
         hldr = hldr->spw;
     
     return true;
@@ -61,7 +72,7 @@ void hhold::add_member(agent *p){
 
 void hhold::rmv_member(agent *p){
     p->h_d = NULL;
-    if(hldr->aid == p->aid){
+    if(hldr != NULL && hldr->aid == p->aid){
         if(p->spw != NULL && is_member(p->spw)) hldr = p->spw;
         else hldr = NULL;
     }
@@ -69,18 +80,13 @@ void hhold::rmv_member(agent *p){
 }
 
 bool hhold::is_member(agent *p){
-    if(mmbrs.find(p->aid) != mmbrs.end()) return true;
+    if(p->h_d != NULL && p->h_d->hid == hid) return true;
     return false;
 }
 
 void hhold::adopted(){
     agent *q = NULL;
-    for(map<int, agent*>::iterator k = rdg->cbk->fmal_marrd.begin(); k != rdg->cbk->fmal_marrd.end(); ++k){
-        if(k->second->chldr.size() == 0){
-            q = k->second;
-            break;
-        }
-    }
+    if(rdg->cbk->fmal_cbrs[0].size() > 0) q = rdg->cbk->fmal_cbrs[0].begin()->second;
     
     mblok *cur = rdg->mbk;
     mblok *mbk = q->h_d->rdg->mbk;
@@ -119,6 +125,7 @@ void hhold::update_hhold(){
                 hldr = hldr->spw;
         }
     }
+    
     size = int(mmbrs.size());
 }
 
@@ -138,14 +145,6 @@ rbldg::~rbldg(){
     cbk = NULL;
 }
 
-void cblok::add_vcnt_rbldg(rbldg *p){
-    cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
-}
-
-void cblok::rmv_vcnt_rbldg(rbldg *p){
-    cblok_vcnt_rbldgs.erase(p->bid);
-}
-
 void cblok::re_location(agent *p, hhold *h_hold){
     hhold *p_h = p->h_d;
     mblok *p_bk = p_h->rdg->mbk;
@@ -157,6 +156,20 @@ void cblok::re_location(agent *p, hhold *h_hold){
     p_bk->rmv_member(p);
     mbk->add_member(p);
     
-    p_h->update_hhold();
-    h_hold->update_hhold();
+    for(map<int, agent*>::iterator j = p->chdr.begin(); j != p->chdr.end(); ++j){
+        agent *cur = j->second;
+        if(p_h->is_member(cur)){
+            int age = int(cur->age/365);
+            
+            bool c_1 = age < 15 && p_h->is_member(cur); //children
+            bool c_2 = cur->chdr.size() == 0 && cur->margs != 'm'; //not married with no children
+            if(c_1 || c_2){
+                p_h->rmv_member(cur);
+                h_hold->add_member(cur);
+                
+                p_bk->rmv_member(cur);
+                mbk->add_member(cur);
+            }
+        }
+    }
 }

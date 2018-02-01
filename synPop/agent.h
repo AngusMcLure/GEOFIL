@@ -26,15 +26,16 @@ public:
     
     char works;     //w - working, s - schooling, h - housing
     char margs;     //m - married, s - single, d - divorce, w - widowed
-    int bth_wind;      //birth window closed for female just having a baby
+    int bth_wind;   //birth window closed for female just having a baby
     
-    char epids;     //S - susceptible, E - exposed, I - infectious, R - removed, D - dead
+    char epids;     //s - susceptible, e - exposed, i - infectious, r - removed, d - dead
     
     agent *spw;
     agent *dad;
     agent *mom;
     
-    map<int, agent*> chldr;
+    int births;
+    map<int, agent*> chdr;
     
     hhold *h_d;      //household
     workp *w_p;      //workplace

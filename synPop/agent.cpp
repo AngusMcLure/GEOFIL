@@ -21,6 +21,7 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, s
     mom = NULL;
     dad = NULL;
     
+    births = 0;
     works = '-';
     bth_wind = 0;
     epids = 's';
@@ -34,9 +35,9 @@ agent::~agent(){
     w_p = NULL;
     s_h = NULL;
     
-    chldr.clear();
+    chdr.clear();
 }
 
 void agent::add_child(agent *p){
-    chldr.insert(pair<int, agent*>(p->aid, p));
+    chdr.insert(pair<int, agent*>(p->aid, p));
 }

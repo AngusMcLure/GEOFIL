@@ -23,14 +23,13 @@ public:
     double lat, log;                    //latitude & longitude
     cblok *cbk;                          //city block
     
-    //map<int, agent*> mblok_pop;         //population
     map<int, agent*> mblok_males;
     map<int, agent*> mblok_fmals;
     map<int, hhold*> mblok_hholds;
     
-    //map<int, rbldg*> mblok_rbldgs_occupy;
-    //map<int, rbldg*> mblok_rbldgs_vacant;
-    map<int, rbldg*> mblok_rbldgs;
+    map<int, rbldg*> mblok_ocpy_rbldgs;
+    map<int, rbldg*> mblok_vcnt_rbldgs;
+    //map<int, rbldg*> mblok_rbldgs;
     map<int, wbldg*> mblok_wbldgs;
     
     void bld_mblok_pop();
@@ -39,7 +38,7 @@ public:
     void add_member(agent *p);
     void rmv_member(agent *p);
     void rnd_margs(agent *p);
-    void add_rbldg(rbldg *p);
+    void add_rbldg(rbldg *p, hhold* h_hold = NULL);
     
     //for building population
     void bld_pop(int mm, int ff, agrps *pp);
@@ -68,10 +67,12 @@ public:
     double lat, log;
     
     int cpop;
+    int chold;
     int next_aid;
-    //map<int, agent*> cblok_pop;
-    map<int, agent*> fmal_marrd;       //married females
-    
+
+    map<int, agent*> fmal_marry;       //married females
+    map<int, agent*> fmal_cbrs[11];    //female child-bearing (age, 15-49) child_num (0 - 10)
+ 
     bool init;                         //for creating pop
     vector<agent*> mvec[vg_agrps];
     vector<agent*> fvec[vg_agrps];
@@ -119,18 +120,22 @@ public:
     int live_birth_order_by_age[10][35];
     int live_birth_order_interval[10][2];
     
+    double live_birth_order_pro[10];        //birth order probability
+    double live_birth_age_pro[10][7];       //birth age prob
+    
     double mmortlty[18];                //male mortatlity
     double fmortlty[18];                //female mortatlity
     
     double sex_ratio[age_grps];               //sex ratios by age groups
-    double fertlty[sim_nd-sim_bg+1][6]; //fertility by age groups
+    double fertlty[sim_nd-sim_bg+1][7]; //fertility by age groups
     
-    int pop_loss[sim_nd-sim_bg+1];      //net annual population loss due to migration
+    double pop_loss[sim_nd-sim_bg+1];      //net annual population loss due to migration
     
     cblok(int cid, string cname, double lat, double log);
     bool pop_reload();
     void read_demgrphcs();
     void read_parmtrs();
+    void rnd_mother();
     void reset_cpop();
     void bld_mbloks();
     void bld_cblok_pop();
@@ -141,7 +146,6 @@ public:
     void calc_bldg_dist();
     void calc_marital_prob();
     void rmv_agent(agent *p);
-    void vldt_hhold(string str);
     void add_vcnt_rbldg(rbldg *p);
     void rmv_vcnt_rbldg(rbldg *p);
     void re_location(agent *p, hhold* h_hold);
@@ -152,23 +156,21 @@ public:
     
     void radt_model(char d);
     
-    void hndl_birth(int t);
-    void hndl_death(int t);
-    void hndl_marrg(int t);
-    void hndl_divrc(int t);
-    void hndl_ploss(int t);
-    void hndl_mvout(int t);
-    void hndl_mvgin(int t);
-    void hndl_hldfrc(int t);
+    void sim_pop(int year);
+    void hndl_marrg(int year);
+    void hndl_divrc(int year);
+    void hndl_migrt(int year);
+    void renew_pop(int year, int day);
+    void hndl_birth(int year, int day);
+    void validate_pop(int year, int day);
     
-    void sim_pop(int t);
-    
-    void get_pop(int t);
-    void get_hhold(int t);
-    void get_sexratio(int t);
-    void get_sexratiob(int t);
-    void get_geographic(int t);
-    void get_bbldgarea();
+    void get_pop(int year);
+    void get_hhold(int year);
+    void get_hhold_size(int year);
+    void get_sexratio(int year);
+    void get_sexratiob(int year);
+    void get_geographic(int year);
+    void get_bbldgarea(int year);
     void prt_hhold(std::ofstream &out, hhold* hh);
 };
 
