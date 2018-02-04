@@ -121,6 +121,26 @@ cblok::cblok(int cid, string cname, double lat, double log){
 }
 
 bool cblok::pop_reload(){
+    //calculate hhold_threshold
+    hhold_threshold = 1;
+    while(true){
+        bool rupture = false;
+        for(int j = 1; j <= hhold_threshold/2; ++j){
+            double p_1 = ztpoisson(hhold_threshold, lambda);
+            double p_2 = ztpoisson(j, lambda);
+            double p_3 = ztpoisson(hhold_threshold-j, lambda);
+            
+            if(p_1 <= p_2*p_3){
+                rupture = true;
+                break;
+            }
+        }
+        
+        if(rupture == true) break;
+        else ++hhold_threshold;
+    }
+    cout << "hhold threshold rupture: " << hhold_threshold << endl;
+    
     string file = config;   file = file + cname;    file = file + ".init";
     ifstream in(file.c_str());
     

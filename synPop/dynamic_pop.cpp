@@ -123,6 +123,8 @@ void cblok::hndl_birth(int year, int day){
             t_1 += v_p[i];
         }
         
+        if(t_1 == 0) continue;
+        
         for(int i = 0; i < 7; ++i) v_p[i] /= t_1;
         
         double d_rnd = drand48();
@@ -135,6 +137,7 @@ void cblok::hndl_birth(int year, int day){
         
         if(v[ii].size() == 0 || ii >= 7){
             for(int i = 0; i < 7; ++i){
+                cout << "here" << endl;
                 cout << v_p[i] << " " << d1 << endl;
                 d1 -= d_rnd;
             }

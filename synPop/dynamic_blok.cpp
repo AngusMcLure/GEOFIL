@@ -126,6 +126,7 @@ void cblok::sim_pop(int year){
     hndl_marrg(year);
     hndl_divrc(year);
     hndl_migrt(year);
+    hndl_hold_rupt(year);
 }
 
 void cblok::validate_pop(int year, int day){

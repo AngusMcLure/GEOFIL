@@ -45,15 +45,18 @@
 #define max_births          10
 #define birth_window        365
 #define male_born           0.522         //probablity of newborn to be male
-#define marg_relocation     0.4
+#define marg_relocation     0.0
 #define adult_relocation    0.0
 #define mortality_improve   0.99
 #define annual_divorce      0.0001
+#define hhold_rup_p_1       0.95
+#define hhold_rup_p_2       0.05
 
 //functions
 int gaussian(double m_mu, double s_sigma);
 int ztpoisson(double l_lambda);
 int binomial(int r, double p);
+double ztpoisson(int k, double l_lambda);
 
 //files ----------------------------------------------------------------------------------
 //paths

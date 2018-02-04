@@ -29,6 +29,14 @@ int ztpoisson(double l_lambda){
     return k;
 }
 
+double ztpoisson(int k, double l_lambda){
+    double p = 1/(exp(l_lambda)-1);
+    for(int j = 1; j <= k; ++j){
+        p *= l_lambda/j;
+    }
+    return p;
+}
+
 int binomial(int r, double p){
 	unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);

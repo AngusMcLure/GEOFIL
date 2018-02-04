@@ -9,6 +9,8 @@
 #include "agent.h"
 #include "block.h"
 
+extern int rup;
+
 hhold::hhold(int hid, int size, agent *holder){
     this->hid = hid;
     this->size = size;
@@ -172,4 +174,146 @@ void cblok::re_location(agent *p, hhold *h_hold){
             }
         }
     }
+}
+
+void cblok::hndl_hold_rupt(int year){
+    vector<hhold*> h_vec;
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        for(map<int, hhold*>::iterator k = mbk->mblok_hholds.begin(); k != mbk->mblok_hholds.end(); ++k){
+            hhold *cur = k->second;
+            if(cur->size < hhold_threshold && cur->size >= lambda && drand48() < hhold_rup_p_2)
+                h_vec.push_back(cur);
+            
+            if(cur->size >= hhold_threshold && drand48() < hhold_rup_p_1)
+                h_vec.push_back(cur);
+        }
+    }
+    
+    for(int j = 0; j < h_vec.size(); ++j){
+        hhold *cur = h_vec[j];
+        mblok *mbk = cur->rdg->mbk;
+        
+        map<int, agent*> member = cur->mmbrs;
+        vector<unit*> vec; //find units
+        while(member.size() > 0){
+            agent *p = NULL, *q = NULL;
+            
+            p = member.begin()->second;
+            q = p->spw;
+            
+            if(p->gendr == 'f'){
+                q = p;
+                p = q->spw;
+            }
+            
+            unit *u = new unit(p, q);
+            
+            if(p != NULL) member.erase(p->aid);
+            if(q != NULL) member.erase(q->aid);
+            
+            if(p != NULL){
+                for(map<int, agent*>::iterator l = p->chdr.begin(); l != p->chdr.end() && member.size() > 0; ++l){
+                    agent *p_c = l->second;
+                    
+                    bool c_1 = p_c->age < 15; //children
+                    bool c_2 = p_c->chdr.size() == 0 && p_c->margs != 'm'; //not married with no children
+                    
+                    if(c_1 || c_2){
+                        map<int, agent*>::iterator it = member.find(p_c->aid);
+                        
+                        if(it != member.end()){
+                            u->child.push_back(it->second);
+                            member.erase(it);
+                        }
+                    }
+                }
+            }
+            
+            if(q != NULL){
+                for(map<int, agent*>::iterator l = q->chdr.begin(); l != q->chdr.end() && member.size() > 0; ++l){
+                    agent *p_c = l->second;
+                    bool c_1 = p_c->age < 15; //children
+                    bool c_2 = p_c->chdr.size() == 0 && p_c->margs != 'm'; //not married with no children
+                    
+                    if(c_1 || c_2){
+                        map<int, agent*>::iterator it = member.find(p_c->aid);
+                        
+                        if(it != member.end()){
+                            u->child.push_back(it->second);
+                            member.erase(it);
+                        }
+                    }
+                }
+            }
+            
+            vec.push_back(u);
+        }
+        
+        if(vec.size() <= 1) continue;
+        
+        int index = 0, s_z = 0;
+        for(int i = 0; i < vec.size(); ++i){
+            unit *u = vec[i];
+            int s = 0;
+            if(u->father != NULL) ++s;
+            if(u->mother != NULL) ++s;
+            s += u->child.size();
+            
+            if(s_z < s){
+                index = i;
+                s_z = s;
+            }
+        }
+        
+        if(cur->size >= hhold_threshold){
+            double p_1 = ztpoisson(cur->size, lambda);
+            double p_2 = ztpoisson(s_z, lambda) * ztpoisson(cur->size - s_z, lambda);
+            
+            if(p_1 > p_2) continue;
+        }
+        
+        if(cur->size < hhold_threshold){
+            if(s_z < (double)cur->size*0.4) continue;     //max unit size < 1/3 orignal size
+        }
+        
+        unit *u_cur = vec[index];
+        agent *p = u_cur->father;
+        agent *q = u_cur->mother;
+        
+        hhold *new_hold = new hhold(next_hid++);
+        int rnd = rand() % cblok_vcnt_rbldgs.size();
+        map<int, rbldg*>::iterator it = cblok_vcnt_rbldgs.begin();
+        while(rnd-- > 0) ++it;
+        rbldg *rbg = it->second;
+        
+        new_hold->asg_rbldg(rbg);
+        rbg->mbk->add_hhold(new_hold);
+        
+        if(p != NULL){
+            re_location(p, new_hold);
+            new_hold->asg_holder(p);
+        }
+        
+        if(q != NULL){
+            re_location(q, new_hold);
+            if(new_hold->hldr == NULL) new_hold->asg_holder(q);
+        }
+        
+        for(int i = 0; i < u_cur->child.size(); ++i){
+            agent *bb = u_cur->child[i];
+            re_location(bb, new_hold);
+        }
+        
+        new_hold->update_hhold();
+        
+        cur->update_hhold();
+        if(cur->size == 0) mbk->rmv_hhold(cur);
+        
+        ++rup;
+        
+        for(int i = 0; i < vec.size(); ++i) delete vec[i];
+        vec.clear();    vec.shrink_to_fit();
+    }
+    h_vec.clear();  h_vec.shrink_to_fit();
 }

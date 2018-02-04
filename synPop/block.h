@@ -69,6 +69,8 @@ public:
     int cpop;
     int chold;
     int next_aid;
+    
+    int hhold_threshold;               //calculate with ztpoission
 
     map<int, agent*> fmal_marry;       //married females
     map<int, agent*> fmal_cbrs[11];    //female child-bearing (age, 15-49) child_num (0 - 10)
@@ -94,7 +96,6 @@ public:
     //parameters from file inputs
     map<int, int> mblok_mpops;          //male pop in each mblok
     map<int, int> mblok_fpops;          //female pop in each mblok
-    //map<int, int> mblok_hholds;         //hholds in each mblok
     map<int, agrps*> mblok_agrps;       //mblok pop by age group;
     
     int male_by_agrp[age_grps];         //males by age groups
@@ -160,6 +161,7 @@ public:
     void hndl_marrg(int year);
     void hndl_divrc(int year);
     void hndl_migrt(int year);
+    void hndl_hold_rupt(int year);
     void renew_pop(int year, int day);
     void hndl_birth(int year, int day);
     void validate_pop(int year, int day);
