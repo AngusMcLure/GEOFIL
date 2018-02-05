@@ -26,7 +26,7 @@ void cblok::get_hhold(int year){
 }
 
 void cblok::get_hhold_size(int year){
-    map<int, int> vec;
+    map<int, double> vec;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
         for(map<int, hhold*>::iterator k = mbk->mblok_hholds.begin(); k != mbk->mblok_hholds.end(); ++k){
@@ -36,18 +36,23 @@ void cblok::get_hhold_size(int year){
         }
     }
     
+    double total = 0;
+    for(map<int, double>::iterator j = vec.begin(); j != vec.end(); ++j)
+        total += j->second;
+    
     string file = outdir;   file = file + syn_hhold_stat;
     ofstream out(file.c_str(), ios::app);
     
     out << year << ",";
-    for(map<int, int>::iterator j = vec.begin(); j != vec.end(); ++j){
+    for(map<int, double>::iterator j = vec.begin(); j != vec.end(); ++j){
         out << j->first << ",";
     }
     out << endl;
     
     out << year << ",";
-    for(map<int, int>::iterator j = vec.begin(); j != vec.end(); ++j){
-        out << j->second << ",";
+    out << std::setprecision(4) << std::setiosflags(ios::fixed);
+    for(map<int, double>::iterator j = vec.begin(); j != vec.end(); ++j){
+        out << j->second/(double)total << ",";
     }
     out << endl;
     

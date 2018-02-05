@@ -49,8 +49,9 @@
 #define adult_relocation    0.0
 #define mortality_improve   0.99
 #define annual_divorce      0.0001
-#define hhold_rup_p_1       0.95
-#define hhold_rup_p_2       0.05
+#define hhold_rup_p_1       0.8
+#define hhold_rup_p_2       0.2
+#define hhold_rup_p_3       1/3
 
 //functions
 int gaussian(double m_mu, double s_sigma);

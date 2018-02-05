@@ -16,6 +16,8 @@ hhold::hhold(int hid, int size, agent *holder){
     this->size = size;
     hldr = holder;
     
+    exp = false;
+    
     lat = 0;
     log = 0;
     area = 0;
@@ -70,6 +72,8 @@ bool hhold::asg_holder(agent *p){
 void hhold::add_member(agent *p){
     p->h_d = this;
     mmbrs.insert(pair<int, agent*>(p->aid, p));
+    
+    exp = true;
 }
 
 void hhold::rmv_member(agent *p){
@@ -182,11 +186,15 @@ void cblok::hndl_hold_rupt(int year){
         mblok *mbk = j->second;
         for(map<int, hhold*>::iterator k = mbk->mblok_hholds.begin(); k != mbk->mblok_hholds.end(); ++k){
             hhold *cur = k->second;
+            if(cur->exp == false) continue;
+            
             if(cur->size < hhold_threshold && cur->size >= lambda && drand48() < hhold_rup_p_2)
                 h_vec.push_back(cur);
             
             if(cur->size >= hhold_threshold && drand48() < hhold_rup_p_1)
                 h_vec.push_back(cur);
+            
+            cur->exp = false;
         }
     }
     
@@ -274,7 +282,8 @@ void cblok::hndl_hold_rupt(int year){
         }
         
         if(cur->size < hhold_threshold){
-            if(s_z < (double)cur->size*0.4) continue;     //max unit size < 1/3 orignal size
+            double ts = (double)cur->size*hhold_rup_p_3;
+            if(s_z < ts || cur->size-s_z < ts) continue;     //max unit size < 1/3 orignal size
         }
         
         unit *u_cur = vec[index];
@@ -306,6 +315,7 @@ void cblok::hndl_hold_rupt(int year){
         }
         
         new_hold->update_hhold();
+        new_hold->exp = false;
         
         cur->update_hhold();
         if(cur->size == 0) mbk->rmv_hhold(cur);

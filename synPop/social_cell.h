@@ -41,6 +41,8 @@ public:
     int hid;                            //hhold id
     int size;
     
+    bool exp;                           //hhold expanding
+    
     double lat, log;
     double area;
     rbldg *rdg;

@@ -320,6 +320,7 @@ bool cblok::pop_reload(){
             }
             
             h_hold->hldr = h_holder;
+            h_hold->exp = false;
         }
         in.close();
     }
@@ -1456,6 +1457,7 @@ void mblok::bld_hhold(){
             h_hold->size = int(h_hold->mmbrs.size());
             allocated += h_hold->size;
             add_hhold(h_hold);
+            h_hold->exp = false;
         }
         else{
             vector<unit*> u_vec;    //units in the hhold
@@ -1647,6 +1649,7 @@ void mblok::bld_hhold(){
                 h_hold->size = int(h_hold->mmbrs.size());
                 allocated += h_hold->size;
                 add_hhold(h_hold);
+                h_hold->exp = false;
             }
         }
     }

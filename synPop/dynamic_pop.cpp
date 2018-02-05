@@ -247,6 +247,7 @@ void cblok::renew_pop(int year, int day){
         re_location(cur, new_hold);
         new_hold->asg_holder(cur);
         new_hold->update_hhold();
+        new_hold->exp = false;
         
         h_d->update_hhold();
         if(h_d->size == 0) mbk->rmv_hhold(h_d);
@@ -334,6 +335,7 @@ void cblok::hndl_marrg(int year){
                 
                 new_hold->asg_holder(p);
                 new_hold->update_hhold();
+                new_hold->exp = false;
             }
             else{
                 if(p_h->size <= q_h->size) re_location(q, p_h);
@@ -405,6 +407,7 @@ void cblok::hndl_divrc(int year){
         re_location(q, h_2);    //female leave the household with children
         h_2->asg_holder(q);
         h_2->update_hhold();
+        h_2->exp = false;
         
         h_1->update_hhold();
         
