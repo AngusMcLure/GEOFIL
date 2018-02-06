@@ -90,8 +90,8 @@ public:
     map<string, int> mbloksIndexA;       //meshblocks in cblocks
     map<int, string> mbloksIndexB;      
     map<int, double*> mblok_crdnt;      //meshblock coordinates
-    double **euclid_dist;               //euclidean distance between meshblocks
-    double **road_dist;                 //road distance between meshblocks
+    double *euclid_dst;               //euclidean distance between meshblocks
+    double *road_dst;                 //road distance between meshblocks
     
     //parameters from file inputs
     map<int, int> mblok_mpops;          //male pop in each mblok

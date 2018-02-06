@@ -21,6 +21,9 @@ cblok::cblok(int cid, string cname, double lat, double log){
     next_mid = 1;
     meshblocks = 0;
     
+    euclid_dst = NULL;
+    road_dst = NULL;
+    
     init = pop_reload();
     
     if(!init){
@@ -659,6 +662,31 @@ void cblok::read_demgrphcs(){
     in.close();
     meshblocks = (int)mbloksIndexA.size();
     
+    //re-id all mbloks
+    int cur_mid = 1, count = 0;
+    while(count < meshblocks){
+        if(mbloksIndexB.find(cur_mid) == mbloksIndexB.end()){
+            int mid = cur_mid + 1;
+            while(mbloksIndexB.find(mid) == mbloksIndexB.end()) ++mid;
+            
+            string vg = mbloksIndexB[mid];
+            agrps *p = mblok_agrps[mid];
+            int mpop = mblok_mpops[mid];
+            int fpop = mblok_fpops[mid];
+            
+            mblok_agrps.erase(mid);     mblok_agrps.insert(pair<int, agrps*>(cur_mid, p));
+            mblok_mpops.erase(mid);     mblok_mpops.insert(pair<int, int>(cur_mid, mpop));
+            mblok_fpops.erase(mid);     mblok_fpops.insert(pair<int, int>(cur_mid, fpop));
+            mbloksIndexA.erase(vg);     mbloksIndexA.insert(pair<string, int>(vg, cur_mid));
+            mbloksIndexB.erase(mid);    mbloksIndexB.insert(pair<int, string>(cur_mid, vg));
+        }
+        
+        ++cur_mid;
+        ++count;
+    }
+    
+    next_mid = cur_mid;
+    
     //11. read meshblock lat & long
     file = datadir;     file = file + village_coordinates;
     in.open(file.c_str());
@@ -885,6 +913,100 @@ void cblok::read_parmtrs(){
         }
     }
     for(int i = 0; i < 10; ++i) live_birth_order_pro[i] = live_birth_order_by_agrps[i][7]/(double)t_1;
+    
+    //reading road_dst & euclid_dst
+    int len = meshblocks*(meshblocks-1)/2;
+    road_dst = new double[len];     memset(road_dst, 0, sizeof(double)*len);
+    euclid_dst = new double[len];   memset(euclid_dst, 0, sizeof(double)*len);
+    
+    file = datadir;     file = file + vil_road;
+    in.open(file.c_str());
+    
+    getline(in, line);
+    vector<string> mbk_vec;
+    {
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        char *p = std::strtok(str, ",");
+        while(p != NULL){
+            mbk_vec.push_back(p);
+            p = std::strtok(NULL, ",");
+        }
+        delete []str;
+        
+        while(getline(in, line)){
+            str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            p = std::strtok(str, ",");
+            string src = p;
+            int src_id = mbloksIndexA[src];
+            
+            int index = 0;
+            p = std::strtok(NULL, ",");
+            while(p != NULL){
+                string tag = mbk_vec[index++];
+                int tag_id = mbloksIndexA[tag];
+                
+                if(tag_id > src_id){
+                    double dd = atof(p);
+                    
+                    int ii = (src_id-1)*(meshblocks*2-src_id)/2 + tag_id-src_id - 1;
+                    road_dst[ii] = dd;
+                }
+                
+                p = std::strtok(NULL, ",");
+            }
+            delete []str;
+        }
+    }
+    mbk_vec.clear();
+    mbk_vec.shrink_to_fit();
+    in.close();
+    
+    file = datadir;     file = file + vil_euclid;
+    in.open(file.c_str());
+    
+    getline(in, line);
+    {
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        char *p = std::strtok(str, ",");
+        while(p != NULL){
+            mbk_vec.push_back(p);
+            p = std::strtok(NULL, ",");
+        }
+        delete []str;
+        
+        while(getline(in, line)){
+            str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            p = std::strtok(str, ",");
+            string src = p;
+            int src_id = mbloksIndexA[src];
+            
+            int index = 0;
+            p = std::strtok(NULL, ",");
+            while(p != NULL){
+                string tag = mbk_vec[index++];
+                int tag_id = mbloksIndexA[tag];
+                
+                if(tag_id > src_id){
+                    double dd = atof(p);
+                    
+                    int ii = (src_id-1)*(meshblocks*2-src_id)/2 + tag_id-src_id - 1;
+                    euclid_dst[ii] = dd;
+                }
+                
+                p = std::strtok(NULL, ",");
+            }
+            delete []str;
+        }
+    }
+    in.close();
 }
 
 void cblok::bld_mbloks(){

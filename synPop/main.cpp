@@ -29,6 +29,7 @@ int main(int argc, const char * argv[]) {
     cout << "available hid: " << cbk->next_hid << endl;
     cout << "available mid: " << cbk->next_mid << endl;
     cout << "vacant blding: " << cbk->cblok_vcnt_rbldgs.size() << endl;
+    cout << "road dist: " << cbk->mbloksIndexB[1] << "-" << cbk->mbloksIndexB[2] << " " << cbk->road_dst[0] << endl;
 
     for(int year = 0; year < 40; ++year){
         births = 0;

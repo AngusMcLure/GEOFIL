@@ -97,8 +97,6 @@ double ztpoisson(int k, double l_lambda);
 #define village_coordinates     "villages_lat_lon.dat"
 #define village_excluded        "village_excluded.dat"
 
-#define vil_euclid_origin       "vil_euclid_origin.dat"
-#define vil_road_origin         "vil_road_origin.dat"
 #define vil_euclid              "vil_euclid.dat"
 #define vil_road                "vil_road.dat"
 
