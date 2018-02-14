@@ -86,19 +86,17 @@ public:
 class schol{
 public:
     int sid;
-    int siz;
+    string name;
+    char level;
     double lat, log;
-    double area;
-    
-    map<int, sbldg*> sdg;
-    
-    map<int, agent*> teacher;
+    double radius;
+
     map<int, agent*> student;
     
-    void add_bldg(sbldg *sdg);
-    void add_tchr(agent *p);
+    schol(int sid, string name, char level, double lat, double log, double radius);
+    ~schol();
+    
     void add_stdt(agent *p);
-    void rmv_tchr(agent *p);
     void rmv_stdt(agent *p);
     void update();
     void removd();

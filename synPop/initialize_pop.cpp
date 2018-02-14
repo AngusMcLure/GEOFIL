@@ -18,6 +18,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
     cpop = 0;
     next_aid = 1;
     next_hid = 1;
+    next_sid = 1;
     next_mid = 1;
     meshblocks = 0;
     
@@ -120,6 +121,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
     }
     
     hndl_land_data();
+    read_schools();
     read_parmtrs();
 }
 
@@ -370,6 +372,7 @@ void cblok::reset_cpop(){
     cpop = 0;
     next_aid = 1;
     next_hid = 1;
+    next_sid = 1;
     next_mid = 1;
     meshblocks = 0;
     
@@ -379,6 +382,7 @@ void cblok::reset_cpop(){
     }
     
     hndl_land_data();
+    read_schools();
     read_parmtrs();
 }
 
@@ -1007,6 +1011,24 @@ void cblok::read_parmtrs(){
         }
     }
     in.close();
+    
+    //read LFPRs
+    file = parameters;      file = file + labor_force_pp_rate;
+    in.open(file.c_str());
+    getline(in, line);
+    
+    ii = 0;
+    while(getline(in, line)){
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        
+        char *p = std::strtok(str, ",");
+        p = std::strtok(NULL, ",");         LFPR[0][ii] = atof(p);
+        p = std::strtok(NULL, ",");         LFPR[1][ii] = atof(p);
+        
+        delete []str;
+        ++ii;
+    }
 }
 
 void cblok::bld_mbloks(){

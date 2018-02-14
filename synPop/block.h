@@ -85,11 +85,16 @@ public:
     map<int, rbldg*> cblok_vcnt_rbldgs; //vacant residential buildings
     //map<int, wbldg*> cblok_wbldgs;
     
+    int next_sid;
+    map<int, schol*> cblok_schols;
+    
+    double LFPR[2][11];               //labor force participation rate
+    
     int next_mid, meshblocks;
     map<int, mblok*> mbloks;
-    map<string, int> mbloksIndexA;       //meshblocks in cblocks
+    map<string, int> mbloksIndexA;    //meshblocks in cblocks
     map<int, string> mbloksIndexB;      
-    map<int, double*> mblok_crdnt;      //meshblock coordinates
+    map<int, double*> mblok_crdnt;    //meshblock coordinates
     double *euclid_dst;               //euclidean distance between meshblocks
     double *road_dst;                 //road distance between meshblocks
     
@@ -136,6 +141,7 @@ public:
     bool pop_reload();
     void read_demgrphcs();
     void read_parmtrs();
+    void read_schools();
     void rnd_mother();
     void reset_cpop();
     void bld_mbloks();

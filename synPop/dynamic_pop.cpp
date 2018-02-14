@@ -21,15 +21,8 @@ void cblok::rmv_agent(agent *p){        //remove dead agent
         p->s_h = NULL;
     }
     else if(p->works == 'w'){
-        if(p->w_p != NULL){
-            p->w_p->employee.erase(p->aid);
-            p->w_p = NULL;
-        }
-        
-        if(p->s_h != NULL){
-            p->s_h->teacher.erase(p->aid);
-            p->s_h = NULL;
-        }
+        p->w_p->employee.erase(p->aid);
+        p->w_p = NULL;
     }
 
     if(p->gendr == 'm') mbk->mblok_males.erase(p->aid);

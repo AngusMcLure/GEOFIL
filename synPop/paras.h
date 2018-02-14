@@ -53,6 +53,10 @@
 #define hhold_rup_p_2       0.2
 #define hhold_rup_p_3       1/3
 
+#define elementary_school   50          //school radius
+#define high_school         100
+#define college             150
+
 //functions
 int gaussian(double m_mu, double s_sigma);
 int ztpoisson(double l_lambda);
@@ -71,6 +75,7 @@ double ztpoisson(int k, double l_lambda);
 #define net_pop_loss            "net_migrants.csv"
 #define mortality_male          "mortality_male.csv"
 #define mortality_female        "mortality_female.csv"
+#define labor_force_pp_rate     "LFPRs.csv"
 
 //demographics
 #define villages                "villages.dat"
@@ -92,6 +97,8 @@ double ztpoisson(int k, double l_lambda);
 #define AS_sbldgs               "AS_sbldgs.dat"
 #define AS_wbldgs               "AS_wbldgs.dat"
 #define AS_bldg_dist            "syn_bldg_distance.dat"
+
+#define AS_schools              "AS_schools.csv"
 
 //geographics
 #define village_coordinates     "villages_lat_lon.dat"
