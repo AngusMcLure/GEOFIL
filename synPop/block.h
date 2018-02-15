@@ -9,7 +9,7 @@
 #ifndef blocks_hpp
 #define blocks_hpp
 
-#include "social_cell.h"
+#include "unit.h"
 #include "agrps.h"
 using namespace std;
 

@@ -33,7 +33,7 @@
 
 /* Begin PBXFileReference section */
 		9D3517C62015A54D00EA8AE0 /* bldg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bldg.h; sourceTree = "<group>"; };
-		9D3517C72015A64100EA8AE0 /* social_cell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = social_cell.h; sourceTree = "<group>"; };
+		9D3517C72015A64100EA8AE0 /* unit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unit.h; sourceTree = "<group>"; };
 		9D7B63441FAAC3F70044FD3F /* synPop */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = synPop; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D7B63471FAAC3F70044FD3F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9D7B63511FAAC4490044FD3F /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
@@ -96,7 +96,7 @@
 				9DEF23391FAEA256008F520B /* agrps.h */,
 				9DEF23311FAE8C3C008F520B /* block.h */,
 				9D3517C62015A54D00EA8AE0 /* bldg.h */,
-				9D3517C72015A64100EA8AE0 /* social_cell.h */,
+				9D3517C72015A64100EA8AE0 /* unit.h */,
 				9D7B63511FAAC4490044FD3F /* main.h */,
 				9DEF232F1FAE88E5008F520B /* paras.h */,
 			);

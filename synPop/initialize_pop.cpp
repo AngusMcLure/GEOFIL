@@ -1029,6 +1029,7 @@ void cblok::read_parmtrs(){
         delete []str;
         ++ii;
     }
+    in.close();
 }
 
 void cblok::bld_mbloks(){
