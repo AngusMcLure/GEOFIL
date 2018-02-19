@@ -117,8 +117,11 @@ void cblok::rmv_vcnt_rbldg(rbldg *p){
 }
 
 void cblok::sim_pop(int year){
+    if(year % 5 == 0) radt_model('r');
+    
+    hndl_jobs(year);
+    
     for(int day = 0; day < 365; ++day){
-        //validate_pop(year, day);
         renew_pop(year, day);
         hndl_birth(year, day);
     }
@@ -127,8 +130,6 @@ void cblok::sim_pop(int year){
     hndl_divrc(year);
     hndl_migrt(year);
     hndl_hold_rupt(year);
-    
-    if(year % 5 == 0) radt_model('r');
 }
 
 void cblok::validate_pop(int year, int day){

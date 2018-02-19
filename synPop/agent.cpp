@@ -22,7 +22,6 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, s
     dad = NULL;
     
     births = 0;
-    works = '-';
     bth_wind = 0;
     epids = 's';
 }

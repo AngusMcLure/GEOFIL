@@ -1033,6 +1033,29 @@ void cblok::read_parmtrs(){
     
     calc_smoothed_agrp(LFPR_by_agrp[0], 11, LFPR_by_age[0], 55);
     calc_smoothed_agrp(LFPR_by_agrp[1], 11, LFPR_by_age[1], 55);
+    
+    //initialize cpop and labor force data
+    cpop = 0;
+    labor_force = 0;
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        
+        cpop += mbk->mblok_males.size() + mbk->mblok_fmals.size();
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
+            agent *cur = k->second;
+            
+            int age = int(cur->age/365);
+            if(age < 70 && age >= 15) labor_force += LFPR_by_age[0][age-15];          //age 15-69
+        }
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
+            agent *cur = k->second;
+            
+            int age = int(cur->age/365);
+            if(age < 70 && age >= 15) labor_force += LFPR_by_age[1][age-15];          //age 15-69
+        }
+    }
 }
 
 void cblok::bld_mbloks(){

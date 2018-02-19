@@ -24,7 +24,6 @@ public:
     int age;        //in days
     char gendr;     //m - male, f - female
     
-    char works;     //w - working, s - schooling, h - housing
     char margs;     //m - married, s - single, d - divorce, w - widowed
     int bth_wind;   //birth window closed for female just having a baby
     

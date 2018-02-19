@@ -32,8 +32,15 @@ public:
     //map<int, rbldg*> mblok_rbldgs;
     map<int, wbldg*> mblok_wbldgs;
     
+    struct node{
+        int mid;
+        double p;
+        
+        node(int mid, double p): mid(mid), p(p){ }
+    };
+    
     double jobs;
-    map<int, double> mblok_comm;        //commuting
+    vector<node*> mblok_comm;        //commuting
     
     void bld_mblok_pop();
     void add_hhold(hhold *p);
@@ -169,6 +176,7 @@ public:
     void radt_model(char m);
     
     void sim_pop(int year);
+    void hndl_jobs(int year);
     void hndl_marrg(int year);
     void hndl_divrc(int year);
     void hndl_migrt(int year);

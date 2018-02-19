@@ -16,11 +16,11 @@ void cblok::rmv_agent(agent *p){        //remove dead agent
     
     h_hold->rmv_member(p);
     
-    if(p->works == 's'){
+    if(p->s_h != NULL){
         p->s_h->student.erase(p->aid);
         p->s_h = NULL;
     }
-    else if(p->works == 'w'){
+    else if(p->w_p != NULL){
         p->w_p->employee.erase(p->aid);
         p->w_p = NULL;
     }
@@ -66,6 +66,120 @@ void cblok::rmv_agent(agent *p){        //remove dead agent
 
 void cblok::rnd_mother(){
     
+}
+
+void cblok::renew_pop(int year, int day){
+    vector<agent*> v_1, v_2;    //v_1, death; v_2, new adult move out
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
+            agent *cur = k->second;
+            
+            int index = int(int(cur->age/365)/5)+1;
+            if(cur->age < 365) index = 0;
+            if(cur->age >= 80*365) index = 17;
+            
+            double prob = 1 - exp(-mmortlty[index]*pow(mortality_improve, year));
+            
+            if(drand48() < prob) v_1.push_back(cur);
+            else{
+                ++cur->age;
+                if(cur->age == 365*15 && drand48() < adult_relocation) v_2.push_back(cur);
+            }
+        }
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
+            agent *cur = k->second;
+            
+            int index = int(int(cur->age/365)/5)+1;
+            if(cur->age < 365) index = 0;
+            if(cur->age >= 80*365) index = 17;
+            
+            double prob = 1 - exp(-fmortlty[index]*pow(mortality_improve, year));
+            
+            if(drand48() < prob) v_1.push_back(cur);
+            else{
+                ++cur->age;
+                if(cur->age == 365*15 && drand48() < adult_relocation) v_2.push_back(cur);
+                if(cur->bth_wind > 0) --cur->bth_wind;
+                
+                if(cur->age == 365*50 && cur->margs == 'm'){
+                    fmal_cbrs[cur->births].erase(cur->aid);
+                    fmal_marry.insert(pair<int, agent*>(cur->aid, cur));
+                }
+            }
+        }
+    }
+    
+    deaths += v_1.size();
+    
+    //remove dead agents
+    while(v_1.size() > 0){
+        agent *cur = v_1.back();
+        hhold *h_d = cur->h_d;
+        mblok *mbk = h_d->rdg->mbk;
+        
+        rmv_agent(cur);
+        
+        h_d->update_hhold();
+        if(h_d->size == 0) mbk->rmv_hhold(h_d);
+        v_1.pop_back();
+    }
+    
+    //handle new adults moving out
+    while(v_2.size() > 0){
+        agent *cur = v_2.back();
+        hhold *h_d = cur->h_d;
+        mblok *mbk = h_d->rdg->mbk;
+        
+        hhold *new_hold = new hhold(next_hid++);
+        int rnd = rand() % cblok_vcnt_rbldgs.size();
+        map<int, rbldg*>::iterator it = cblok_vcnt_rbldgs.begin();
+        while(rnd-- > 0) ++it;
+        rbldg *rbg = it->second;
+        
+        new_hold->asg_rbldg(rbg);
+        rbg->mbk->add_hhold(new_hold);
+        
+        re_location(cur, new_hold);
+        new_hold->asg_holder(cur);
+        new_hold->update_hhold();
+        new_hold->exp = false;
+        
+        h_d->update_hhold();
+        if(h_d->size == 0) mbk->rmv_hhold(h_d);
+        
+        v_2.pop_back();
+    }
+    
+    v_1.shrink_to_fit();
+    v_2.shrink_to_fit();
+}
+
+void cblok::hndl_jobs(int year){
+    cpop = 0;
+    labor_force = 0;
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        
+        cpop += mbk->mblok_males.size() + mbk->mblok_fmals.size();
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
+            agent *cur = k->second;
+            
+            int age = int(cur->age/365);
+            if(age < 70 && age >= 15) labor_force += LFPR_by_age[0][age-15];          //age 15-69
+        }
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
+            agent *cur = k->second;
+            
+            int age = int(cur->age/365);
+            if(age < 70 && age >= 15) labor_force += LFPR_by_age[1][age-15];          //age 15-69
+        }
+    }
 }
 
 void cblok::hndl_birth(int year, int day){
@@ -121,19 +235,10 @@ void cblok::hndl_birth(int year, int day){
         for(int i = 0; i < 7; ++i) v_p[i] /= t_1;
         
         double d_rnd = drand48();
-        double d1 = d_rnd;
         int ii = 0;
         for(ii = 0; ii < 7; ++ii){
             d_rnd -= v_p[ii];
             if(d_rnd <= 0 && v_p[ii] != 0) break;
-        }
-        
-        if(v[ii].size() == 0 || ii >= 7){
-            for(int i = 0; i < 7; ++i){
-                cout << "here" << endl;
-                cout << v_p[i] << " " << d1 << endl;
-                d1 -= d_rnd;
-            }
         }
         
         agent *cur = v[ii][rand()%v[ii].size()];
@@ -162,106 +267,6 @@ void cblok::hndl_birth(int year, int day){
         }
         -- total_birth;
     }
-}
-
-void cblok::renew_pop(int year, int day){
-    cpop = 0;
-    labor_force = 0;
-    vector<agent*> v_1, v_2;    //v_1, death; v_2, new adult move out
-    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        mblok *mbk = j->second;
-        
-        cpop += mbk->mblok_males.size() + mbk->mblok_fmals.size();
-        
-        for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
-            agent *cur = k->second;
-            
-            int age = int(cur->age/365);
-            if(age < 70 && age >= 15) labor_force += LFPR_by_age[0][age-15];          //age 15-69
-            
-            int index = int(int(cur->age/365)/5)+1;
-            if(cur->age < 365) index = 0;
-            if(cur->age >= 80*365) index = 17;
-            
-            double prob = 1 - exp(-mmortlty[index]*pow(mortality_improve, year));
-            
-            if(drand48() < prob) v_1.push_back(cur);
-            else{
-                ++cur->age;
-                if(cur->age == 365*15 && drand48() < adult_relocation) v_2.push_back(cur);
-            }
-        }
-        
-        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
-            agent *cur = k->second;
-            
-            int age = int(cur->age/365);
-            if(age < 70 && age >= 15) labor_force += LFPR_by_age[1][age-15];          //age 15-69
-            
-            int index = int(int(cur->age/365)/5)+1;
-            if(cur->age < 365) index = 0;
-            if(cur->age >= 80*365) index = 17;
-            
-            double prob = 1 - exp(-fmortlty[index]*pow(mortality_improve, year));
-            
-            if(drand48() < prob) v_1.push_back(cur);
-            else{
-                ++cur->age;
-                if(cur->age == 365*15 && drand48() < adult_relocation) v_2.push_back(cur);
-                if(cur->bth_wind > 0) --cur->bth_wind;
-                
-                if(cur->age == 365*50 && cur->margs == 'm'){
-                    fmal_cbrs[cur->births].erase(cur->aid);
-                    fmal_marry.insert(pair<int, agent*>(cur->aid, cur));
-                }
-            }
-        }
-    }
-    cpop -= v_1.size();
-    
-    deaths += v_1.size();
-    
-    //remove dead agents
-    while(v_1.size() > 0){
-        agent *cur = v_1.back();
-        hhold *h_d = cur->h_d;
-        mblok *mbk = h_d->rdg->mbk;
-        
-        rmv_agent(cur);
-        
-        h_d->update_hhold();
-        if(h_d->size == 0) mbk->rmv_hhold(h_d);
-        v_1.pop_back();
-    }
-    
-    //handle new adults moving out
-    while(v_2.size() > 0){
-        agent *cur = v_2.back();
-        hhold *h_d = cur->h_d;
-        mblok *mbk = h_d->rdg->mbk;
-        
-        hhold *new_hold = new hhold(next_hid++);
-        int rnd = rand() % cblok_vcnt_rbldgs.size();
-        map<int, rbldg*>::iterator it = cblok_vcnt_rbldgs.begin();
-        while(rnd-- > 0) ++it;
-        rbldg *rbg = it->second;
-        
-        new_hold->asg_rbldg(rbg);
-        rbg->mbk->add_hhold(new_hold);
-        
-        re_location(cur, new_hold);
-        new_hold->asg_holder(cur);
-        new_hold->update_hhold();
-        new_hold->exp = false;
-        
-        h_d->update_hhold();
-        if(h_d->size == 0) mbk->rmv_hhold(h_d);
-        
-        v_2.pop_back();
-    }
-    
-    v_1.shrink_to_fit();
-    v_2.shrink_to_fit();
 }
 
 void cblok::hndl_marrg(int year){
