@@ -8,12 +8,12 @@
 #include "paras.h"
 using namespace std;
 
-int gaussian(double m_mu, double s_sigma){
+double gaussian(double m_mu, double s_sigma){
     unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
     std::normal_distribution<double> distribution(m_mu, s_sigma);
     
-    return int(distribution(generator)+0.5);
+    return distribution(generator);
 }
 
 int ztpoisson(double l_lambda){

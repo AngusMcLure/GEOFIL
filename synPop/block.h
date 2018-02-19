@@ -21,7 +21,7 @@ class mblok{
 public:
     int mid;                            //mblock id
     double lat, log;                    //latitude & longitude
-    cblok *cbk;                          //city block
+    cblok *cbk;                         //city block
     
     map<int, agent*> mblok_males;
     map<int, agent*> mblok_fmals;
@@ -31,6 +31,9 @@ public:
     map<int, rbldg*> mblok_vcnt_rbldgs;
     //map<int, rbldg*> mblok_rbldgs;
     map<int, wbldg*> mblok_wbldgs;
+    
+    double jobs;
+    map<int, double> mblok_comm;        //commuting
     
     void bld_mblok_pop();
     void add_hhold(hhold *p);
@@ -88,15 +91,17 @@ public:
     int next_sid;
     map<int, schol*> cblok_schols;
     
-    double LFPR[2][11];               //labor force participation rate
+    double labor_force;                //total employment
+    double LFPR_by_agrp[2][11];        //labor force participation rate
+    double LFPR_by_age[2][55];
     
     int next_mid, meshblocks;
     map<int, mblok*> mbloks;
-    map<string, int> mbloksIndexA;    //meshblocks in cblocks
+    map<string, int> mbloksIndexA;     //meshblocks in cblocks
     map<int, string> mbloksIndexB;      
-    map<int, double*> mblok_crdnt;    //meshblock coordinates
-    double *euclid_dst;               //euclidean distance between meshblocks
-    double *road_dst;                 //road distance between meshblocks
+    map<int, double*> mblok_crdnt;     //meshblock coordinates
+    double *euclid_dst;                //euclidean distance between meshblocks
+    double *road_dst;                  //road distance between meshblocks
     
     //parameters from file inputs
     map<int, int> mblok_mpops;          //male pop in each mblok
@@ -161,7 +166,7 @@ public:
     void calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL);
     void calc_smoothed_agrp(double *p, int pL, double *res, int rL);
     
-    void radt_model(char d);
+    void radt_model(char m);
     
     void sim_pop(int year);
     void hndl_marrg(int year);
@@ -172,7 +177,6 @@ public:
     void hndl_birth(int year, int day);
     void validate_pop(int year, int day);
     
-    void get_pop(int year);
     void get_hhold(int year);
     void get_hhold_size(int year);
     void get_sexratio(int year);

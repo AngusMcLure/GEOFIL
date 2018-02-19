@@ -1023,13 +1023,16 @@ void cblok::read_parmtrs(){
         std::strcpy(str, line.c_str());
         
         char *p = std::strtok(str, ",");
-        p = std::strtok(NULL, ",");         LFPR[0][ii] = atof(p);
-        p = std::strtok(NULL, ",");         LFPR[1][ii] = atof(p);
+        p = std::strtok(NULL, ",");         LFPR_by_agrp[0][ii] = atof(p);
+        p = std::strtok(NULL, ",");         LFPR_by_agrp[1][ii] = atof(p);
         
         delete []str;
         ++ii;
     }
     in.close();
+    
+    calc_smoothed_agrp(LFPR_by_agrp[0], 11, LFPR_by_age[0], 55);
+    calc_smoothed_agrp(LFPR_by_agrp[1], 11, LFPR_by_age[1], 55);
 }
 
 void cblok::bld_mbloks(){

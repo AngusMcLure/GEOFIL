@@ -8,15 +8,6 @@
 
 #include "block.h"
 
-void cblok::get_pop(int year){
-    cpop = 0;
-    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        cpop += j->second->mblok_males.size();
-        cpop += j->second->mblok_fmals.size();
-    }
-    cout << "pop = " << cpop << endl;
-}
-
 void cblok::get_hhold(int year){
     chold = 0;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){

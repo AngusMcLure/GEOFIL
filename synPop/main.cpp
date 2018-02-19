@@ -37,7 +37,7 @@ int main(int argc, const char * argv[]) {
         rup = 0;
         cbk->sim_pop(year);
         cout << "year = " << year+2011 << " birth = " << births << " death = " << deaths  << " mgrt = " << int(cbk->cpop*cbk->pop_loss[year]/1000) << " hhold rup = " << rup << endl;
-        cbk->get_pop(year);
+        cout << "year = " << year+2011 << " cpop = " << cbk->cpop << endl;
         cbk->get_hhold(year);
         cout << "vant bldg = " << cbk->cblok_vcnt_rbldgs.size() << endl;
         

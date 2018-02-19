@@ -57,11 +57,14 @@
 #define high_school         100
 #define college             150
 
+#define cannery_avg         0.176
+#define commuting_ratio     0.703       //2010 data, 289/411
+
 //functions
-int gaussian(double m_mu, double s_sigma);
 int ztpoisson(double l_lambda);
 int binomial(int r, double p);
 double ztpoisson(int k, double l_lambda);
+double gaussian(double m_mu, double s_sigma);
 
 //files ----------------------------------------------------------------------------------
 //paths
@@ -101,7 +104,7 @@ double ztpoisson(int k, double l_lambda);
 #define AS_schools              "AS_schools.csv"
 
 //geographics
-#define village_coordinates     "villages_lat_lon.dat"
+#define village_coordinates     "villages_lat_lon.csv"
 #define village_excluded        "village_excluded.dat"
 
 #define vil_euclid              "vil_euclid.dat"

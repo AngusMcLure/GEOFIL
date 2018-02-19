@@ -165,11 +165,19 @@ void cblok::hndl_birth(int year, int day){
 }
 
 void cblok::renew_pop(int year, int day){
+    cpop = 0;
+    labor_force = 0;
     vector<agent*> v_1, v_2;    //v_1, death; v_2, new adult move out
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
+        
+        cpop += mbk->mblok_males.size() + mbk->mblok_fmals.size();
+        
         for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
             agent *cur = k->second;
+            
+            int age = int(cur->age/365);
+            if(age < 70 && age >= 15) labor_force += LFPR_by_age[0][age-15];          //age 15-69
             
             int index = int(int(cur->age/365)/5)+1;
             if(cur->age < 365) index = 0;
@@ -186,6 +194,9 @@ void cblok::renew_pop(int year, int day){
         
         for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
             agent *cur = k->second;
+            
+            int age = int(cur->age/365);
+            if(age < 70 && age >= 15) labor_force += LFPR_by_age[1][age-15];          //age 15-69
             
             int index = int(int(cur->age/365)/5)+1;
             if(cur->age < 365) index = 0;
@@ -206,6 +217,7 @@ void cblok::renew_pop(int year, int day){
             }
         }
     }
+    cpop -= v_1.size();
     
     deaths += v_1.size();
     
@@ -411,6 +423,8 @@ void cblok::hndl_divrc(int year){
 
 void cblok::hndl_migrt(int year){
     int migrants = int(cpop*pop_loss[year]/1000);
+    
+    cpop -= migrants;
     
     int total_hhold = 0;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
