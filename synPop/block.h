@@ -9,7 +9,7 @@
 #ifndef blocks_hpp
 #define blocks_hpp
 
-#include "unit.h"
+#include "hhold.h"
 #include "agrps.h"
 using namespace std;
 
@@ -30,17 +30,28 @@ public:
     map<int, rbldg*> mblok_ocpy_rbldgs;
     map<int, rbldg*> mblok_vcnt_rbldgs;
     //map<int, rbldg*> mblok_rbldgs;
-    map<int, wbldg*> mblok_wbldgs;
     
-    struct node{
+    struct w_node{
+        int wid;
+        double p;
+        
+        w_node(int wid, double p): wid(wid), p(p){ }
+    };
+    
+    double labors;
+    map<int, workp*> mblok_workps;
+    vector<w_node*> mblok_working;
+    
+    struct c_node{
         int mid;
         double p;
         
-        node(int mid, double p): mid(mid), p(p){ }
+        c_node(int mid, double p): mid(mid), p(p){ }
     };
     
     double jobs;
-    vector<node*> mblok_comm;        //commuting
+    map<int, double> mblok_commuting;
+    vector<c_node*> mblok_comm;        //commuting
     
     void bld_mblok_pop();
     void add_hhold(hhold *p);
@@ -48,6 +59,7 @@ public:
     void add_member(agent *p);
     void rmv_member(agent *p);
     void rnd_margs(agent *p);
+    void add_workp(workp *p);
     void add_rbldg(rbldg *p, hhold* h_hold = NULL);
     
     //for building population
@@ -93,7 +105,8 @@ public:
     //map<int, hhold*> cblok_hholds;
     //map<int, rbldg*> cblok_rbldgs;
     map<int, rbldg*> cblok_vcnt_rbldgs; //vacant residential buildings
-    //map<int, wbldg*> cblok_wbldgs;
+    
+    map<int, workp*> cblok_workps;
     
     int next_sid;
     map<int, schol*> cblok_schols;
@@ -153,7 +166,7 @@ public:
     bool pop_reload();
     void read_demgrphcs();
     void read_parmtrs();
-    void read_schools();
+    void rnd_jobs(agent *p);
     void rnd_mother();
     void reset_cpop();
     void bld_mbloks();
@@ -161,7 +174,6 @@ public:
     void bld_cblok_hhold();
     void hndl_land_data();
     void allct_rbldgs();
-    void allct_bbldgs();
     void calc_bldg_dist();
     void calc_marital_prob();
     void rmv_agent(agent *p);
@@ -169,7 +181,6 @@ public:
     void rmv_vcnt_rbldg(rbldg *p);
     void re_location(agent *p, hhold* h_hold);
     void hndl_rbldg(string ff, int low, int upper, int min_dist);
-    void hndl_bbldg(string ff, int low, int upper, int min_dist);
     void calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL);
     void calc_smoothed_agrp(double *p, int pL, double *res, int rL);
     
@@ -185,6 +196,7 @@ public:
     void hndl_birth(int year, int day);
     void validate_pop(int year, int day);
     
+    void get_works(int year);
     void get_hhold(int year);
     void get_hhold_size(int year);
     void get_sexratio(int year);

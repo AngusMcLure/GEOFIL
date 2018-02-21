@@ -58,7 +58,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
             if(pos != string::npos) mbk_str[pos] = '_';
             
             //out population
-            file = config;  file = file + mbk_str;  file = file + "_pop.init";
+            file = config_pop;  file = file + mbk_str;  file = file + "_pop.init";
             
             out.open(file.c_str());
             out << "ID,age,gender,marriage,births" << endl;
@@ -73,7 +73,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
             }
             out.close();
             
-            file = config;  file = file + mbk_str;   file = file + "_hhold.init";
+            file = config_hhold;  file = file + mbk_str;   file = file + "_hhold.init";
             out.open(file.c_str());
             
             out << "hhold_ID,size,holder_ID,gender" << endl;
@@ -87,7 +87,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
             out.close();
             
             //out family unit
-            file = config;  file = file + mbk_str;   file = file + "_unit.init";
+            file = config_unit;  file = file + mbk_str;   file = file + "_unit.init";
             out.open(file.c_str());
             out << "ID,gender,spw_ID,gender,child_num" << endl;
             for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
@@ -121,7 +121,6 @@ cblok::cblok(int cid, string cname, double lat, double log){
     }
     
     hndl_land_data();
-    read_schools();
     read_parmtrs();
 }
 
@@ -183,7 +182,7 @@ bool cblok::pop_reload(){
         int pos = int(mbk_str.find('/'));
         if(pos != string::npos) mbk_str[pos] = '_';
         
-        file = config;   file = file + mbk_str;   file = file + "_pop.init";
+        file = config_pop;   file = file + mbk_str;   file = file + "_pop.init";
         in.open(file.c_str());
         
         string line;
@@ -217,7 +216,7 @@ bool cblok::pop_reload(){
         int pos = int(mbk_str.find('/'));
         if(pos != string::npos) mbk_str[pos] = '_';
         
-        file = config;   file = file + mbk_str;   file = file + "_unit.init";
+        file = config_unit;   file = file + mbk_str;   file = file + "_unit.init";
         in.open(file.c_str());
         
         string line;
@@ -283,7 +282,7 @@ bool cblok::pop_reload(){
         int pos = int(mbk_str.find('/'));
         if(pos != string::npos) mbk_str[pos] = '_';
         
-        file = config;   file = file + mbk_str;   file = file + "_hhold.init";
+        file = config_hhold;   file = file + mbk_str;   file = file + "_hhold.init";
         in.open(file.c_str());
         
         string line;
@@ -382,7 +381,6 @@ void cblok::reset_cpop(){
     }
     
     hndl_land_data();
-    read_schools();
     read_parmtrs();
 }
 
@@ -1039,6 +1037,7 @@ void cblok::read_parmtrs(){
     labor_force = 0;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
+        mbk->labors = 0;
         
         cpop += mbk->mblok_males.size() + mbk->mblok_fmals.size();
         
@@ -1046,15 +1045,17 @@ void cblok::read_parmtrs(){
             agent *cur = k->second;
             
             int age = int(cur->age/365);
-            if(age < 70 && age >= 15) labor_force += LFPR_by_age[0][age-15];          //age 15-69
+            if(age < 70 && age >= 15) mbk->labors += LFPR_by_age[0][age-15];          //age 15-69
         }
         
         for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
             agent *cur = k->second;
             
             int age = int(cur->age/365);
-            if(age < 70 && age >= 15) labor_force += LFPR_by_age[1][age-15];          //age 15-69
+            if(age < 70 && age >= 15) mbk->labors += LFPR_by_age[1][age-15];          //age 15-69
         }
+        
+        labor_force += mbk->labors;
     }
 }
 
@@ -1132,29 +1133,338 @@ void cblok::bld_cblok_hhold(){
 }
 
 void cblok::hndl_land_data(){
-    string data = config;  data = data + AS_rbldgs;
+    //read residential
+    bool residential_init = false;
+    string data = config_bldg;  data = data + AS_rbldgs;
     ifstream in(data.c_str());
     
     if(!in){
         data = datadir;     data = data + AS_rbldgs_origin;
         hndl_rbldg(data, 30, 300, 20);
-        allct_rbldgs();
         
-        data = config;  data = data + AS_rbldgs;
+        //output residential buildings
+        data = config_bldg;  data = data + AS_rbldgs;
         ofstream out(data.c_str());
-        out << "bldg_id,log,lat,area,meshblock,hhold_id" << endl;
+        out << "bldg_id,log,lat,area,meshblock" << endl;
         out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
         
         for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
             mblok *mbk = j->second;
             for(map<int, rbldg*>::iterator k = mbk->mblok_ocpy_rbldgs.begin(); k != mbk->mblok_ocpy_rbldgs.end(); ++k){
                 rbldg *p = k->second;
-                out << p->bid << "," << p->log << "," << p->lat << "," << p->area << "," << mbk->cbk->mbloksIndexB[mbk->mid] << "," << p->h_d->hid << endl;
+                out << p->bid << "," << p->log << "," << p->lat << "," << p->area << "," << mbk->cbk->mbloksIndexB[mbk->mid] << endl;
             }
             
             for(map<int, rbldg*>::iterator k = mbk->mblok_vcnt_rbldgs.begin(); k != mbk->mblok_vcnt_rbldgs.end(); ++k){
                 rbldg *p = k->second;
-                out << p->bid << "," << p->log << "," << p->lat << "," << p->area << "," << mbk->cbk->mbloksIndexB[mbk->mid] << "," << "-1" << endl;
+                out << p->bid << "," << p->log << "," << p->lat << "," << p->area << "," << mbk->cbk->mbloksIndexB[mbk->mid] << endl;
+            }
+        }
+        out.close();
+    }
+    else{
+        residential_init = true;
+        string line;
+        getline(in, line);  //skip the header
+        
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");    int bid = atoi(p);
+            p = std::strtok(NULL, ",");         double log = atof(p);
+            p = std::strtok(NULL, ",");         double lat = atof(p);
+            p = std::strtok(NULL, ",");         double area = atof(p);
+            p = std::strtok(NULL, ",");         string mbk = p;
+            
+            mblok *mbk_p = mbloks[mbloksIndexA[mbk]];
+            rbldg *bg = new rbldg(bid, log, lat, area, mbk_p, this);
+
+            mbk_p->add_rbldg(bg);
+            delete []str;
+        }
+        in.close();
+    }
+    
+    //read workplace
+    data = config_bldg;     data = data + AS_workps;
+    in.open(data.c_str());
+    
+    if(!in){
+        data = datadir;     data = data + AS_workps_origin;
+        in.open(data.c_str());
+        
+        string line;
+        getline(in, line);  //skip the header
+        
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");
+            int bid = atoi(p);
+            
+            p = std::strtok(NULL, ",");
+            string mbk = p;
+            
+            if(mbloksIndexA.find(mbk) == mbloksIndexA.end()){
+                cout << "err: mblock " << mbk << " non exist" << endl;
+                exit(1);
+            }
+            
+            p = std::strtok(NULL, ",");      double area = atof(p);
+            p = std::strtok(NULL, ",");      string cate = p;
+            p = std::strtok(NULL, ",");      string name = p;
+            p = std::strtok(NULL, ",");      double lat = atof(p);
+            p = std::strtok(NULL, ",");      double log = atof(p);
+            
+            mblok *mbk_p = mbloks[mbloksIndexA[mbk]];
+            workp *wp = new workp(bid, log, lat, area, mbk_p, this);
+            mbk_p->add_workp(wp);
+            delete []str;
+        }
+        in.close();
+        
+        //output workplace
+        data = config_bldg;  data = data + AS_workps;
+        ofstream out(data.c_str());
+        out << "workp_id,log,lat,area,meshblock" << endl;
+        out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
+        
+        for(map<int, workp*>::iterator j = cblok_workps.begin(); j != cblok_workps.end(); ++j){
+            workp *p = j->second;
+            mblok *mbk = p->mbk;
+            
+            out << p->wid << "," << p->log << "," << p->lat << "," << p->area << "," << p->cbk->mbloksIndexB[mbk->mid] << endl;
+        }
+        out.close();
+    }
+    else{
+        string line;
+        getline(in, line);  //skip the header
+        
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");    int wid = atoi(p);
+            p = std::strtok(NULL, ",");         double log = atof(p);
+            p = std::strtok(NULL, ",");         double lat = atof(p);
+            p = std::strtok(NULL, ",");         double area = atof(p);
+            p = std::strtok(NULL, ",");         string mbk = p;
+            
+            mblok *mbk_p = mbloks[mbloksIndexA[mbk]];
+            workp *wp = new workp(wid, log, lat, area, mbk_p, this);
+            
+            mbk_p->add_workp(wp);
+            delete []str;
+        }
+        in.close();
+    }
+    
+    //read schools
+    data = config_bldg;      data = data + AS_schols;
+    in.open(data.c_str());
+    
+    if(!in){
+        data = datadir;      data = data + AS_schols_origin;
+        in.open(data.c_str());
+        
+        string line;
+        getline(in, line);
+        
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            strncpy(str, line.c_str(), line.size());
+            
+            char *p = std::strtok(str, ",");    string name = p;
+            p = std::strtok(NULL, ",");         char level = p[0];
+            p = std::strtok(NULL, ",");         string cate = p;
+            p = std::strtok(NULL, ",");         double lat = atof(p);
+            p = std::strtok(NULL, ",");         double log = atof(p);
+            
+            double radius = 0;
+            if(level == 'E') radius = 25;
+            else if(level == 'H' || level == 'B') radius = 50;
+            else if(level == 'C') radius = 100;
+            
+            schol *sh = new schol(next_sid++, name, level, log, lat, radius);
+            cblok_schols.insert(pair<int, schol*>(sh->sid, sh));
+            
+            delete []str;
+        }
+        
+        //output schol
+        data = config_bldg;     data = data + AS_schols;
+        ofstream out(data.c_str());
+        out << "schol_id,name,level,log,lat,radius" << endl;
+        out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
+        
+        for(map<int, schol*>::iterator j = cblok_schols.begin(); j != cblok_schols.end(); ++j){
+            schol *p = j->second;
+            
+            out << p->sid << "," << p->name << "," << p->level << "," << p->log << "," << p->lat << "," << p->radius << endl;
+        }
+        out.close();
+    }
+    else{
+        string line;
+        getline(in, line);  //skip the header
+        
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");    int sid = atoi(p);
+            p = std::strtok(NULL, ",");         string name = p;
+            p = std::strtok(NULL, ",");         char level = p[0];
+            p = std::strtok(NULL, ",");         double log = atof(p);
+            p = std::strtok(NULL, ",");         double lat = atof(p);
+            p = std::strtok(NULL, ",");         double radius = atof(p);
+            
+            schol *sh = new schol(sid, name, level, log, lat, radius);
+
+            cblok_schols.insert(pair<int, schol*>(sh->sid, sh));
+            delete []str;
+        }
+        in.close();
+    }
+    
+    //risk range
+    data = config;      data = data + AS_bldg_risk_range;
+    in.open(data.c_str());
+    
+    if(!in){
+        for(map<int, rbldg*>::iterator j = cblok_vcnt_rbldgs.begin(); j != cblok_vcnt_rbldgs.end(); ++j){
+            rbldg *rb = j->second;
+            
+            //residential <--> residential
+            for(map<int, rbldg*>::iterator k = j; k != cblok_vcnt_rbldgs.end(); ++k){
+                rbldg *rb_2 = k->second;
+                if(rb_2->bid == rb->bid) continue;
+                
+                double abs_x = abs(rb->lat - rb_2->lat);
+                if(abs_x > risk_range) continue;
+                
+                double abs_y = abs(rb->log - rb_2->log);
+                if(abs_y > risk_range) continue;
+                
+                double diff = abs_x*abs_x + abs_y*abs_y;
+                if(diff > pow(risk_range, 2)) continue;
+                
+                rb->r_neigh.push_back(rb_2);
+                rb_2->r_neigh.push_back(rb);
+            }
+            
+            //residential <--> workp
+            for(map<int, workp*>::iterator k = cblok_workps.begin(); k != cblok_workps.end(); ++k){
+                workp *wp = k->second;
+                
+                double abs_x = abs(rb->lat - wp->lat);
+                if(abs_x > risk_range) continue;
+                
+                double abs_y = abs(rb->log - wp->log);
+                if(abs_y > risk_range) continue;
+                
+                double diff = abs_x*abs_x + abs_y*abs_y;
+                if(diff > pow(risk_range, 2)) continue;
+                
+                rb->w_neigh.push_back(wp);
+                wp->r_neigh.push_back(rb);
+            }
+            
+            //residential <--> schol
+            for(map<int, schol*>::iterator k = cblok_schols.begin(); k != cblok_schols.end(); ++k){
+                schol *sh = k->second;
+                
+                double abs_x = abs(rb->lat - sh->lat);
+                if(abs_x > risk_range) continue;
+                
+                double abs_y = abs(rb->log - sh->log);
+                if(abs_y > risk_range) continue;
+                
+                double diff = abs_x*abs_x + abs_y*abs_y;
+                if(diff > pow(risk_range, 2)) continue;
+                
+                rb->s_neigh.push_back(sh);
+                sh->r_neigh.push_back(rb);
+            }
+        }
+        
+        for(map<int, workp*>::iterator j = cblok_workps.begin(); j != cblok_workps.end(); ++j){
+            workp *wp = j->second;
+            
+            //workp <--> workp
+            for(map<int, workp*>::iterator k = j; k != cblok_workps.end(); ++k){
+                workp *wp_2 = k->second;
+                if(wp_2->wid == wp->wid) continue;
+                
+                double abs_x = abs(wp->lat - wp_2->lat);
+                if(abs_x > risk_range) continue;
+                
+                double abs_y = abs(wp->log - wp_2->log);
+                if(abs_y > risk_range) continue;
+                
+                double diff = abs_x*abs_x + abs_y*abs_y;
+                if(diff > pow(risk_range, 2)) continue;
+                
+                wp->w_neigh.push_back(wp_2);
+                wp_2->w_neigh.push_back(wp);
+            }
+            
+            //workp <--> schol
+            for(map<int, schol*>::iterator k = cblok_schols.begin(); k != cblok_schols.end(); ++k){
+                schol *sh = k->second;
+                
+                double abs_x = abs(wp->lat - sh->lat);
+                if(abs_x > risk_range) continue;
+                
+                double abs_y = abs(wp->log - sh->log);
+                if(abs_y > risk_range) continue;
+                
+                double diff = abs_x*abs_x + abs_y*abs_y;
+                if(diff > pow(risk_range, 2)) continue;
+                
+                wp->s_neigh.push_back(sh);
+                sh->w_neigh.push_back(wp);
+            }
+        }
+        
+        //schol <--> schol
+        for(map<int, schol*>::iterator j = cblok_schols.begin(); j != cblok_schols.end(); ++j){
+            schol *sh = j->second;
+            for(map<int, schol*>::iterator k = j; k != cblok_schols.end(); ++k){
+                schol *sh_2 = k->second;
+                if(sh_2->sid == sh->sid) continue;
+                
+                double abs_x = abs(sh->lat - sh_2->lat);
+                if(abs_x > risk_range) continue;
+                
+                double abs_y = abs(sh->log - sh_2->log);
+                if(abs_y > risk_range) continue;
+                
+                double diff = abs_x*abs_x + abs_y*abs_y;
+                if(diff > pow(risk_range, 2)) continue;
+                
+                sh->s_neigh.push_back(sh_2);
+                sh_2->s_neigh.push_back(sh);
+            }
+        }
+    }
+    in.close();
+    
+    data = config_bldg;      data = data + AS_occupy_rbldgs;
+    in.open(data.c_str());
+    if(!in){
+        allct_rbldgs();         //allocate hholds to residential buildings
+        
+        ofstream out(data.c_str());
+        out << "bid,hid" << endl;
+        for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+            mblok *mbk = j->second;
+            for(map<int, rbldg*>::iterator k = mbk->mblok_ocpy_rbldgs.begin(); k != mbk->mblok_ocpy_rbldgs.end(); ++k){
+                rbldg *rb = k->second;
+                out << rb->bid << "," << rb->h_d->hid << "," << mbloksIndexB[mbk->mid] << endl;
             }
         }
         out.close();
@@ -1168,19 +1478,323 @@ void cblok::hndl_land_data(){
             std::strcpy(str, line.c_str());
             
             char *p = std::strtok(str, ",");    int bid = atoi(p);
-            p = std::strtok(NULL, ",");         double log = atof(p);
-            p = std::strtok(NULL, ",");         double lat = atof(p);
-            p = std::strtok(NULL, ",");         double area = atof(p);
-            p = std::strtok(NULL, ",");         string mbk = p;
             p = std::strtok(NULL, ",");         int hid = atoi(p);
+            p = std::strtok(NULL, ",");         string mbk = p;
             
-            mblok *mbk_p = mbloks[mbloksIndexA[mbk]];
-            rbldg *bg = new rbldg(bid, log, lat, area, mbk_p, this);
+            mblok *m_bk = mbloks[mbloksIndexA[mbk]];
+            rbldg *rb = m_bk->mblok_vcnt_rbldgs[bid];
+            hhold *hd = m_bk->mblok_hholds[hid];
             
-            if(hid != -1) mbk_p->mblok_hholds[hid]->asg_rbldg(bg);
-            
-            mbk_p->add_rbldg(bg, bg->h_d);
+            hd->asg_rbldg(rb);
             delete []str;
+        }
+        in.close();
+    }
+    
+    data = config;      data = data + AS_bldg_risk_range;
+    in.open(data.c_str());
+    if(!in){
+        ofstream out(data.c_str());
+        for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+            mblok *mbk = j->second;
+            
+            for(map<int, rbldg*>::iterator k = mbk->mblok_ocpy_rbldgs.begin(); k != mbk->mblok_ocpy_rbldgs.end(); ++k){
+                rbldg *p = k->second;
+                
+                if(p->r_neigh.size()+p->w_neigh.size()+p->s_neigh.size() == 0)
+                    continue;
+                
+                out << "h," << p->bid << "," << mbloksIndexB[p->mbk->mid] << ",1" << endl;
+                
+                out << p->r_neigh.size() << endl;
+                for(int i = 0; i < p->r_neigh.size(); ++i){
+                    out << p->r_neigh[i]->bid << "," << mbloksIndexB[p->r_neigh[i]->mbk->mid] << ",";
+                    if(p->r_neigh[i]->h_d == NULL) out << 0 << endl;
+                    else out << 1 << endl;
+                }
+                
+                out << p->w_neigh.size() << endl;
+                for(int i = 0; i < p->w_neigh.size(); ++i){
+                    out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << endl;
+                }
+                
+                out << p->s_neigh.size() << endl;
+                for(int i = 0; i < p->s_neigh.size(); ++i){
+                    out << p->s_neigh[i]->sid << endl;
+                }
+            }
+            
+            for(map<int, rbldg*>::iterator k = mbk->mblok_vcnt_rbldgs.begin(); k != mbk->mblok_vcnt_rbldgs.end(); ++k){
+                rbldg *p = k->second;
+                
+                if(p->r_neigh.size()+p->w_neigh.size()+p->s_neigh.size() == 0)
+                    continue;
+                
+                out << "h," << p->bid << "," << mbloksIndexB[p->mbk->mid] << ",0" << endl;
+                
+                out << p->r_neigh.size() << endl;
+                for(int i = 0; i < p->r_neigh.size(); ++i){
+                    out << p->r_neigh[i]->bid << "," << mbloksIndexB[p->r_neigh[i]->mbk->mid] << ",";
+                    if(p->r_neigh[i]->h_d == NULL) out << 0 << endl;
+                    else out << 1 << endl;
+                }
+                
+                out << p->w_neigh.size() << endl;
+                for(int i = 0; i < p->w_neigh.size(); ++i){
+                    out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << endl;
+                }
+                
+                out << p->s_neigh.size() << endl;
+                for(int i = 0; i < p->s_neigh.size(); ++i){
+                    out << p->s_neigh[i]->sid << endl;
+                }
+            }
+        }
+        
+        //workp
+        for(map<int, workp*>::iterator j = cblok_workps.begin(); j != cblok_workps.end(); ++j){
+            workp *p = j->second;
+            
+            if(p->r_neigh.size()+p->w_neigh.size()+p->s_neigh.size() == 0)
+                continue;
+            
+            out << "w," << p->wid << "," << mbloksIndexB[p->mbk->mid] << endl;
+            
+            out << p->r_neigh.size() << endl;
+            for(int i = 0; i < p->r_neigh.size(); ++i){
+                out << p->r_neigh[i]->bid << "," << mbloksIndexB[p->r_neigh[i]->mbk->mid] << ",";
+                if(p->r_neigh[i]->h_d == NULL) out << 0 << endl;
+                else out << 1 << endl;
+            }
+            
+            out << p->w_neigh.size() << endl;
+            for(int i = 0; i < p->w_neigh.size(); ++i){
+                out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << endl;
+            }
+            
+            out << p->s_neigh.size() << endl;
+            for(int i = 0; i < p->s_neigh.size(); ++i){
+                out << p->s_neigh[i]->sid << endl;
+            }
+        }
+        
+        //schol
+        for(map<int, schol*>::iterator j = cblok_schols.begin(); j != cblok_schols.end(); ++j){
+            schol *p = j->second;
+            
+            if(p->r_neigh.size()+p->w_neigh.size()+p->s_neigh.size() == 0)
+                continue;
+            
+            out << "s," << p->sid << ",NA" << endl;
+            
+            out << p->r_neigh.size() << endl;
+            for(int i = 0; i < p->r_neigh.size(); ++i){
+                out << p->r_neigh[i]->bid << "," << mbloksIndexB[p->r_neigh[i]->mbk->mid] << ",";
+                if(p->r_neigh[i]->h_d == NULL) out << 0 << endl;
+                else out << 1 << endl;
+            }
+            
+            out << p->w_neigh.size() << endl;
+            for(int i = 0; i < p->w_neigh.size(); ++i){
+                out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << endl;
+            }
+            
+            out << p->s_neigh.size() << endl;
+            for(int i = 0; i < p->s_neigh.size(); ++i){
+                out << p->s_neigh[i]->sid << endl;
+            }
+        }
+        out.close();
+    }
+    else{
+        string line;
+        while(getline(in, line)){
+            char *str = new char[line.size()+1];
+            std::strcpy(str, line.c_str());
+            
+            char *p = std::strtok(str, ",");    char type = p[0];
+            p = std::strtok(NULL, ",");         int id = atoi(p);
+            p = std::strtok(NULL, ",");         string mbk = p;
+            
+            if(type == 'h'){
+                p = std::strtok(NULL, ",");         char ocpy = p[0];
+                delete []str;
+                
+                mblok *m_bk = mbloks[mbloksIndexA[mbk]];
+                rbldg *rb = NULL;
+                if(ocpy == '0') rb = m_bk->mblok_vcnt_rbldgs[id];
+                else rb = m_bk->mblok_ocpy_rbldgs[id];
+                
+                //residential neighbor
+                getline(in, line);
+                int num = atoi(line.c_str());
+                while(num-- > 0){
+                    getline(in, line);
+                    str = new char[line.size()+1];
+                    std::strcpy(str, line.c_str());
+                    
+                    p = std::strtok(str, ",");    id = atoi(p);
+                    p = std::strtok(NULL, ",");   mbk = p;
+                    p = std::strtok(NULL, ",");   ocpy = p[0];
+                    m_bk = mbloks[mbloksIndexA[mbk]];
+                    
+                    rbldg *rb_2 = NULL;
+                    if(ocpy == '0') rb_2 = m_bk->mblok_vcnt_rbldgs[id];
+                    else rb_2 = m_bk->mblok_ocpy_rbldgs[id];
+                    
+                    rb->r_neigh.push_back(rb_2);
+                    delete []str;
+                }
+                
+                //workplace neighbor
+                getline(in, line);
+                num = atoi(line.c_str());
+                while(num-- > 0){
+                    getline(in, line);
+                    str = new char[line.size()+1];
+                    std::strcpy(str, line.c_str());
+                    
+                    p = std::strtok(str, ",");    id = atoi(p);
+                    p = std::strtok(NULL, ",");   mbk = p;
+                    m_bk = mbloks[mbloksIndexA[mbk]];
+                    
+                    workp *wp = m_bk->mblok_workps[id];
+                    
+                    rb->w_neigh.push_back(wp);
+                    delete []str;
+                }
+                
+                //schol neighbor
+                getline(in, line);
+                num = atoi(line.c_str());
+                while(num-- > 0){
+                    getline(in, line);
+                    id = atoi(line.c_str());
+                    
+                    schol *sh = cblok_schols[id];
+                    
+                    rb->s_neigh.push_back(sh);
+                }
+            }
+            else if(type == 'w'){
+                delete []str;
+                
+                mblok *m_bk = mbloks[mbloksIndexA[mbk]];
+                workp *wp = m_bk->mblok_workps[id];
+                
+                //residential neighbor
+                getline(in, line);
+                int num = atoi(line.c_str());
+                
+                while(num-- > 0){
+                    getline(in, line);
+                    str = new char[line.size()+1];
+                    std::strcpy(str, line.c_str());
+                    
+                    p = std::strtok(str, ",");    id = atoi(p);
+                    p = std::strtok(NULL, ",");   mbk = p;
+                    p = std::strtok(NULL, ",");   char ocpy = p[0];
+                    m_bk = mbloks[mbloksIndexA[mbk]];
+                    
+                    rbldg *rb_2 = NULL;
+                    if(ocpy == '0') rb_2 = m_bk->mblok_vcnt_rbldgs[id];
+                    else rb_2 = m_bk->mblok_ocpy_rbldgs[id];
+                    
+                    wp->r_neigh.push_back(rb_2);
+                    delete []str;
+                }
+                
+                //workplace neighbor
+                getline(in, line);
+                num = atoi(line.c_str());
+                
+                while(num-- > 0){
+                    getline(in, line);
+                    str = new char[line.size()+1];
+                    std::strcpy(str, line.c_str());
+                    
+                    p = std::strtok(str, ",");    id = atoi(p);
+                    p = std::strtok(NULL, ",");   mbk = p;
+                    m_bk = mbloks[mbloksIndexA[mbk]];
+                    
+                    workp *wp_2 = m_bk->mblok_workps[id];
+                    
+                    wp->w_neigh.push_back(wp_2);
+                    delete []str;
+                }
+                
+                //schol neighbor
+                getline(in, line);
+                num = atoi(line.c_str());
+                
+                while(num-- > 0){
+                    getline(in, line);
+                    id = atoi(line.c_str());
+                    
+                    schol *sh = cblok_schols[id];
+                    
+                    wp->s_neigh.push_back(sh);
+                }
+            }
+            else{
+                delete []str;
+                
+                schol *sh = cblok_schols[id];
+                
+                //residential neighbor
+                getline(in, line);
+                int num = atoi(line.c_str());
+                
+                while(num-- > 0){
+                    getline(in, line);
+                    str = new char[line.size()+1];
+                    std::strcpy(str, line.c_str());
+                    
+                    p = std::strtok(str, ",");    id = atoi(p);
+                    p = std::strtok(NULL, ",");   string mbk = p;
+                    p = std::strtok(NULL, ",");   char ocpy = p[0];
+                    mblok *m_bk = mbloks[mbloksIndexA[mbk]];
+                    
+                    rbldg *rb_2 = NULL;
+                    if(ocpy == '0') rb_2 = m_bk->mblok_vcnt_rbldgs[id];
+                    else rb_2 = m_bk->mblok_ocpy_rbldgs[id];
+                    
+                    sh->r_neigh.push_back(rb_2);
+                    delete []str;
+                }
+                
+                //workplace neighbor
+                getline(in, line);
+                num = atoi(line.c_str());
+                
+                while(num-- > 0){
+                    getline(in, line);
+                    str = new char[line.size()+1];
+                    std::strcpy(str, line.c_str());
+                    
+                    p = std::strtok(str, ",");    id = atoi(p);
+                    p = std::strtok(NULL, ",");   string mbk = p;
+                    mblok *m_bk = mbloks[mbloksIndexA[mbk]];
+                    
+                    workp *wp = m_bk->mblok_workps[id];
+                    
+                    sh->w_neigh.push_back(wp);
+                    delete []str;
+                }
+                
+                //schol neighbor
+                getline(in, line);
+                num = atoi(line.c_str());
+                
+                while(num-- > 0){
+                    getline(in, line);
+                    id = atoi(line.c_str());
+                    
+                    schol *sh_2 = cblok_schols[id];
+                    
+                    sh->s_neigh.push_back(sh_2);
+                }
+            }
         }
         in.close();
     }
@@ -1208,8 +1822,8 @@ void cblok::hndl_rbldg(string ff, int low, int upper, int min_dist){
         }
         
         p = std::strtok(NULL, ",");      double area = atof(p);
-        p = std::strtok(NULL, ",");      double log = atof(p);
         p = std::strtok(NULL, ",");      double lat = atof(p);
+        p = std::strtok(NULL, ",");      double log = atof(p);
         
         mblok *mbk_p = mbloks[mbloksIndexA[mbk]];
         rbldg *bg = new rbldg(bid, log, lat, area, mbk_p, this);
@@ -1312,10 +1926,6 @@ void cblok::hndl_rbldg(string ff, int low, int upper, int min_dist){
     cout << "bldgs number with reconstruction is " << cblok_vcnt_rbldgs.size() << endl;
 }
 
-void cblok::hndl_bbldg(string ff, int low, int upper, int min_dist){
-    
-}
-
 void cblok::allct_rbldgs(){
     struct _comp_bldg{
         bool operator() (const rbldg *lhs, const rbldg *rhs){
@@ -1360,10 +1970,6 @@ void cblok::allct_rbldgs(){
         v_1.clear(); v_1.shrink_to_fit();
         v_2.clear(); v_2.shrink_to_fit();
     }
-}
-
-void cblok::allct_bbldgs(){
-    
 }
 
 void cblok::calc_bldg_dist(){
@@ -1490,9 +2096,9 @@ mblok::~mblok(){
         delete j->second;
     mblok_vcnt_rbldgs.clear();
     
-    for(map<int, wbldg*>::iterator j = mblok_wbldgs.begin(); j != mblok_wbldgs.end(); ++j)
+    for(map<int, workp*>::iterator j = mblok_workps.begin(); j != mblok_workps.end(); ++j)
         delete j->second;
-    mblok_wbldgs.clear();
+    mblok_workps.clear();
 }
 
 void mblok::bld_mblok_pop(){

@@ -29,8 +29,7 @@ int main(int argc, const char * argv[]) {
     cout << "available hid: " << cbk->next_hid << endl;
     cout << "available mid: " << cbk->next_mid << endl;
     cout << "vacant blding: " << cbk->cblok_vcnt_rbldgs.size() << endl;
-    cout << "road dist: " << cbk->mbloksIndexB[1] << "-" << cbk->mbloksIndexB[2] << " " << cbk->road_dst[0] << endl;
-
+    
     for(int year = 0; year < 40; ++year){
         births = 0;
         deaths = 0;
@@ -39,7 +38,6 @@ int main(int argc, const char * argv[]) {
         cout << "year = " << year+2011 << " birth = " << births << " death = " << deaths  << " mgrt = " << int(cbk->cpop*cbk->pop_loss[year]/1000) << " hhold rup = " << rup << endl;
         cout << "year = " << year+2011 << " cpop = " << cbk->cpop << endl;
         cbk->get_hhold(year);
-        cout << "vant bldg = " << cbk->cblok_vcnt_rbldgs.size() << endl;
         
         if(year == 0) cbk->get_hhold_size(year);
         if((year+1)%10 == 0) cbk->get_hhold_size(year);

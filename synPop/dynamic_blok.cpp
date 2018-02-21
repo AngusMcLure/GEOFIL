@@ -39,6 +39,11 @@ void mblok::rmv_member(agent *p){
     else mblok_fmals.erase(p->aid);
 }
 
+void mblok::add_workp(workp *p){
+    mblok_workps.insert(pair<int, workp*>(p->wid, p));
+    cbk->cblok_workps.insert(pair<int, workp*>(p->wid, p));
+}
+
 void mblok::add_rbldg(rbldg *p, hhold* h_hold){
     if(h_hold == NULL){
         mblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
@@ -117,9 +122,9 @@ void cblok::rmv_vcnt_rbldg(rbldg *p){
 }
 
 void cblok::sim_pop(int year){
-    if(year % 5 == 0) radt_model('r');
-    
     hndl_jobs(year);
+    
+    get_works(year);
     
     for(int day = 0; day < 365; ++day){
         renew_pop(year, day);

@@ -9,7 +9,7 @@
 #ifndef social_cell_h
 #define social_cell_h
 
-#include "bldg.h"
+#include "units.h"
 using namespace std;
 
 //family units
@@ -61,45 +61,6 @@ public:
     void rmv_member(agent *p);
     bool is_member(agent *p);
     
-};
-
-class workp{
-public:
-    int wid;
-    int siz;
-    map<int, agent*> employee;             //employees members
-    double lat, log;
-    double area;
-    
-    map<int, wbldg*> wdg;                         //building list
-    
-    workp(int wid, int siz);
-    ~workp();
-    
-    void add_bldg(wbldg *wdg);
-    void add_mmbr(agent *p);
-    void rmv_mmbr(agent *p);
-    void update();
-    void removd();
-};
-
-class schol{
-public:
-    int sid;
-    string name;
-    char level;
-    double lat, log;
-    double radius;
-
-    map<int, agent*> student;
-    
-    schol(int sid, string name, char level, double lat, double log, double radius);
-    ~schol();
-    
-    void add_stdt(agent *p);
-    void rmv_stdt(agent *p);
-    void update();
-    void removd();
 };
 
 #endif /* social_cell_h */

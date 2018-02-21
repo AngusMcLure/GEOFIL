@@ -8,6 +8,23 @@
 
 #include "block.h"
 
+void cblok::get_works(int year){
+    int t_1 = 0, t_2 = 0, t_3 = 0;
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        
+        int worker = 0;
+        for(map<int, workp*>::iterator k = mbk->mblok_workps.begin(); k != mbk->mblok_workps.end(); ++k)
+            worker += k->second->workers.size();
+        
+        cout << mbloksIndexB[mbk->mid] << " " << worker << " " << int(mbk->jobs) << endl;
+        t_1 += worker;
+        t_2 += int(mbk->jobs);
+        t_3 += int(mbk->labors);
+    }
+    cout << "total employment: " << t_1 << " " << t_2 << " " << t_3 <<  endl;
+}
+
 void cblok::get_hhold(int year){
     chold = 0;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){

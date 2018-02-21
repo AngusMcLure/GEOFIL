@@ -135,22 +135,6 @@ void hhold::update_hhold(){
     size = int(mmbrs.size());
 }
 
-rbldg::rbldg(int bid, double lat, double log, double area, mblok *mbk, cblok *cbk){
-    this->bid = bid;
-    this->lat = lat;
-    this->log = log;
-    this->area = area;
-    this->h_d = NULL;
-    this->mbk = mbk;
-    this->cbk = cbk;
-}
-
-rbldg::~rbldg(){
-    h_d = NULL;
-    mbk = NULL;
-    cbk = NULL;
-}
-
 void cblok::re_location(agent *p, hhold *h_hold){
     hhold *p_h = p->h_d;
     mblok *p_bk = p_h->rdg->mbk;

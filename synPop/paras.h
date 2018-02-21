@@ -60,6 +60,8 @@
 #define cannery_avg         0.176
 #define commuting_ratio     0.703       //2010 data, 289/411
 
+#define risk_range          500
+
 //functions
 int ztpoisson(double l_lambda);
 int binomial(int r, double p);
@@ -70,6 +72,10 @@ double gaussian(double m_mu, double s_sigma);
 //paths
 #define datadir                 "/Users/stingxu/Desktop/Coding/SynPop/data/"
 #define config                  "/Users/stingxu/Desktop/Coding/SynPop/$config/"
+#define config_pop              "/Users/stingxu/Desktop/Coding/SynPop/$config/pop/"
+#define config_hhold            "/Users/stingxu/Desktop/Coding/SynPop/$config/hold/"
+#define config_unit             "/Users/stingxu/Desktop/Coding/SynPop/$config/unit/"
+#define config_bldg             "/Users/stingxu/Desktop/Coding/SynPop/$config/bldg/"
 #define parameters              "/Users/stingxu/Desktop/Coding/SynPop/parameters/"
 #define outdir                  "/Users/stingxu/Desktop/Coding/SynPop/output/"
 
@@ -94,14 +100,13 @@ double gaussian(double m_mu, double s_sigma);
 
 //land use data
 #define AS_rbldgs_origin        "AS_rbldgs_origin.csv"
-#define AS_sbldgs_origin        "AS_sbldgs_origin.csv"
-#define AS_wbldgs_origin        "AS_wbldgs_origin.csv"
+#define AS_schols_origin        "AS_schols_origin.csv"
+#define AS_workps_origin        "AS_workps_origin.csv"
 #define AS_rbldgs               "AS_rbldgs.dat"
-#define AS_sbldgs               "AS_sbldgs.dat"
-#define AS_wbldgs               "AS_wbldgs.dat"
-#define AS_bldg_dist            "syn_bldg_distance.dat"
-
-#define AS_schools              "AS_schools.csv"
+#define AS_workps               "AS_workps.dat"
+#define AS_schols               "AS_schols.dat"
+#define AS_occupy_rbldgs        "AS_occupy_rbldgs.dat"
+#define AS_bldg_risk_range      "AS_bldg_risk_range.dat"
 
 //geographics
 #define village_coordinates     "villages_lat_lon.csv"
