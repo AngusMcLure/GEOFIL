@@ -25,10 +25,10 @@ int main(int argc, const char * argv[]) {
     cblok *cbk = new cblok(as_cid, "American Samoa", as_lat, as_long);
     cout << "total pop: " << cbk->cpop << endl;
     cout << "total villages: " << cbk->mbloks.size() << endl;
-    cout << "available aid: " << cbk->next_aid << endl;
-    cout << "available hid: " << cbk->next_hid << endl;
-    cout << "available mid: " << cbk->next_mid << endl;
-    cout << "vacant blding: " << cbk->cblok_vcnt_rbldgs.size() << endl;
+    cout << "total school: " << cbk->cblok_schols.size() << endl;
+    cout << "total elementary: " << cbk->cblok_e_schols.size() << endl;
+    cout << "total high: " << cbk->cblok_h_schols.size() << endl;
+    cout << "total college: " << cbk->cblok_c_schols.size() << endl;
     
     for(int year = 0; year < 40; ++year){
         births = 0;

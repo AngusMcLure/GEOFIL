@@ -109,7 +109,10 @@ public:
     map<int, workp*> cblok_workps;
     
     int next_sid;
-    map<int, schol*> cblok_schols;
+    vector<schol*> cblok_schols;
+    map<int, schol*> cblok_e_schols;
+    map<int, schol*> cblok_h_schols;
+    map<int, schol*> cblok_c_schols;
     
     double labor_force;                //total employment
     double LFPR_by_agrp[2][11];        //labor force participation rate
@@ -166,7 +169,6 @@ public:
     bool pop_reload();
     void read_demgrphcs();
     void read_parmtrs();
-    void rnd_jobs(agent *p);
     void rnd_mother();
     void reset_cpop();
     void bld_mbloks();
@@ -187,7 +189,9 @@ public:
     void radt_model(char m);
     
     void sim_pop(int year);
+    void rnd_jobs(agent *p);
     void hndl_jobs(int year);
+    void hndl_schol(int year);
     void hndl_marrg(int year);
     void hndl_divrc(int year);
     void hndl_migrt(int year);
@@ -195,6 +199,7 @@ public:
     void renew_pop(int year, int day);
     void hndl_birth(int year, int day);
     void validate_pop(int year, int day);
+    void select_schol(agent *p, char level);
     
     void get_works(int year);
     void get_hhold(int year);

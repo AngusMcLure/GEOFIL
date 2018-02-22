@@ -25,6 +25,9 @@ cblok::cblok(int cid, string cname, double lat, double log){
     euclid_dst = NULL;
     road_dst = NULL;
     
+    cblok_schols.clear();
+    cblok_schols.shrink_to_fit();
+    
     init = pop_reload();
     
     if(!init){
@@ -338,6 +341,18 @@ void cblok::reset_cpop(){
     for(int i = 0; i < 11; ++i) fmal_cbrs[i].clear();
     
     //clear meshblocks, households, buildings
+    for(map<int, workp*>::iterator j = cblok_workps.begin(); j != cblok_workps.end(); ++j)
+        delete j->second;
+    cblok_workps.clear();
+    
+    for(int i = 0; i < cblok_schols.size(); ++i)
+        delete cblok_schols[i];
+    cblok_schols.clear();
+    cblok_schols.shrink_to_fit();
+    cblok_e_schols.clear();
+    cblok_h_schols.clear();
+    cblok_c_schols.clear();
+    
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j)
         delete j->second;
     mbloks.clear();
@@ -351,12 +366,6 @@ void cblok::reset_cpop(){
     //clear meshblock index
     mbloksIndexA.clear();
     mbloksIndexB.clear();
-    
-    //clear meshblock distance matrix
-    /*for(int i = 0; i < meshblocks; ++i){
-        delete [] euclid_dist[i];
-        delete [] road_dist[i];
-    }*/
     
     //clear age groups data
     for(map<int, agrps*>::iterator j = mblok_agrps.begin(); j != mblok_agrps.end(); ++j)
@@ -1289,7 +1298,15 @@ void cblok::hndl_land_data(){
             else if(level == 'C') radius = 100;
             
             schol *sh = new schol(next_sid++, name, level, log, lat, radius);
-            cblok_schols.insert(pair<int, schol*>(sh->sid, sh));
+            cblok_schols.push_back(sh);
+            
+            if(level == 'E') cblok_e_schols.insert(pair<int, schol*>(sh->sid, sh));
+            else if(level == 'H') cblok_h_schols.insert(pair<int, schol*>(sh->sid, sh));
+            else if(level == 'B'){
+                cblok_e_schols.insert(pair<int, schol*>(sh->sid, sh));
+                cblok_h_schols.insert(pair<int, schol*>(sh->sid, sh));
+            }
+            else if(level == 'C') cblok_c_schols.insert(pair<int, schol*>(sh->sid, sh));
             
             delete []str;
         }
@@ -1300,9 +1317,8 @@ void cblok::hndl_land_data(){
         out << "schol_id,name,level,log,lat,radius" << endl;
         out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
         
-        for(map<int, schol*>::iterator j = cblok_schols.begin(); j != cblok_schols.end(); ++j){
-            schol *p = j->second;
-            
+        for(int i = 0; i < cblok_schols.size(); ++i){
+            schol *p = cblok_schols[i];
             out << p->sid << "," << p->name << "," << p->level << "," << p->log << "," << p->lat << "," << p->radius << endl;
         }
         out.close();
@@ -1323,8 +1339,16 @@ void cblok::hndl_land_data(){
             p = std::strtok(NULL, ",");         double radius = atof(p);
             
             schol *sh = new schol(sid, name, level, log, lat, radius);
+            cblok_schols.push_back(sh);
 
-            cblok_schols.insert(pair<int, schol*>(sh->sid, sh));
+            if(level == 'E') cblok_e_schols.insert(pair<int, schol*>(sh->sid, sh));
+            else if(level == 'H') cblok_h_schols.insert(pair<int, schol*>(sh->sid, sh));
+            else if(level == 'B'){
+                cblok_e_schols.insert(pair<int, schol*>(sh->sid, sh));
+                cblok_h_schols.insert(pair<int, schol*>(sh->sid, sh));
+            }
+            else if(level == 'C') cblok_c_schols.insert(pair<int, schol*>(sh->sid, sh));
+            
             delete []str;
         }
         in.close();
@@ -1374,8 +1398,8 @@ void cblok::hndl_land_data(){
             }
             
             //residential <--> schol
-            for(map<int, schol*>::iterator k = cblok_schols.begin(); k != cblok_schols.end(); ++k){
-                schol *sh = k->second;
+            for(int i = 0; i < cblok_schols.size(); ++i){
+                schol *sh = cblok_schols[i];
                 
                 double abs_x = abs(rb->lat - sh->lat);
                 if(abs_x > risk_range) continue;
@@ -1413,8 +1437,8 @@ void cblok::hndl_land_data(){
             }
             
             //workp <--> schol
-            for(map<int, schol*>::iterator k = cblok_schols.begin(); k != cblok_schols.end(); ++k){
-                schol *sh = k->second;
+            for(int i = 0; i < cblok_schols.size(); ++i){
+                schol *sh = cblok_schols[i];
                 
                 double abs_x = abs(wp->lat - sh->lat);
                 if(abs_x > risk_range) continue;
@@ -1431,11 +1455,10 @@ void cblok::hndl_land_data(){
         }
         
         //schol <--> schol
-        for(map<int, schol*>::iterator j = cblok_schols.begin(); j != cblok_schols.end(); ++j){
-            schol *sh = j->second;
-            for(map<int, schol*>::iterator k = j; k != cblok_schols.end(); ++k){
-                schol *sh_2 = k->second;
-                if(sh_2->sid == sh->sid) continue;
+        for(int i = 0; i < cblok_schols.size(); ++i){
+            schol *sh = cblok_schols[i];
+            for(int k = i+1; k < cblok_schols.size(); ++k){
+                schol *sh_2 = cblok_schols[k];
                 
                 double abs_x = abs(sh->lat - sh_2->lat);
                 if(abs_x > risk_range) continue;
@@ -1520,7 +1543,7 @@ void cblok::hndl_land_data(){
                 
                 out << p->s_neigh.size() << endl;
                 for(int i = 0; i < p->s_neigh.size(); ++i){
-                    out << p->s_neigh[i]->sid << endl;
+                    out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << endl;
                 }
             }
             
@@ -1546,7 +1569,7 @@ void cblok::hndl_land_data(){
                 
                 out << p->s_neigh.size() << endl;
                 for(int i = 0; i < p->s_neigh.size(); ++i){
-                    out << p->s_neigh[i]->sid << endl;
+                    out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << endl;
                 }
             }
         }
@@ -1574,18 +1597,18 @@ void cblok::hndl_land_data(){
             
             out << p->s_neigh.size() << endl;
             for(int i = 0; i < p->s_neigh.size(); ++i){
-                out << p->s_neigh[i]->sid << endl;
+                out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << endl;
             }
         }
         
         //schol
-        for(map<int, schol*>::iterator j = cblok_schols.begin(); j != cblok_schols.end(); ++j){
-            schol *p = j->second;
+        for(int i = 0; i < cblok_schols.size(); ++i){
+            schol *p = cblok_schols[i];
             
             if(p->r_neigh.size()+p->w_neigh.size()+p->s_neigh.size() == 0)
                 continue;
             
-            out << "s," << p->sid << ",NA" << endl;
+            out << "s," << p->sid << "," << p->level << endl;
             
             out << p->r_neigh.size() << endl;
             for(int i = 0; i < p->r_neigh.size(); ++i){
@@ -1601,7 +1624,7 @@ void cblok::hndl_land_data(){
             
             out << p->s_neigh.size() << endl;
             for(int i = 0; i < p->s_neigh.size(); ++i){
-                out << p->s_neigh[i]->sid << endl;
+                out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << endl;
             }
         }
         out.close();
@@ -1669,11 +1692,19 @@ void cblok::hndl_land_data(){
                 num = atoi(line.c_str());
                 while(num-- > 0){
                     getline(in, line);
-                    id = atoi(line.c_str());
+                    str = new char[line.size()+1];
+                    std::strcpy(str, line.c_str());
                     
-                    schol *sh = cblok_schols[id];
+                    p = std::strtok(str, ",");    id = atoi(p);
+                    p = std::strtok(NULL, ",");   char level = p[0];
+                    
+                    schol *sh = NULL;
+                    if(level == 'E' || level == 'B') sh = cblok_e_schols[id];
+                    else if(level == 'H') sh = cblok_h_schols[id];
+                    else sh = cblok_c_schols[id];
                     
                     rb->s_neigh.push_back(sh);
+                    delete []str;
                 }
             }
             else if(type == 'w'){
@@ -1729,9 +1760,16 @@ void cblok::hndl_land_data(){
                 
                 while(num-- > 0){
                     getline(in, line);
-                    id = atoi(line.c_str());
+                    str = new char[line.size()+1];
+                    std::strcpy(str, line.c_str());
                     
-                    schol *sh = cblok_schols[id];
+                    p = std::strtok(str, ",");    id = atoi(p);
+                    p = std::strtok(NULL, ",");   char level = p[0];
+                    
+                    schol *sh = NULL;
+                    if(level == 'E' || level == 'B') sh = cblok_e_schols[id];
+                    else if(level == 'H') sh = cblok_h_schols[id];
+                    else sh = cblok_c_schols[id];
                     
                     wp->s_neigh.push_back(sh);
                 }
@@ -1739,7 +1777,12 @@ void cblok::hndl_land_data(){
             else{
                 delete []str;
                 
-                schol *sh = cblok_schols[id];
+                schol *sh = NULL;
+                char level = mbk[0];
+                
+                if(level == 'E' || level == 'B') sh = cblok_e_schols[id];
+                else if(level == 'H') sh = cblok_h_schols[id];
+                else sh = cblok_c_schols[id];
                 
                 //residential neighbor
                 getline(in, line);
@@ -1787,10 +1830,10 @@ void cblok::hndl_land_data(){
                 num = atoi(line.c_str());
                 
                 while(num-- > 0){
-                    getline(in, line);
-                    id = atoi(line.c_str());
-                    
-                    schol *sh_2 = cblok_schols[id];
+                    schol *sh_2 = NULL;
+                    if(level == 'E' || level == 'B') sh_2 = cblok_e_schols[id];
+                    else if(level == 'H') sh_2 = cblok_h_schols[id];
+                    else sh_2 = cblok_c_schols[id];
                     
                     sh->s_neigh.push_back(sh_2);
                 }

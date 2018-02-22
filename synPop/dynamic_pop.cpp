@@ -236,10 +236,24 @@ void cblok::hndl_jobs(int year){
             
             if(age >= 15 && age <= 70){
                 if(year > 0){
-                    if(p_2 > p_1 && cur->w_p == NULL && drand48()<(p_2-p_1)/(1-p_1)) rnd_jobs(cur);
+                    if(p_2 > p_1 && cur->w_p == NULL && drand48()<(p_2-p_1)/(1-p_1)){
+                        rnd_jobs(cur);
+                        
+                        if(cur->s_h != NULL){           //remove from students
+                            cur->s_h->student.erase(cur->aid);
+                            cur->s_h = NULL;
+                        }
+                    }
                 }
                 else{
-                    if(cur->w_p == NULL && drand48() < p_2) rnd_jobs(cur);
+                    if(cur->w_p == NULL && drand48() < p_2){
+                        rnd_jobs(cur);
+                        
+                        if(cur->s_h != NULL){           //remove from students
+                            cur->s_h->student.erase(cur->aid);
+                            cur->s_h = NULL;
+                        }
+                    }
                 }
                 
                 if(p_2 < p_1 && cur->w_p != NULL){
@@ -263,10 +277,24 @@ void cblok::hndl_jobs(int year){
             
             if(age >= 15 && age <= 70){
                 if(year > 0){
-                    if(p_2 > p_1 && cur->w_p == NULL && drand48()<(p_2-p_1)/(1-p_1)) rnd_jobs(cur);
+                    if(p_2 > p_1 && cur->w_p == NULL && drand48()<(p_2-p_1)/(1-p_1)){
+                        rnd_jobs(cur);
+                        
+                        if(cur->s_h != NULL){           //remove from students
+                            cur->s_h->student.erase(cur->aid);
+                            cur->s_h = NULL;
+                        }
+                    }
                 }
                 else{
-                    if(cur->w_p == NULL && drand48() < p_2) rnd_jobs(cur);
+                    if(cur->w_p == NULL && drand48() < p_2){
+                        rnd_jobs(cur);
+                        
+                        if(cur->s_h != NULL){           //remove from students
+                            cur->s_h->student.erase(cur->aid);
+                            cur->s_h = NULL;
+                        }
+                    }
                 }
                 
                 if(p_2 < p_1 && cur->w_p != NULL){
@@ -280,6 +308,88 @@ void cblok::hndl_jobs(int year){
         
         labor_force += mbk->labors;
     }
+}
+
+void cblok::hndl_schol(int year){
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
+            agent *cur = k->second;
+            int age = int(cur->age/365);
+            
+            if(age > 20) continue;
+            else if(age >= 18 && age <= 20 && cur->w_p == NULL){
+                if(age == 18 || cur->s_h == NULL) select_schol(cur, 'C');   //enroll college || no schol
+            }
+            else if(age >= 12 && age <= 17 && cur->w_p == NULL){
+                if(age == 12 || cur->s_h == NULL) select_schol(cur, 'H');   //enroll high || no shol
+            }
+            else if(age >= 6 && age <= 11){
+                if(cur->s_h == NULL) select_schol(cur, 'E');                //enroll elementary || no schol
+            }
+        }
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
+            agent *cur = k->second;
+            int age = int(cur->age/365);
+            
+            if(age > 20) continue;
+            else if(age >= 18 && age <= 20 && cur->w_p == NULL){
+                if(age == 18 || cur->s_h == NULL) select_schol(cur, 'C');   //enroll college || no schol
+            }
+            else if(age >= 12 && age <= 17 && cur->w_p == NULL){
+                if(age == 12 || cur->s_h == NULL) select_schol(cur, 'H');   //enroll high || no shol
+            }
+            else if(age >= 6 && age <= 11){
+                if(cur->s_h == NULL) select_schol(cur, 'E');                //enroll elementary || no schol
+            }
+        }
+    }
+}
+
+void cblok::select_schol(agent *p, char level){
+    hhold *hd = p->h_d;
+    rbldg *rb = hd->rdg;
+    schol *sh = NULL;
+    
+    map<int, schol*>::iterator j;
+    if(level == 'E'){
+        j = cblok_e_schols.begin();
+        sh = j->second;
+        
+        double d_1 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
+        while(++j != cblok_e_schols.end()){
+            double d_2 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
+            
+            if(d_2 < d_1) sh = j->second;
+        }
+    }
+    else if(level == 'H'){
+        j = cblok_h_schols.begin();
+        sh = j->second;
+        
+        double d_1 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
+        while(++j != cblok_h_schols.end()){
+            double d_2 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
+            
+            if(d_2 < d_1) sh = j->second;
+        }
+    }
+    else if(level == 'C'){
+        j = cblok_c_schols.begin();
+        sh = j->second;
+        
+        double d_1 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
+        while(++j != cblok_c_schols.end()){
+            double d_2 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
+            
+            if(d_2 < d_1) sh = j->second;
+        }
+    }
+    
+    p->s_h = sh;
+    sh->student.insert(pair<int, agent*>(p->aid, p));
 }
 
 void cblok::hndl_birth(int year, int day){

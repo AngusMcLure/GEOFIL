@@ -60,7 +60,7 @@
 #define cannery_avg         0.176
 #define commuting_ratio     0.703       //2010 data, 289/411
 
-#define risk_range          500
+#define risk_range          150         //150m average, Aedes polynesiensis
 
 //functions
 int ztpoisson(double l_lambda);

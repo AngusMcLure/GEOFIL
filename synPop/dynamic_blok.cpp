@@ -124,7 +124,7 @@ void cblok::rmv_vcnt_rbldg(rbldg *p){
 void cblok::sim_pop(int year){
     hndl_jobs(year);
     
-    get_works(year);
+    //get_works(year);
     
     for(int day = 0; day < 365; ++day){
         renew_pop(year, day);

@@ -111,17 +111,16 @@ void cblok::radt_model(char m){
         stable_sort(mbk->mblok_comm.begin(), mbk->mblok_comm.end(), _larger);
     }
     
-    
-    string file = outdir;   file = file + "commuting.csv";
+    /*string file = outdir;   file = file + "commuting.csv";
     ofstream out(file.c_str());
     out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
     
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
         for(int i = 0; i < mbk->mblok_comm.size(); ++i){
-            if(mbk->mblok_comm[i]->p * mbk->jobs >= 30)
+            if(mbk->mblok_comm[i]->p * mbk->labors >= 20)
                 out << mbk->lat << "," << mbk->log << "," << mbloks[mbk->mblok_comm[i]->mid]->lat << "," << mbloks[mbk->mblok_comm[i]->mid]->log << "," << mbk->mblok_comm[i]->p*mbk->jobs << endl;
         }
     }
-    out.close();
+    out.close();*/
 }
