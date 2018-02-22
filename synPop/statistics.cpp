@@ -33,6 +33,23 @@ void cblok::get_hhold(int year){
     cout << "hhold = " << chold << endl;
 }
 
+void cblok::get_students(int year){
+    int t_1 = 0, t_2 = 0, t_3 = 0, t = 0;
+    for(int i = 0; i < cblok_schols.size(); ++i){
+        schol *sh = cblok_schols[i];
+        
+        t += sh->student.size();
+        
+        switch(sh->level){
+            case 'E': t_1 += sh->student.size(); break;
+            case 'H': t_2 += sh->student.size(); break;
+            case 'B': t_1 += sh->student.size()*0.5; t_2 += sh->student.size()*0.5; break;
+            case 'C': t_3 += sh->student.size(); break;
+        }
+    }
+    cout << "total students " << year+2010 << ": " << t << " " << t_1 << " " << t_2 << " " << t_3 << endl;
+}
+
 void cblok::get_hhold_size(int year){
     map<int, double> vec;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){

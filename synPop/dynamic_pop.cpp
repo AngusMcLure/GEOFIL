@@ -318,8 +318,11 @@ void cblok::hndl_schol(int year){
             agent *cur = k->second;
             int age = int(cur->age/365);
             
-            if(age > 20) continue;
-            else if(age >= 18 && age <= 20 && cur->w_p == NULL){
+            if(age >= 20 && cur->s_h != NULL){
+                cur->s_h->student.erase(cur->aid);
+                cur->s_h = NULL;
+            }
+            else if(age >= 18 && age <= 19 && cur->w_p == NULL){
                 if(age == 18 || cur->s_h == NULL) select_schol(cur, 'C');   //enroll college || no schol
             }
             else if(age >= 12 && age <= 17 && cur->w_p == NULL){
@@ -334,8 +337,11 @@ void cblok::hndl_schol(int year){
             agent *cur = k->second;
             int age = int(cur->age/365);
             
-            if(age > 20) continue;
-            else if(age >= 18 && age <= 20 && cur->w_p == NULL){
+            if(age >= 20 && cur->s_h != NULL){
+                cur->s_h->student.erase(cur->aid);
+                cur->s_h = NULL;
+            }
+            else if(age >= 18 && age <= 19 && cur->w_p == NULL){
                 if(age == 18 || cur->s_h == NULL) select_schol(cur, 'C');   //enroll college || no schol
             }
             else if(age >= 12 && age <= 17 && cur->w_p == NULL){
@@ -387,6 +393,8 @@ void cblok::select_schol(agent *p, char level){
             if(d_2 < d_1) sh = j->second;
         }
     }
+    
+    if(p->s_h != NULL) p->s_h->student.erase(p->aid);
     
     p->s_h = sh;
     sh->student.insert(pair<int, agent*>(p->aid, p));

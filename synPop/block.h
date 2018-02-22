@@ -203,6 +203,7 @@ public:
     
     void get_works(int year);
     void get_hhold(int year);
+    void get_students(int year);
     void get_hhold_size(int year);
     void get_sexratio(int year);
     void get_sexratiob(int year);
