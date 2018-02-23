@@ -97,7 +97,8 @@ public:
     map<int, agent*> fmal_marry;       //married females
     map<int, agent*> fmal_cbrs[11];    //female child-bearing (age, 15-49) child_num (0 - 10)
     
-    map<int, agent*> lat_indiv;        //latent individuals
+    map<int, agent*> pre_indiv;        //latent individuals
+    
     map<int, agent*> inf_indiv;        //infectious individuals
     map<int, agent*> rmv_indiv;        //removed individuals
  

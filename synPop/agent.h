@@ -27,7 +27,8 @@ public:
     char margs;     //m - married, s - single, d - divorce, w - widowed
     int bth_wind;   //birth window closed for female just having a baby
     
-    char epids;     //s - susceptible, e - exposed, i - infectious, r - removed, d - dead
+    int worms;
+    char epids;     //s - susceptible, e - prepatent, i - infectious, r - removed
     
     agent *spw;
     agent *dad;
@@ -45,7 +46,9 @@ public:
     ~agent();
     
     void add_child(agent *p);
-    void calc_risk(double d);
+    void calc_schol_risk();
+    void calc_general_risk(double d);
+    void renew_epidemics();
 };
 
 #endif /* agent_hpp */
