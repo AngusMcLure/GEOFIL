@@ -45,6 +45,7 @@ public:
     ~agent();
     
     void add_child(agent *p);
+    void calc_risk(double d);
 };
 
 #endif /* agent_hpp */

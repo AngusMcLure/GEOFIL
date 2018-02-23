@@ -43,7 +43,13 @@ void cblok::get_students(int year){
         switch(sh->level){
             case 'E': t_1 += sh->student.size(); break;
             case 'H': t_2 += sh->student.size(); break;
-            case 'B': t_1 += sh->student.size()*0.5; t_2 += sh->student.size()*0.5; break;
+            case 'B':
+                for(map<int, agent*>::iterator j = sh->student.begin(); j != sh->student.end(); ++j){
+                    int age = int(j->second->age/365);
+                    if(age <= 13) ++t_1;
+                    else ++t_2;
+                }
+                break;
             case 'C': t_3 += sh->student.size(); break;
         }
     }

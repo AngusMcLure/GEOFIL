@@ -40,3 +40,7 @@ agent::~agent(){
 void agent::add_child(agent *p){
     chdr.insert(pair<int, agent*>(p->aid, p));
 }
+
+void agent::calc_risk(double d){
+    
+}

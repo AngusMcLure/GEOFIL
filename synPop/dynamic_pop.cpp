@@ -325,10 +325,10 @@ void cblok::hndl_schol(int year){
             else if(age >= 18 && age <= 19 && cur->w_p == NULL){
                 if(age == 18 || cur->s_h == NULL) select_schol(cur, 'C');   //enroll college || no schol
             }
-            else if(age >= 12 && age <= 17 && cur->w_p == NULL){
-                if(age == 12 || cur->s_h == NULL) select_schol(cur, 'H');   //enroll high || no shol
+            else if(age >= 14 && age <= 17 && cur->w_p == NULL){
+                if(age == 14 || cur->s_h == NULL) select_schol(cur, 'H');   //enroll high || no shol
             }
-            else if(age >= 6 && age <= 11){
+            else if(age >= 6 && age <= 13){
                 if(cur->s_h == NULL) select_schol(cur, 'E');                //enroll elementary || no schol
             }
         }
@@ -344,10 +344,10 @@ void cblok::hndl_schol(int year){
             else if(age >= 18 && age <= 19 && cur->w_p == NULL){
                 if(age == 18 || cur->s_h == NULL) select_schol(cur, 'C');   //enroll college || no schol
             }
-            else if(age >= 12 && age <= 17 && cur->w_p == NULL){
-                if(age == 12 || cur->s_h == NULL) select_schol(cur, 'H');   //enroll high || no shol
+            else if(age >= 14 && age <= 17 && cur->w_p == NULL){
+                if(age == 14 || cur->s_h == NULL) select_schol(cur, 'H');   //enroll high || no shol
             }
-            else if(age >= 6 && age <= 11){
+            else if(age >= 6 && age <= 13){
                 if(cur->s_h == NULL) select_schol(cur, 'E');                //enroll elementary || no schol
             }
         }

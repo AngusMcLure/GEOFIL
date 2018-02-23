@@ -21,6 +21,8 @@ int main(int argc, const char * argv[]) {
 	std::default_random_engine generator(seed);
 	srand48(seed);
     
+    cout << r_d << endl;
+    
     // insert code here...
     cblok *cbk = new cblok(as_cid, "American Samoa", as_lat, as_long);
     cout << "total pop: " << cbk->cpop << endl;

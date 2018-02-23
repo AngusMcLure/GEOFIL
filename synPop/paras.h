@@ -60,7 +60,16 @@
 #define cannery_avg         0.176
 #define commuting_ratio     0.703       //2010 data, 289/411
 
+//parameters for risk
 #define risk_range          150         //150m average, Aedes polynesiensis
+#define r_b                 50          //bitten rate per half day
+#define r_m                 0.0028      //positive ratio of mosquitos
+#define r_w                 0.0325      //probability of receiving both sexes of worms at a single bite
+#define r_p                 1/300       //pre-patent transition rate per half day, average 150 days
+#define c0_4                0.25        //relative exposure to mosquitos, age 0-4
+#define c5_15               0.75        //relative exposure to mosquitos, age 5-15
+#define r_d            -log(0.13)/150   //death rate of mated female worms per half day
+
 
 //functions
 int ztpoisson(double l_lambda);

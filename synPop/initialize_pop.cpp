@@ -25,6 +25,10 @@ cblok::cblok(int cid, string cname, double lat, double log){
     euclid_dst = NULL;
     road_dst = NULL;
     
+    lat_indiv.clear();
+    inf_indiv.clear();
+    rmv_indiv.clear();
+    
     cblok_schols.clear();
     cblok_schols.shrink_to_fit();
     
@@ -337,6 +341,10 @@ bool cblok::pop_reload(){
 
 void cblok::reset_cpop(){
     //clear population
+    lat_indiv.clear();
+    inf_indiv.clear();
+    rmv_indiv.clear();
+    
     fmal_marry.clear();
     for(int i = 0; i < 11; ++i) fmal_cbrs[i].clear();
     
@@ -2124,7 +2132,12 @@ mblok::mblok(int mid, cblok *cbk, double lat, double log){
 
 mblok::~mblok(){
     cbk = NULL;
+    for(map<int, agent*>::iterator j = mblok_males.begin(); j != mblok_males.end(); ++j)
+        delete j->second;
     mblok_males.clear();
+    
+    for(map<int, agent*>::iterator j = mblok_fmals.begin(); j != mblok_fmals.end(); ++j)
+        delete j->second;
     mblok_fmals.clear();
     
     for(map<int, hhold*>::iterator j = mblok_hholds.begin(); j != mblok_hholds.end(); ++j)
