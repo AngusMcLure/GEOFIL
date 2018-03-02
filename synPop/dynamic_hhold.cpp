@@ -108,6 +108,17 @@ void hhold::adopted(){
         
         cur->rmv_member(bb);
         mbk->add_member(bb);
+        
+        if(bb->s_h != NULL){
+            char level = bb->s_h->level;
+            if(level == 'B'){
+                int age = int(bb->age/365);
+                if(age <= 13) level = 'E';
+                else level = 'H';
+            }
+            
+            mbk->cbk->select_schol(bb, level);
+        }
     }
     q->h_d->update_hhold();
 }
@@ -159,8 +170,29 @@ void cblok::re_location(agent *p, hhold *h_hold){
                 
                 p_bk->rmv_member(cur);
                 mbk->add_member(cur);
+                
+                if(cur->s_h != NULL){
+                    char level = cur->s_h->level;
+                    if(level == 'B'){
+                        if(age <= 13) level = 'E';
+                        else level = 'H';
+                    }
+                    
+                    select_schol(cur, level);
+                }
             }
         }
+    }
+
+    if(p->s_h != NULL){
+        char level = p->s_h->level;
+        int age = int(p->age/365);
+        if(level == 'B'){
+            if(age <= 13) level = 'E';
+            else level = 'H';
+        }
+        
+        select_schol(p, level);
     }
 }
 
@@ -206,13 +238,13 @@ void cblok::hndl_hold_rupt(int year){
             
             if(p != NULL){
                 for(map<int, agent*>::iterator l = p->chdr.begin(); l != p->chdr.end() && member.size() > 0; ++l){
-                    agent *p_c = l->second;
+                    agent *pp = l->second;
                     
-                    bool c_1 = p_c->age < 15; //children
-                    bool c_2 = p_c->chdr.size() == 0 && p_c->margs != 'm'; //not married with no children
+                    bool c_1 = pp->age < 15; //children
+                    bool c_2 = pp->chdr.size() == 0 && pp->margs != 'm'; //not married with no children
                     
                     if(c_1 || c_2){
-                        map<int, agent*>::iterator it = member.find(p_c->aid);
+                        map<int, agent*>::iterator it = member.find(pp->aid);
                         
                         if(it != member.end()){
                             u->child.push_back(it->second);
@@ -224,12 +256,12 @@ void cblok::hndl_hold_rupt(int year){
             
             if(q != NULL){
                 for(map<int, agent*>::iterator l = q->chdr.begin(); l != q->chdr.end() && member.size() > 0; ++l){
-                    agent *p_c = l->second;
-                    bool c_1 = p_c->age < 15; //children
-                    bool c_2 = p_c->chdr.size() == 0 && p_c->margs != 'm'; //not married with no children
+                    agent *pp = l->second;
+                    bool c_1 = pp->age < 15; //children
+                    bool c_2 = pp->chdr.size() == 0 && pp->margs != 'm'; //not married with no children
                     
                     if(c_1 || c_2){
-                        map<int, agent*>::iterator it = member.find(p_c->aid);
+                        map<int, agent*>::iterator it = member.find(pp->aid);
                         
                         if(it != member.end()){
                             u->child.push_back(it->second);

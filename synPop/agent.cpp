@@ -26,6 +26,9 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, s
     
     worms = 0;
     epids = 's';
+    clock_pre = -1;
+    clock_inf = -1;
+    active_len = 0;
 }
 
 agent::~agent(){
@@ -43,26 +46,42 @@ void agent::add_child(agent *p){
     chdr.insert(pair<int, agent*>(p->aid, p));
 }
 
-void agent::calc_general_risk(double d){
+void agent::calc_risk(double prv){
     double c = 1;
     int age = int(this->age/365);
     if(age <= 4) c = c0_4;
     else if(age <= 15) c = c5_15;
 
-    double p = r_b*c * p_c*(1 - d/r_r) * r_w;      //bites * positive * probability reciving mated worm
+    double p = r_b*c * prv * r_w;      //bites * positive * probability reciving mated worm
+    //cout << fixed << setprecision(5) << p << endl;
     if(drand48() < p) ++worms;
 }
 
 void agent::renew_epidemics(){
-    int deaths = 0;
-    for(int i = 0; i < worms; ++i){
-        if(drand48() < exp(-r_d)) ++deaths;
+    if(epids == 's'){
+        if(worms > 0){
+            if(drand48() < s_w){
+                epids = 'e';
+                clock_pre = 210;
+            }
+            worms = 0;
+        }
     }
-    worms -= deaths;
-    
-    double p = 1 - pow(1-exp(-r_p), worms);
-    if(drand48() < p){
-        worms = 0;
-        epids = 'i';
+    else if(epids == 'e'){
+        if(clock_pre > 0) --clock_pre;
+        
+        if(clock_pre == 0){
+            epids = 'i';
+            clock_inf = 14;
+            active_len = 6*365 + drand48()*2*365;   
+        }
     }
+    else if(epids == 'i'){
+        if(clock_inf > 0) --clock_inf;
+        
+        --active_len;
+        if(active_len == 0) epids = 'r';
+    }
+    else if(epids == 'r' && drand48() > 0.99726402359/*exp(-r_l)*/)
+        epids = 's';
 }

@@ -29,6 +29,9 @@ public:
     
     int worms;
     char epids;     //s - susceptible, e - prepatent, i - infectious, r - removed
+    int clock_pre;
+    int clock_inf;
+    int active_len; //active period in days, 6-8 years
     
     agent *spw;
     agent *dad;
@@ -46,8 +49,7 @@ public:
     ~agent();
     
     void add_child(agent *p);
-    void calc_schol_risk();
-    void calc_general_risk(double d);
+    void calc_risk(double prv);
     void renew_epidemics();
 };
 

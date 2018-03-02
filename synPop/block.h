@@ -97,10 +97,19 @@ public:
     map<int, agent*> fmal_marry;       //married females
     map<int, agent*> fmal_cbrs[11];    //female child-bearing (age, 15-49) child_num (0 - 10)
     
+    //map<int, agent*> risk_indiv;       //individuals at risk
     map<int, agent*> pre_indiv;        //latent individuals
-    
     map<int, agent*> inf_indiv;        //infectious individuals
     map<int, agent*> rmv_indiv;        //removed individuals
+    
+    map<int, rbldg*> inf_rbldg_day;
+    map<int, rbldg*> inf_rbldg_night;
+    map<int, schol*> inf_schol;
+    map<int, workp*> inf_workp;
+    
+    map<int, rbldg*> risk_rbldg;
+    map<int, schol*> risk_schol;
+    map<int, workp*> risk_workp;
  
     bool init;                         //for creating pop
     vector<agent*> mvec[vg_agrps];
@@ -174,7 +183,6 @@ public:
     bool pop_reload();
     void read_demgrphcs();
     void read_parmtrs();
-    void rnd_mother();
     void reset_cpop();
     void bld_mbloks();
     void bld_cblok_pop();
@@ -205,6 +213,12 @@ public:
     void hndl_birth(int year, int day);
     void validate_pop(int year, int day);
     void select_schol(agent *p, char level);
+    void calc_risk(int year, int day);
+    void risk_loc_day(int year, int day);
+    void risk_loc_night(int year, int day);        //time = 'd' or 'n', day/night
+    void renew_epidemics(int year, int day);
+    void seed_epidemics(double p, int age_dn, int age_up);
+    void seed_epidemics();      //Lupelele Elementary School, two positive
     
     void get_works(int year);
     void get_hhold(int year);
@@ -214,6 +228,8 @@ public:
     void get_sexratiob(int year);
     void get_geographic(int year);
     void get_bbldgarea(int year);
+    void get_epidemics(int year);
+    void out_epidemics(int year);
     void prt_hhold(std::ofstream &out, hhold* hh);
 };
 

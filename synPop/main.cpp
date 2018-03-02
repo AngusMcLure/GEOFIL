@@ -23,24 +23,19 @@ int main(int argc, const char * argv[]) {
     
     // insert code here...
     cblok *cbk = new cblok(as_cid, "American Samoa", as_lat, as_long);
-    cout << "total pop: " << cbk->cpop << endl;
+    /*cout << "total pop: " << cbk->cpop << endl;
     cout << "total villages: " << cbk->mbloks.size() << endl;
     cout << "total school: " << cbk->cblok_schols.size() << endl;
     cout << "total elementary: " << cbk->cblok_e_schols.size() << endl;
     cout << "total high: " << cbk->cblok_h_schols.size() << endl;
-    cout << "total college: " << cbk->cblok_c_schols.size() << endl;
+    cout << "total college: " << cbk->cblok_c_schols.size() << endl;*/
     
     for(int year = 0; year < 40; ++year){
         births = 0;
         deaths = 0;
         rup = 0;
-        cbk->sim_pop(year);
-        cout << "year = " << year+2011 << " birth = " << births << " death = " << deaths  << " mgrt = " << int(cbk->cpop*cbk->pop_loss[year]/1000) << " hhold rup = " << rup << endl;
-        cout << "year = " << year+2011 << " cpop = " << cbk->cpop << endl;
-        cbk->get_hhold(year);
         
-        if(year == 0) cbk->get_hhold_size(year);
-        if((year+1)%10 == 0) cbk->get_hhold_size(year);
+        cbk->sim_pop(year);
     }
     
     return 0;

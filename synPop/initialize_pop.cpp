@@ -25,7 +25,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
     euclid_dst = NULL;
     road_dst = NULL;
     
-    lat_indiv.clear();
+    pre_indiv.clear();
     inf_indiv.clear();
     rmv_indiv.clear();
     
@@ -264,18 +264,18 @@ bool cblok::pop_reload(){
                 p = std::strtok(NULL, ",");     char gender = p[0];
                 p = std::strtok(NULL, ",");     string mbk = p;
                 
-                agent *p_c = NULL;
-                if(gender == 'm') p_c = mbloks[mbloksIndexA[mbk]]->mblok_males[c_id];
-                else p_c = mbloks[mbloksIndexA[mbk]]->mblok_fmals[c_id];
+                agent *pp = NULL;
+                if(gender == 'm') pp = mbloks[mbloksIndexA[mbk]]->mblok_males[c_id];
+                else pp = mbloks[mbloksIndexA[mbk]]->mblok_fmals[c_id];
                 
-                p_m->add_child(p_c);
-                if(p_m->gendr == 'm') p_c->dad = p_m;
-                else p_c->mom = p_m;
+                p_m->add_child(pp);
+                if(p_m->gendr == 'm') pp->dad = p_m;
+                else pp->mom = p_m;
                 
                 if(p_s != NULL){
-                    p_s->add_child(p_c);
-                    if(p_s->gendr == 'm') p_c->dad = p_s;
-                    else p_c->mom = p_s;
+                    p_s->add_child(pp);
+                    if(p_s->gendr == 'm') pp->dad = p_s;
+                    else pp->mom = p_s;
                 }
                 
                 delete []str;
@@ -341,7 +341,7 @@ bool cblok::pop_reload(){
 
 void cblok::reset_cpop(){
     //clear population
-    lat_indiv.clear();
+    pre_indiv.clear();
     inf_indiv.clear();
     rmv_indiv.clear();
     
@@ -1300,12 +1300,7 @@ void cblok::hndl_land_data(){
             p = std::strtok(NULL, ",");         double lat = atof(p);
             p = std::strtok(NULL, ",");         double log = atof(p);
             
-            double radius = 0;
-            if(level == 'E') radius = 25;
-            else if(level == 'H' || level == 'B') radius = 50;
-            else if(level == 'C') radius = 100;
-            
-            schol *sh = new schol(next_sid++, name, level, log, lat, radius);
+            schol *sh = new schol(next_sid++, name, level, log, lat);
             cblok_schols.push_back(sh);
             
             if(level == 'E') cblok_e_schols.insert(pair<int, schol*>(sh->sid, sh));
@@ -1327,7 +1322,7 @@ void cblok::hndl_land_data(){
         
         for(int i = 0; i < cblok_schols.size(); ++i){
             schol *p = cblok_schols[i];
-            out << p->sid << "," << p->name << "," << p->level << "," << p->log << "," << p->lat << "," << p->radius << endl;
+            out << p->sid << "," << p->name << "," << p->level << "," << p->log << "," << p->lat << endl;
         }
         out.close();
     }
@@ -1344,9 +1339,8 @@ void cblok::hndl_land_data(){
             p = std::strtok(NULL, ",");         char level = p[0];
             p = std::strtok(NULL, ",");         double log = atof(p);
             p = std::strtok(NULL, ",");         double lat = atof(p);
-            p = std::strtok(NULL, ",");         double radius = atof(p);
             
-            schol *sh = new schol(sid, name, level, log, lat, radius);
+            schol *sh = new schol(sid, name, level, log, lat);
             cblok_schols.push_back(sh);
 
             if(level == 'E') cblok_e_schols.insert(pair<int, schol*>(sh->sid, sh));
@@ -1376,13 +1370,13 @@ void cblok::hndl_land_data(){
                 if(rb_2->bid == rb->bid) continue;
                 
                 double abs_x = abs(rb->lat - rb_2->lat);
-                if(abs_x > risk_range) continue;
+                if(abs_x > r_r) continue;
                 
                 double abs_y = abs(rb->log - rb_2->log);
-                if(abs_y > risk_range) continue;
+                if(abs_y > r_r) continue;
                 
                 double diff = abs_x*abs_x + abs_y*abs_y;
-                if(diff > pow(risk_range, 2)) continue;
+                if(diff > pow(r_r, 2)) continue;
                 
                 rb->r_neigh.push_back(rb_2);
                 rb_2->r_neigh.push_back(rb);
@@ -1393,13 +1387,13 @@ void cblok::hndl_land_data(){
                 workp *wp = k->second;
                 
                 double abs_x = abs(rb->lat - wp->lat);
-                if(abs_x > risk_range) continue;
+                if(abs_x > r_r) continue;
                 
                 double abs_y = abs(rb->log - wp->log);
-                if(abs_y > risk_range) continue;
+                if(abs_y > r_r) continue;
                 
                 double diff = abs_x*abs_x + abs_y*abs_y;
-                if(diff > pow(risk_range, 2)) continue;
+                if(diff > pow(r_r, 2)) continue;
                 
                 rb->w_neigh.push_back(wp);
                 wp->r_neigh.push_back(rb);
@@ -1410,13 +1404,13 @@ void cblok::hndl_land_data(){
                 schol *sh = cblok_schols[i];
                 
                 double abs_x = abs(rb->lat - sh->lat);
-                if(abs_x > risk_range) continue;
+                if(abs_x > r_r) continue;
                 
                 double abs_y = abs(rb->log - sh->log);
-                if(abs_y > risk_range) continue;
+                if(abs_y > r_r) continue;
                 
                 double diff = abs_x*abs_x + abs_y*abs_y;
-                if(diff > pow(risk_range, 2)) continue;
+                if(diff > pow(r_r, 2)) continue;
                 
                 rb->s_neigh.push_back(sh);
                 sh->r_neigh.push_back(rb);
@@ -1432,13 +1426,13 @@ void cblok::hndl_land_data(){
                 if(wp_2->wid == wp->wid) continue;
                 
                 double abs_x = abs(wp->lat - wp_2->lat);
-                if(abs_x > risk_range) continue;
+                if(abs_x > r_r) continue;
                 
                 double abs_y = abs(wp->log - wp_2->log);
-                if(abs_y > risk_range) continue;
+                if(abs_y > r_r) continue;
                 
                 double diff = abs_x*abs_x + abs_y*abs_y;
-                if(diff > pow(risk_range, 2)) continue;
+                if(diff > pow(r_r, 2)) continue;
                 
                 wp->w_neigh.push_back(wp_2);
                 wp_2->w_neigh.push_back(wp);
@@ -1449,13 +1443,13 @@ void cblok::hndl_land_data(){
                 schol *sh = cblok_schols[i];
                 
                 double abs_x = abs(wp->lat - sh->lat);
-                if(abs_x > risk_range) continue;
+                if(abs_x > r_r) continue;
                 
                 double abs_y = abs(wp->log - sh->log);
-                if(abs_y > risk_range) continue;
+                if(abs_y > r_r) continue;
                 
                 double diff = abs_x*abs_x + abs_y*abs_y;
-                if(diff > pow(risk_range, 2)) continue;
+                if(diff > pow(r_r, 2)) continue;
                 
                 wp->s_neigh.push_back(sh);
                 sh->w_neigh.push_back(wp);
@@ -1469,13 +1463,13 @@ void cblok::hndl_land_data(){
                 schol *sh_2 = cblok_schols[k];
                 
                 double abs_x = abs(sh->lat - sh_2->lat);
-                if(abs_x > risk_range) continue;
+                if(abs_x > r_r) continue;
                 
                 double abs_y = abs(sh->log - sh_2->log);
-                if(abs_y > risk_range) continue;
+                if(abs_y > r_r) continue;
                 
                 double diff = abs_x*abs_x + abs_y*abs_y;
-                if(diff > pow(risk_range, 2)) continue;
+                if(diff > pow(r_r, 2)) continue;
                 
                 sh->s_neigh.push_back(sh_2);
                 sh_2->s_neigh.push_back(sh);

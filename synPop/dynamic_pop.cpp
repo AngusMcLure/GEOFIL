@@ -11,6 +11,10 @@ extern int deaths;
 extern int births;
 
 void cblok::rmv_agent(agent *p){        //remove dead agent
+    if(p->epids == 'e') pre_indiv.erase(p->aid);
+    else if(p->epids == 'i') inf_indiv.erase(p->aid);
+    else if(p->epids == 'r') rmv_indiv.erase(p->aid);
+    
     hhold *h_hold = p->h_d;
     mblok *mbk = h_hold->rdg->mbk;
     
@@ -60,12 +64,8 @@ void cblok::rmv_agent(agent *p){        //remove dead agent
         p->mom->chdr.erase(p->aid);
         p->mom = NULL;
     }
-
-    delete p;
-}
-
-void cblok::rnd_mother(){
     
+    delete p;
 }
 
 void cblok::renew_pop(int year, int day){
@@ -187,217 +187,6 @@ void cblok::rnd_jobs(agent *p){
         p->w_p = wp;
         break;
     }
-}
-
-void cblok::hndl_jobs(int year){
-    if(year % 5 == 0) radt_model('r');
-    
-    if(year == 0){
-        struct _comp_w_node{
-            bool operator()(const mblok::w_node *p, const mblok::w_node *q){return p->p > q->p; }
-        } _larger;
-        
-        for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-            mblok *mbk = j->second;
-            
-            double total = 0;
-            for(map<int, workp*>::iterator k = mbk->mblok_workps.begin(); k != mbk->mblok_workps.end(); ++k){
-                workp *wp = k->second;
-                total += wp->area;
-                mbk->mblok_working.push_back(new mblok::w_node(wp->wid, wp->area));
-            }
-            
-            for(int i = 0; i < mbk->mblok_working.size(); ++i){
-                mbk->mblok_working[i]->p /= total;
-            }
-            
-            stable_sort(mbk->mblok_working.begin(), mbk->mblok_working.end(), _larger);
-        }
-    }
-    
-    cpop = 0;
-    labor_force = 0;
-    
-    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        mblok *mbk = j->second;
-        mbk->labors = 0;
-        
-        cpop += mbk->mblok_males.size() + mbk->mblok_fmals.size();
-        
-        for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
-            agent *cur = k->second;
-            
-            int age = int(cur->age/365);
-            if(age < 70 && age >= 15) mbk->labors += LFPR_by_age[0][age-15];          //age 15-69
-            
-            double p_1 = 0, p_2 = 0;
-            if(age > 15 && age <= 70) p_1 = LFPR_by_age[0][age-16];
-            if(age >= 15 && age < 70) p_2 = LFPR_by_age[0][age-15];
-            
-            if(age >= 15 && age <= 70){
-                if(year > 0){
-                    if(p_2 > p_1 && cur->w_p == NULL && drand48()<(p_2-p_1)/(1-p_1)){
-                        rnd_jobs(cur);
-                        
-                        if(cur->s_h != NULL){           //remove from students
-                            cur->s_h->student.erase(cur->aid);
-                            cur->s_h = NULL;
-                        }
-                    }
-                }
-                else{
-                    if(cur->w_p == NULL && drand48() < p_2){
-                        rnd_jobs(cur);
-                        
-                        if(cur->s_h != NULL){           //remove from students
-                            cur->s_h->student.erase(cur->aid);
-                            cur->s_h = NULL;
-                        }
-                    }
-                }
-                
-                if(p_2 < p_1 && cur->w_p != NULL){
-                    if(drand48() < (p_1-p_2)/(1-p_1)){
-                        cur->w_p->workers.erase(cur->aid);
-                        cur->w_p = NULL;
-                    }
-                }
-            }
-        }
-        
-        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
-            agent *cur = k->second;
-            
-            int age = int(cur->age/365);
-            if(age < 70 && age >= 15) mbk->labors += LFPR_by_age[1][age-15];          //age 15-69
-            
-            double p_1 = 0, p_2 = 0;
-            if(age > 15 && age <= 70) p_1 = LFPR_by_age[1][age-16];
-            if(age >= 15 && age < 70) p_2 = LFPR_by_age[1][age-15];
-            
-            if(age >= 15 && age <= 70){
-                if(year > 0){
-                    if(p_2 > p_1 && cur->w_p == NULL && drand48()<(p_2-p_1)/(1-p_1)){
-                        rnd_jobs(cur);
-                        
-                        if(cur->s_h != NULL){           //remove from students
-                            cur->s_h->student.erase(cur->aid);
-                            cur->s_h = NULL;
-                        }
-                    }
-                }
-                else{
-                    if(cur->w_p == NULL && drand48() < p_2){
-                        rnd_jobs(cur);
-                        
-                        if(cur->s_h != NULL){           //remove from students
-                            cur->s_h->student.erase(cur->aid);
-                            cur->s_h = NULL;
-                        }
-                    }
-                }
-                
-                if(p_2 < p_1 && cur->w_p != NULL){
-                    if(drand48() < (p_1-p_2)/(1-p_1)){
-                        cur->w_p->workers.erase(cur->aid);
-                        cur->w_p = NULL;
-                    }
-                }
-            }
-        }
-        
-        labor_force += mbk->labors;
-    }
-}
-
-void cblok::hndl_schol(int year){
-    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        mblok *mbk = j->second;
-        
-        for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
-            agent *cur = k->second;
-            int age = int(cur->age/365);
-            
-            if(age >= 20 && cur->s_h != NULL){
-                cur->s_h->student.erase(cur->aid);
-                cur->s_h = NULL;
-            }
-            else if(age >= 18 && age <= 19 && cur->w_p == NULL){
-                if(age == 18 || cur->s_h == NULL) select_schol(cur, 'C');   //enroll college || no schol
-            }
-            else if(age >= 14 && age <= 17 && cur->w_p == NULL){
-                if(age == 14 || cur->s_h == NULL) select_schol(cur, 'H');   //enroll high || no shol
-            }
-            else if(age >= 6 && age <= 13){
-                if(cur->s_h == NULL) select_schol(cur, 'E');                //enroll elementary || no schol
-            }
-        }
-        
-        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
-            agent *cur = k->second;
-            int age = int(cur->age/365);
-            
-            if(age >= 20 && cur->s_h != NULL){
-                cur->s_h->student.erase(cur->aid);
-                cur->s_h = NULL;
-            }
-            else if(age >= 18 && age <= 19 && cur->w_p == NULL){
-                if(age == 18 || cur->s_h == NULL) select_schol(cur, 'C');   //enroll college || no schol
-            }
-            else if(age >= 14 && age <= 17 && cur->w_p == NULL){
-                if(age == 14 || cur->s_h == NULL) select_schol(cur, 'H');   //enroll high || no shol
-            }
-            else if(age >= 6 && age <= 13){
-                if(cur->s_h == NULL) select_schol(cur, 'E');                //enroll elementary || no schol
-            }
-        }
-    }
-}
-
-void cblok::select_schol(agent *p, char level){
-    hhold *hd = p->h_d;
-    rbldg *rb = hd->rdg;
-    schol *sh = NULL;
-    
-    map<int, schol*>::iterator j;
-    if(level == 'E'){
-        j = cblok_e_schols.begin();
-        sh = j->second;
-        
-        double d_1 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
-        while(++j != cblok_e_schols.end()){
-            double d_2 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
-            
-            if(d_2 < d_1) sh = j->second;
-        }
-    }
-    else if(level == 'H'){
-        j = cblok_h_schols.begin();
-        sh = j->second;
-        
-        double d_1 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
-        while(++j != cblok_h_schols.end()){
-            double d_2 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
-            
-            if(d_2 < d_1) sh = j->second;
-        }
-    }
-    else if(level == 'C'){
-        j = cblok_c_schols.begin();
-        sh = j->second;
-        
-        double d_1 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
-        while(++j != cblok_c_schols.end()){
-            double d_2 = pow(rb->lat - j->second->lat, 2) + pow(rb->log - j->second->log, 2);
-            
-            if(d_2 < d_1) sh = j->second;
-        }
-    }
-    
-    if(p->s_h != NULL) p->s_h->student.erase(p->aid);
-    
-    p->s_h = sh;
-    sh->student.insert(pair<int, agent*>(p->aid, p));
 }
 
 void cblok::hndl_birth(int year, int day){
@@ -590,23 +379,11 @@ void cblok::hndl_divrc(int year){
     for(int i = 0; i < 11; ++i){
         for(map<int, agent*>::iterator j = fmal_cbrs[i].begin(); j != fmal_cbrs[i].end(); ++j){
             if(drand48() < annual_divorce) v_1.push_back(j->second);
-            
-            //to be deleted
-            if(j->second->margs != 'm' || j->second->spw == NULL || j->second->spw->margs != 'm' || j->second->spw->spw == NULL){
-                cout << "err: hndl_divrc" << endl;
-                exit(1);
-            }
         }
     }
     
     for(map<int, agent*>::iterator j = fmal_marry.begin(); j != fmal_marry.end(); ++j){
         if(drand48() < annual_divorce) v_1.push_back(j->second);
-        
-        //to be deleted
-        if(j->second->margs != 'm' || j->second->spw == NULL || j->second->spw->margs != 'm' || j->second->spw->spw == NULL){
-            cout << "err: hndl_divrc" << endl;
-            exit(1);
-        }
     }
     
     //cout << "year = " << year << " divorce = " << v_1.size() << endl;

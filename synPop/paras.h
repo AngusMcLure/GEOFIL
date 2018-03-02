@@ -51,28 +51,24 @@
 #define annual_divorce      0.0001
 #define hhold_rup_p_1       0.8
 #define hhold_rup_p_2       0.2
-#define hhold_rup_p_3       1/3
-
-#define elementary_school   50          //school radius
-#define high_school         100
-#define college             150
-#define avg_e_schol         47.6304     //avg distance of two random elementary students
-#define avg_h_schol         95.244      //avg distance of two random secondary students
-#define avg_c_schol         142.884     ////avg distance of two random college students
+#define hhold_rup_p_3       1.0/3
 
 #define cannery_avg         0.176
 #define commuting_ratio     0.703       //2010 data, 289/411
 
 //parameters for risk
-#define r_r                 150         //risk range, 150 m average, Aedes polynesiensis
-#define r_b                 50          //bitten rate per half day
-#define p_c                 0.0084      //positive ratio of mosquitos at the center
-#define r_w                 0.0325      //probability of receiving both sexes of worms at a single bite
-#define r_p                 1/150       //pre-patent transition rate per half day, average 150 days
-#define c0_4                0.25        //relative exposure to mosquitos, age 0-4
-#define c5_15               0.75        //relative exposure to mosquitos, age 5-15
-#define r_d            -log(0.13)/75    //death rate of mated female worms per half day
+#define r_r                 100             //risk range, 150 m average, Aedes polynesiensis
+#define r_b                 5               //bitten rate per half day
+#define r_w                 0.0325          //probability of receiving both sexes of worms at a single bite
+#define c0_4                0.25            //relative exposure to mosquitos, age 0-4
+#define c5_15               0.75            //relative exposure to mosquitos, age 5-15
+#define r_l                 1.0/365         //loss of immune rate
+#define s_l3                0.50            //survive to more than 13 days (L3 larave)
+#define r_i                 0.3881          //infected of mosquitos survive to L3
+#define s_w                 0.0033          //survive to adult worms
 
+//epidemic seeds
+#define prl                 0.0005
 
 //functions
 int ztpoisson(double l_lambda);
