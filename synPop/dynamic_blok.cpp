@@ -8,6 +8,8 @@
 
 #include "block.h"
 
+extern double max_prv;
+
 void mblok::add_hhold(hhold *p){
     mblok_hholds.insert(pair<int, hhold*>(p->hid, p));
 }
@@ -119,36 +121,6 @@ void cblok::add_vcnt_rbldg(rbldg *p){
 
 void cblok::rmv_vcnt_rbldg(rbldg *p){
     cblok_vcnt_rbldgs.erase(p->bid);
-}
-
-void cblok::sim_pop(int year){
-    hndl_jobs(year);
-    hndl_schol(year);
-    
-    if(year == 0){
-        seed_epidemics();
-        //seed_epidemics(0.001, 15, 69);
-    }
-    
-    get_epidemics(year);
-    if(year%10 == 0) out_epidemics(year);
-    cout << "year = " << year+2010 << " cpop = " << cpop << endl;
-    get_students(year);
-    get_works(year);
-    
-    for(int day = 0; day < 365; ++day){
-        //get_epidemics(year);
-        renew_epidemics(year, day);
-        calc_risk(year, day);
-
-        renew_pop(year, day);
-        hndl_birth(year, day);
-    }
-    
-    hndl_marrg(year);
-    hndl_divrc(year);
-    hndl_migrt(year);
-    hndl_hold_rupt(year);
 }
 
 void cblok::hndl_jobs(int year){
@@ -372,37 +344,6 @@ void cblok::select_schol(agent *p, char level){
 }
 
 void cblok::calc_risk(int year, int day){
-    double max_prv = 0;
-    
-    inf_rbldg_day.clear();
-    inf_rbldg_night.clear();
-    inf_schol.clear();
-    inf_workp.clear();
-    
-    for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
-        agent *cur = j->second;
-        rbldg *rb = cur->h_d->rdg;
-        schol *sh = cur->s_h;
-        workp *wp = cur->w_p;
-        
-        rb->day_p = 0;  rb->night_p = 0;
-        inf_rbldg_night.insert(pair<int, rbldg*>(rb->bid, rb));
-        
-        if(sh != NULL){
-            sh->day_p = 0;
-            inf_schol.insert(pair<int, schol*>(sh->sid, sh));
-        }
-        
-        if(wp != NULL){
-            wp->day_p = 0;
-            inf_workp.insert(pair<int, workp*>(wp->wid, wp));
-        }
-        
-        if(sh == NULL && wp == NULL){
-            inf_rbldg_day.insert(pair<int, rbldg*>(rb->bid, rb));
-        }
-    }
-    
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
         agent *cur = j->second;
         hhold *hd = cur->h_d;
@@ -410,10 +351,25 @@ void cblok::calc_risk(int year, int day){
         schol *sh = cur->s_h;
         workp *wp = cur->w_p;
         
+        int sum = 0;
+        for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
+            if(k->second->s_h == NULL && k->second->w_p == NULL) ++sum;
+        }
+        
+        inf_rbldg_night.insert(pair<int, rbldg*>(rb->bid, rb));
         rb->night_p += 1.0/(double)hd->mmbrs.size();
-        if(sh != NULL) sh->day_p += 1.0/(double)sh->student.size();
-        if(wp != NULL) wp->day_p += 1.0/(double)wp->workers.size();
-        if(sh == NULL && wp == NULL) rb->day_p += 1.0/(double)hd->mmbrs.size();
+        if(sh != NULL){
+            sh->day_p += 1.0/(double)sh->student.size();
+            inf_schol.insert(pair<int, schol*>(sh->sid, sh));
+        }
+        if(wp != NULL){
+            wp->day_p += 1.0/(double)wp->workers.size();
+            inf_workp.insert(pair<int, workp*>(wp->wid, wp));
+        }
+        if(sh == NULL && wp == NULL){
+            rb->day_p += 1.0/(double)sum;
+            inf_rbldg_day.insert(pair<int, rbldg*>(rb->bid, rb));
+        }
     }
     
     //risk at day-time
@@ -421,59 +377,140 @@ void cblok::calc_risk(int year, int day){
     
     //calculate risk for individuals at risk rbldg
     for(map<int, rbldg*>::iterator j = risk_rbldg.begin(); j != risk_rbldg.end(); ++j){
-        rbldg *rb = j->second;
-        hhold *hd = rb->h_d;
+        rbldg *r_1 = j->second;
+        hhold *hd = r_1->h_d;
         
-        if(hd != NULL){
-            vector<agent*> indiv;
-            for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
-                agent *p = k->second;
-                if(p->epids == 's' && p->s_h == NULL && p->w_p == NULL)
-                    indiv.push_back(p);
-            }
-            
-            if(indiv.size() > 0){
-                double prv = 0;
-                for(int i = 0; i < rb->r_vec.size(); ++i){
-                    double f = rb->r_vec[i]->f / rb->t_f;
-                    double p = rb->r_vec[i]->p * r_i * s_l3;
-                    prv += f * p;
-                }
-                
-                if(prv > max_prv) max_prv = prv;
-                
-                for(int i = 0; i < indiv.size(); ++i){
-                    agent *p = indiv[i];
-                    p->calc_risk(prv);
-                    p->renew_epidemics();
-                    
-                    if(p->epids == 'e'){
-                        pre_indiv.insert(pair<int, agent*>(p->aid, p));
-                    }
-                }
-            }
-            indiv.clear();
-            indiv.shrink_to_fit();
+        vector<agent*> r_indiv;
+        r_indiv.shrink_to_fit();
+        for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
+            agent *p = k->second;
+            if(p->epids == 's' && p->s_h == NULL && p->w_p == NULL)
+                r_indiv.push_back(p);
+        }
+        if(r_indiv.size() == 0) continue;
+        
+        //itself
+        r_1->t_f = 0;
+        r_1->t_f += 1.0;
+        
+        //r_neigbors
+        for(int i = 0; i < r_1->r_neigh.size(); ++i){
+            rbldg *r_2 = r_1->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            r_1->t_f += 1 - r_1->r_neigh_d[i]/r_r;
         }
         
-        rb->t_f = 0;
-        for(int i = 0; i < rb->r_vec.size(); ++i)
-            delete rb->r_vec[i];
-        rb->r_vec.clear();
-        rb->r_vec.shrink_to_fit();
+        //s_neigbors
+        for(int i = 0; i < r_1->s_neigh.size(); ++i){
+            schol *sh = r_1->s_neigh[i];
+            if(sh->student.size() == 0) continue;
+            r_1->t_f += 1 - r_1->s_neigh_d[i]/r_r;
+        }
+        
+        //w_neigbors
+        for(int i = 0; i < r_1->w_neigh.size(); ++i){
+            workp *wp = r_1->w_neigh[i];
+            if(wp->workers.size() == 0) continue;
+            r_1->t_f += 1 - r_1->w_neigh_d[i]/r_r;
+        }
+        
+        //calculate prevalence
+        double prv = 0;
+        double f = 1.0 / r_1->t_f;
+        prv += f * r_1->day_p;
+        for(int i = 0; i < r_1->r_neigh.size(); ++i){
+            rbldg *r_2 = r_1->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            
+            f = (1 - r_1->r_neigh_d[i]/r_r) / r_1->t_f;
+            prv += f * r_2->day_p;
+        }
+        
+        for(int i = 0; i < r_1->s_neigh.size(); ++i){
+            schol *sh = r_1->s_neigh[i];
+            if(sh->student.size() == 0) continue;
+            f = (1 - r_1->s_neigh_d[i]/r_r) / r_1->t_f;
+            prv += f * sh->day_p;
+        }
+        
+        for(int i = 0; i < r_1->w_neigh.size(); ++i){
+            workp *wp = r_1->w_neigh[i];
+            if(wp->workers.size() == 0) continue;
+            f = (1 - r_1->w_neigh_d[i]/r_r) / r_1->t_f;
+            prv += f * wp->day_p;
+        }
+        
+        prv *= (r_i * s_l3);
+        if(max_prv < prv) max_prv = prv;
+        
+        for(int i = 0; i < r_indiv.size(); ++i){
+            agent *p = r_indiv[i];
+            p->calc_risk(prv);
+            p->renew_epidemics();
+            
+            if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
+        }
+        
+        r_indiv.clear();
+        r_indiv.shrink_to_fit();
     }
     
     for(map<int, schol*>::iterator j = risk_schol.begin(); j != risk_schol.end(); ++j){
         schol *sh = j->second;
         
-        double prv = 0;
-        for(int i = 0; i < sh->r_vec.size(); ++i){
-            double f = sh->r_vec[i]->f / sh->t_f;
-            double p = sh->r_vec[i]->p * r_i * s_l3;
-            prv += f * p;
+        //itself
+        sh->t_f = 0;
+        sh->t_f += 1.0;
+        
+        //r_neigbors
+        for(int i = 0; i < sh->r_neigh.size(); ++i){
+            rbldg *r_2 = sh->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            sh->t_f += 1 - sh->r_neigh_d[i]/r_r;
         }
         
-        if(prv > max_prv) max_prv = prv;
+        //s_neigbors
+        for(int i = 0; i < sh->s_neigh.size(); ++i){
+            schol *s_2 = sh->s_neigh[i];
+            if(s_2->student.size() == 0) continue;
+            sh->t_f += 1 - sh->s_neigh_d[i]/r_r;
+        }
+        
+        //w_neigbors
+        for(int i = 0; i < sh->w_neigh.size(); ++i){
+            workp *wp = sh->w_neigh[i];
+            if(wp->workers.size() == 0) continue;
+            sh->t_f += 1 - sh->w_neigh_d[i]/r_r;
+        }
+        
+        //calculate prevalence
+        double prv = 0;
+        double f = 1.0 / sh->t_f;
+        prv += f * sh->day_p;
+        for(int i = 0; i < sh->r_neigh.size(); ++i){
+            rbldg *r_2 = sh->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            
+            f = (1 - sh->r_neigh_d[i]/r_r) / sh->t_f;
+            prv += f * r_2->day_p;
+        }
+        
+        for(int i = 0; i < sh->s_neigh.size(); ++i){
+            schol *s_2 = sh->s_neigh[i];
+            if(s_2->student.size() == 0) continue;
+            f = (1 - sh->s_neigh_d[i]/r_r) / sh->t_f;
+            prv += f * s_2->day_p;
+        }
+        
+        for(int i = 0; i < sh->w_neigh.size(); ++i){
+            workp *wp = sh->w_neigh[i];
+            if(wp->workers.size() == 0) continue;
+            f = (1 - sh->w_neigh_d[i]/r_r) / sh->t_f;
+            prv += f * wp->day_p;
+        }
+        
+        prv *= (r_i * s_l3);
+        if(max_prv < prv) max_prv = prv;
         
         for(map<int, agent*>::iterator k = sh->student.begin(); k != sh->student.end(); ++k){
             agent *p = k->second;
@@ -482,29 +519,66 @@ void cblok::calc_risk(int year, int day){
             p->calc_risk(prv);
             p->renew_epidemics();
             
-            if(p->epids == 'e'){
-                pre_indiv.insert(pair<int, agent*>(p->aid, p));
-            }
+            if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
-        
-        sh->t_f = 0;
-        for(int i = 0; i < sh->r_vec.size(); ++i)
-            delete sh->r_vec[i];
-        sh->r_vec.clear();
-        sh->r_vec.shrink_to_fit();
     }
     
     for(map<int, workp*>::iterator j = risk_workp.begin(); j != risk_workp.end(); ++j){
         workp *wp = j->second;
         
-        double prv = 0;
-        for(int i = 0; i < wp->r_vec.size(); ++i){
-            double f = wp->r_vec[i]->f / wp->t_f;
-            double p = wp->r_vec[i]->p * r_i * s_l3;
-            prv += f * p;
+        //itself
+        wp->t_f = 0;
+        wp->t_f += 1.0;
+        
+        //r_neigbors
+        for(int i = 0; i < wp->r_neigh.size(); ++i){
+            rbldg *r_2 = wp->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            wp->t_f += 1 - wp->r_neigh_d[i]/r_r;
         }
         
-        if(prv > max_prv) max_prv = prv;
+        //s_neigbors
+        for(int i = 0; i < wp->s_neigh.size(); ++i){
+            schol *s_2 = wp->s_neigh[i];
+            if(s_2->student.size() == 0) continue;
+            wp->t_f += 1 - wp->s_neigh_d[i]/r_r;
+        }
+        
+        //w_neigbors
+        for(int i = 0; i < wp->w_neigh.size(); ++i){
+            workp *w_2 = wp->w_neigh[i];
+            if(w_2->workers.size() == 0) continue;
+            wp->t_f += 1 - wp->w_neigh_d[i]/r_r;
+        }
+        
+        //calculate prevalence
+        double prv = 0;
+        double f = 1.0 / wp->t_f;
+        prv += f * wp->day_p;
+        for(int i = 0; i < wp->r_neigh.size(); ++i){
+            rbldg *r_2 = wp->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            
+            f = (1 - wp->r_neigh_d[i]/r_r) / wp->t_f;
+            prv += f * r_2->day_p;
+        }
+        
+        for(int i = 0; i < wp->s_neigh.size(); ++i){
+            schol *s_2 = wp->s_neigh[i];
+            if(s_2->student.size() == 0) continue;
+            f = (1 - wp->s_neigh_d[i]/r_r) / wp->t_f;
+            prv += f * s_2->day_p;
+        }
+        
+        for(int i = 0; i < wp->w_neigh.size(); ++i){
+            workp *w_2 = wp->w_neigh[i];
+            if(w_2->workers.size() == 0) continue;
+            f = (1 - wp->w_neigh_d[i]/r_r) / wp->t_f;
+            prv += f * w_2->day_p;
+        }
+        
+        prv *= (r_i * s_l3);
+        if(max_prv < prv) max_prv = prv;
         
         for(map<int, agent*>::iterator k = wp->workers.begin(); k != wp->workers.end(); ++k){
             agent *p = k->second;
@@ -513,16 +587,8 @@ void cblok::calc_risk(int year, int day){
             p->calc_risk(prv);
             p->renew_epidemics();
             
-            if(p->epids == 'e'){
-                pre_indiv.insert(pair<int, agent*>(p->aid, p));
-            }
+            if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
-        
-        wp->t_f = 0;
-        for(int i = 0; i < wp->r_vec.size(); ++i)
-            delete wp->r_vec[i];
-        wp->r_vec.clear();
-        wp->r_vec.shrink_to_fit();
     }
     
     //risk at night-time
@@ -530,26 +596,34 @@ void cblok::calc_risk(int year, int day){
     
     //calculate risk for individuals at risk rbldg
     for(map<int, rbldg*>::iterator j = risk_rbldg.begin(); j != risk_rbldg.end(); ++j){
-        rbldg *rb = j->second;
-        if(rb->h_d == NULL){
-            rb->t_f = 0;
-            for(int i = 0; i < rb->r_vec.size(); ++i)
-                delete rb->r_vec[i];
-            rb->r_vec.clear();
-            rb->r_vec.shrink_to_fit();
-            continue;
+        rbldg *r_1 = j->second;
+        hhold *hd = r_1->h_d;
+        
+        //itself
+        r_1->t_f = 0;
+        r_1->t_f += 1.0;
+        
+        //r_neigbors
+        for(int i = 0; i < r_1->r_neigh.size(); ++i){
+            rbldg *r_2 = r_1->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            r_1->t_f += 1 - r_1->r_neigh_d[i]/r_r;
         }
         
-        hhold *hd = rb->h_d;
-        
+        //calculate prevalence
         double prv = 0;
-        for(int i = 0; i < rb->r_vec.size(); ++i){
-            double f = rb->r_vec[i]->f / rb->t_f;
-            double p = rb->r_vec[i]->p * r_i * s_l3;
-            prv += f * p;
+        double f = 1.0 / r_1->t_f;
+        prv += f * r_1->night_p;
+        for(int i = 0; i < r_1->r_neigh.size(); ++i){
+            rbldg *r_2 = r_1->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            
+            f = (1 - r_1->r_neigh_d[i]/r_r) / r_1->t_f;
+            prv += f * r_2->night_p;
         }
         
-        if(prv > max_prv) max_prv = prv;
+        prv *= (r_i * s_l3);
+        if(max_prv < prv) max_prv = prv;
         
         for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
             agent *p = k->second;
@@ -557,19 +631,36 @@ void cblok::calc_risk(int year, int day){
             p->calc_risk(prv);
             p->renew_epidemics();
             
-            if(p->epids == 'e'){
-                pre_indiv.insert(pair<int, agent*>(p->aid, p));
-            }
+            if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
-        
-        rb->t_f = 0;
-        for(int i = 0; i < rb->r_vec.size(); ++i)
-            delete rb->r_vec[i];
-        rb->r_vec.clear();
-        rb->r_vec.shrink_to_fit();
     }
     
-    //cout << max_prv << endl;
+    //reset
+    for(map<int, rbldg*>::iterator j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j){
+        rbldg *rb = j->second;
+        rb->day_p = 0;
+        rb->night_p = 0;
+    }
+    
+    for(map<int, rbldg*>::iterator j = inf_rbldg_day.begin(); j != inf_rbldg_day.end(); ++j){
+        rbldg *rb = j->second;
+        rb->day_p = 0;
+        rb->night_p = 0;
+    }
+    
+    for(map<int, schol*>::iterator j = inf_schol.begin(); j != inf_schol.end(); ++j){
+        schol *sh = j->second;
+        sh->day_p = 0;
+    }
+    
+    for(map<int, workp*>::iterator j = inf_workp.begin(); j != inf_workp.end(); ++j){
+        workp *wp = j->second;
+        wp->day_p = 0;
+    }
+    inf_rbldg_day.clear();
+    inf_rbldg_night.clear();
+    inf_schol.clear();
+    inf_workp.clear();
 }
 
 void cblok::risk_loc_day(int year, int day){
@@ -579,141 +670,69 @@ void cblok::risk_loc_day(int year, int day){
     
     for(map<int, rbldg*>::iterator j = inf_rbldg_day.begin(); j != inf_rbldg_day.end(); ++j){
         rbldg *r_1 = j->second;
-        
-        r_1->t_f += 1.0;
-        r_1->r_vec.push_back(new r_node(1, r_1->day_p));
         risk_rbldg.insert(pair<int, rbldg*>(r_1->bid, r_1));
         
         for(int i = 0; i < r_1->r_neigh.size(); ++i){       //add household
             rbldg *r_2 = r_1->r_neigh[i];
-            
-            double d = sqrt(pow(r_1->lat-r_2->lat, 2) + pow(r_1->log-r_2->log, 2));
-            double f = 1 - d/r_r;
-            double p = r_1->day_p;
-            
-            r_2->t_f += f;
-            r_2->r_vec.push_back(new r_node(f, p));
-    
+            if(r_2->h_d == NULL) continue;
             risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
         }
         
         for(int i = 0; i < r_1->s_neigh.size(); ++i){       //add school
             schol *sh = r_1->s_neigh[i];
-            
-            double d = sqrt(pow(r_1->lat-sh->lat, 2) + pow(r_1->log-sh->log, 2));
-            double f = 1 - d/r_r;
-            double p = r_1->day_p;
-            
-            sh->t_f += f;
-            sh->r_vec.push_back(new r_node(f, p));
-            
+            if(sh->student.size() == 0) continue;
             risk_schol.insert(pair<int, schol*>(sh->sid, sh));
         }
         
         for(int i = 0; i < r_1->w_neigh.size(); ++i){       //add workplace
             workp *wp = r_1->w_neigh[i];
-            
-            double d = sqrt(pow(r_1->lat-wp->lat, 2) + pow(r_1->log-wp->log, 2));
-            double f = 1 - d/r_r;
-            double p = r_1->day_p;
-            
-            wp->t_f += f;
-            wp->r_vec.push_back(new r_node(f, p));
-            
+            if(wp->workers.size() == 0) continue;
             risk_workp.insert(pair<int, workp*>(wp->wid, wp));
         }
     }
     
     for(map<int, schol*>::iterator j = inf_schol.begin(); j != inf_schol.end(); ++j){
         schol *s_1 = j->second;
-        
-        s_1->t_f += 1.0;
-        s_1->r_vec.push_back(new r_node(1, s_1->day_p));
         risk_schol.insert(pair<int, schol*>(s_1->sid, s_1));
         
         for(int i = 0; i < s_1->r_neigh.size(); ++i){       //add household
             rbldg *r_2 = s_1->r_neigh[i];
-            
-            double d = sqrt(pow(s_1->lat-r_2->lat, 2) + pow(s_1->log-r_2->log, 2));
-            double f = 1 - d/r_r;
-            double p = s_1->day_p;
-            
-            r_2->t_f += f;
-            r_2->r_vec.push_back(new r_node(f, p));
-            
+            if(r_2->h_d == NULL) continue;
             risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
         }
         
         for(int i = 0; i < s_1->s_neigh.size(); ++i){       //add school
             schol *s_2 = s_1->s_neigh[i];
-            
-            double d = sqrt(pow(s_1->lat-s_2->lat, 2) + pow(s_1->log-s_2->log, 2));
-            double f = 1 - d/r_r;
-            double p = s_1->day_p;
-            
-            s_2->t_f += f;
-            s_2->r_vec.push_back(new r_node(f, p));
-            
+            if(s_2->student.size() == 0) continue;
             risk_schol.insert(pair<int, schol*>(s_2->sid, s_2));
         }
         
         for(int i = 0; i < s_1->w_neigh.size(); ++i){       //add workplace
             workp *wp = s_1->w_neigh[i];
-            
-            double d = sqrt(pow(s_1->lat-wp->lat, 2) + pow(s_1->log-wp->log, 2));
-            double f = 1 - d/r_r;
-            double p = s_1->day_p;
-            
-            wp->t_f += f;
-            wp->r_vec.push_back(new r_node(f, p));
-            
+            if(wp->workers.size() == 0) continue;
             risk_workp.insert(pair<int, workp*>(wp->wid, wp));
         }
     }
     
     for(map<int, workp*>::iterator j = inf_workp.begin(); j != inf_workp.end(); ++j){
         workp *w_1 = j->second;
-        
-        w_1->t_f += 1.0;
-        w_1->r_vec.push_back(new r_node(1, w_1->day_p));
         risk_workp.insert(pair<int, workp*>(w_1->wid, w_1));
         
         for(int i = 0; i < w_1->r_neigh.size(); ++i){       //add household
             rbldg *r_2 = w_1->r_neigh[i];
-            
-            double d = sqrt(pow(w_1->lat-r_2->lat, 2) + pow(w_1->log-r_2->log, 2));
-            double f = 1 - d/r_r;
-            double p = w_1->day_p;
-            
-            r_2->t_f += f;
-            r_2->r_vec.push_back(new r_node(f, p));
-            
+            if(r_2->h_d == NULL) continue;
             risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
         }
         
         for(int i = 0; i < w_1->s_neigh.size(); ++i){       //add school
             schol *sh = w_1->s_neigh[i];
-            
-            double d = sqrt(pow(w_1->lat-sh->lat, 2) + pow(w_1->log-sh->log, 2));
-            double f = 1 - d/r_r;
-            double p = w_1->day_p;
-            
-            sh->t_f += f;
-            sh->r_vec.push_back(new r_node(f, p));
-            
+            if(sh->student.size() == 0) continue;
             risk_schol.insert(pair<int, schol*>(sh->sid, sh));
         }
         
         for(int i = 0; i < w_1->w_neigh.size(); ++i){       //add workplace
             workp *wp = w_1->w_neigh[i];
-            
-            double d = sqrt(pow(w_1->lat-wp->lat, 2) + pow(w_1->log-wp->log, 2));
-            double f = 1 - d/r_r;
-            double p = w_1->day_p;
-            
-            wp->t_f += f;
-            wp->r_vec.push_back(new r_node(f, p));
-            
+            if(wp->workers.size() == 0) continue;
             risk_workp.insert(pair<int, workp*>(wp->wid, wp));
         }
     }
@@ -726,21 +745,11 @@ void cblok::risk_loc_night(int year, int day){
     
     for(map<int, rbldg*>::iterator j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j){
         rbldg *r_1 = j->second;
-        
-        r_1->t_f += 1.0;
-        r_1->r_vec.push_back(new r_node(1, r_1->night_p));
         risk_rbldg.insert(pair<int, rbldg*>(r_1->bid, r_1));
         
         for(int i = 0; i < r_1->r_neigh.size(); ++i){       //add household
             rbldg *r_2 = r_1->r_neigh[i];
-            
-            double d = sqrt(pow(r_1->lat-r_2->lat, 2) + pow(r_1->log-r_2->log, 2));
-            double f = 1 - d/r_r;
-            double p = r_1->night_p;
-            
-            r_2->t_f += f;
-            r_2->r_vec.push_back(new r_node(f, p));
-            
+            if(r_2->h_d == NULL) continue;
             risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
         }
     }

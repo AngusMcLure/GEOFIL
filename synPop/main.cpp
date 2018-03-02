@@ -29,12 +29,10 @@ int main(int argc, const char * argv[]) {
     cout << "total elementary: " << cbk->cblok_e_schols.size() << endl;
     cout << "total high: " << cbk->cblok_h_schols.size() << endl;
     cout << "total college: " << cbk->cblok_c_schols.size() << endl;*/
-    
     for(int year = 0; year < 40; ++year){
         births = 0;
         deaths = 0;
         rup = 0;
-        
         cbk->sim_pop(year);
     }
     

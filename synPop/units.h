@@ -19,12 +19,6 @@ class schol;        //school
 class mblok;
 class cblok;
 
-struct r_node{
-    double f;
-    double p;
-    r_node(double f, double p):f(f),p(p){}
-};
-
 class rbldg{
 public:
     int bid;
@@ -38,8 +32,11 @@ public:
     vector<workp*> w_neigh;
     vector<schol*> s_neigh;
     
+    vector<double> r_neigh_d;
+    vector<double> w_neigh_d;
+    vector<double> s_neigh_d;
+    
     double day_p, night_p, t_f;
-    vector<r_node*> r_vec;
     
     rbldg(int bid, double log, double lat, double area, mblok *mbk, cblok *cbk){
         this->bid = bid;
@@ -54,8 +51,11 @@ public:
         w_neigh.clear();    w_neigh.shrink_to_fit();
         s_neigh.clear();    s_neigh.shrink_to_fit();
         
+        r_neigh_d.clear();  r_neigh_d.shrink_to_fit();
+        w_neigh_d.clear();  w_neigh_d.shrink_to_fit();
+        s_neigh_d.clear();  s_neigh_d.shrink_to_fit();
+        
         day_p = 0;  night_p = 0;    t_f = 0;
-        r_vec.clear();      r_vec.shrink_to_fit();
     }
     
     ~rbldg(){
@@ -66,7 +66,9 @@ public:
         r_neigh.clear();    r_neigh.shrink_to_fit();
         w_neigh.clear();    w_neigh.shrink_to_fit();
         s_neigh.clear();    s_neigh.shrink_to_fit();
-        r_vec.clear();      r_vec.shrink_to_fit();
+        r_neigh_d.clear();  r_neigh_d.shrink_to_fit();
+        w_neigh_d.clear();  w_neigh_d.shrink_to_fit();
+        s_neigh_d.clear();  s_neigh_d.shrink_to_fit();
     }
 };
 
@@ -82,8 +84,11 @@ public:
     vector<workp*> w_neigh;
     vector<schol*> s_neigh;
     
+    vector<double> r_neigh_d;
+    vector<double> w_neigh_d;
+    vector<double> s_neigh_d;
+    
     double day_p, t_f;
-    vector<r_node*> r_vec;
     
     map<int, agent*> workers;
     
@@ -101,8 +106,11 @@ public:
         w_neigh.clear();    w_neigh.shrink_to_fit();
         s_neigh.clear();    s_neigh.shrink_to_fit();
         
+        r_neigh_d.clear();  r_neigh_d.shrink_to_fit();
+        w_neigh_d.clear();  w_neigh_d.shrink_to_fit();
+        s_neigh_d.clear();  s_neigh_d.shrink_to_fit();
+        
         day_p = 0;  t_f = 0;
-        r_vec.clear();      r_vec.shrink_to_fit();
     }
     
     ~workp(){
@@ -114,8 +122,10 @@ public:
         r_neigh.clear();    r_neigh.shrink_to_fit();
         w_neigh.clear();    w_neigh.shrink_to_fit();
         s_neigh.clear();    s_neigh.shrink_to_fit();
-    
-        r_vec.clear();      r_vec.shrink_to_fit();
+        
+        r_neigh_d.clear();  r_neigh_d.shrink_to_fit();
+        w_neigh_d.clear();  w_neigh_d.shrink_to_fit();
+        s_neigh_d.clear();  s_neigh_d.shrink_to_fit();
     }
 };
 
@@ -133,8 +143,11 @@ public:
     vector<workp*> w_neigh;
     vector<schol*> s_neigh;
     
+    vector<double> r_neigh_d;
+    vector<double> w_neigh_d;
+    vector<double> s_neigh_d;
+    
     double day_p, t_f;
-    vector<r_node*> r_vec;
     
     schol(int sid, string name, char level, double log, double lat){
         this->sid = sid;
@@ -149,8 +162,11 @@ public:
         w_neigh.clear();    w_neigh.shrink_to_fit();
         s_neigh.clear();    s_neigh.shrink_to_fit();
         
+        r_neigh_d.clear();  r_neigh_d.shrink_to_fit();
+        w_neigh_d.clear();  w_neigh_d.shrink_to_fit();
+        s_neigh_d.clear();  s_neigh_d.shrink_to_fit();
+        
         day_p = 0;  t_f = 0;
-        r_vec.clear();      r_vec.shrink_to_fit();
     }
     
     ~schol(){
@@ -160,7 +176,9 @@ public:
         r_neigh.clear();    r_neigh.shrink_to_fit();
         w_neigh.clear();    w_neigh.shrink_to_fit();
         s_neigh.clear();    s_neigh.shrink_to_fit();
-        r_vec.clear();      r_vec.shrink_to_fit();
+        r_neigh_d.clear();  r_neigh_d.shrink_to_fit();
+        w_neigh_d.clear();  w_neigh_d.shrink_to_fit();
+        s_neigh_d.clear();  s_neigh_d.shrink_to_fit();
     }
     
     void add_stdt(agent *p);

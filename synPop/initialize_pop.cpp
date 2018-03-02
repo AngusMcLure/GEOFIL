@@ -1380,6 +1380,10 @@ void cblok::hndl_land_data(){
                 
                 rb->r_neigh.push_back(rb_2);
                 rb_2->r_neigh.push_back(rb);
+                
+                double dist = sqrt(diff);
+                rb->r_neigh_d.push_back(dist);
+                rb_2->r_neigh_d.push_back(dist);
             }
             
             //residential <--> workp
@@ -1397,6 +1401,10 @@ void cblok::hndl_land_data(){
                 
                 rb->w_neigh.push_back(wp);
                 wp->r_neigh.push_back(rb);
+                
+                double dist = sqrt(diff);
+                rb->w_neigh_d.push_back(dist);
+                wp->r_neigh_d.push_back(dist);
             }
             
             //residential <--> schol
@@ -1414,6 +1422,10 @@ void cblok::hndl_land_data(){
                 
                 rb->s_neigh.push_back(sh);
                 sh->r_neigh.push_back(rb);
+                
+                double dist = sqrt(diff);
+                rb->s_neigh_d.push_back(dist);
+                sh->r_neigh_d.push_back(dist);
             }
         }
         
@@ -1436,6 +1448,10 @@ void cblok::hndl_land_data(){
                 
                 wp->w_neigh.push_back(wp_2);
                 wp_2->w_neigh.push_back(wp);
+                
+                double dist = sqrt(diff);
+                wp->w_neigh_d.push_back(dist);
+                wp_2->w_neigh_d.push_back(dist);
             }
             
             //workp <--> schol
@@ -1453,6 +1469,10 @@ void cblok::hndl_land_data(){
                 
                 wp->s_neigh.push_back(sh);
                 sh->w_neigh.push_back(wp);
+                
+                double dist = sqrt(diff);
+                wp->s_neigh_d.push_back(dist);
+                sh->w_neigh_d.push_back(dist);
             }
         }
         
@@ -1473,6 +1493,10 @@ void cblok::hndl_land_data(){
                 
                 sh->s_neigh.push_back(sh_2);
                 sh_2->s_neigh.push_back(sh);
+                
+                double dist = sqrt(diff);
+                sh->s_neigh_d.push_back(dist);
+                sh_2->s_neigh_d.push_back(dist);
             }
         }
     }
@@ -1534,18 +1558,19 @@ void cblok::hndl_land_data(){
                 out << p->r_neigh.size() << endl;
                 for(int i = 0; i < p->r_neigh.size(); ++i){
                     out << p->r_neigh[i]->bid << "," << mbloksIndexB[p->r_neigh[i]->mbk->mid] << ",";
-                    if(p->r_neigh[i]->h_d == NULL) out << 0 << endl;
-                    else out << 1 << endl;
+                    if(p->r_neigh[i]->h_d == NULL) out << 0 << ",";
+                    else out << 1 << ",";
+                    out << p->r_neigh_d[i] << endl;
                 }
                 
                 out << p->w_neigh.size() << endl;
                 for(int i = 0; i < p->w_neigh.size(); ++i){
-                    out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << endl;
+                    out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << "," << p->w_neigh_d[i] << endl;
                 }
                 
                 out << p->s_neigh.size() << endl;
                 for(int i = 0; i < p->s_neigh.size(); ++i){
-                    out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << endl;
+                    out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << "," << p->s_neigh_d[i] << endl;
                 }
             }
             
@@ -1560,18 +1585,19 @@ void cblok::hndl_land_data(){
                 out << p->r_neigh.size() << endl;
                 for(int i = 0; i < p->r_neigh.size(); ++i){
                     out << p->r_neigh[i]->bid << "," << mbloksIndexB[p->r_neigh[i]->mbk->mid] << ",";
-                    if(p->r_neigh[i]->h_d == NULL) out << 0 << endl;
-                    else out << 1 << endl;
+                    if(p->r_neigh[i]->h_d == NULL) out << 0 << ",";
+                    else out << 1 << ",";
+                    out << p->r_neigh_d[i] << endl;
                 }
                 
                 out << p->w_neigh.size() << endl;
                 for(int i = 0; i < p->w_neigh.size(); ++i){
-                    out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << endl;
+                    out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << "," << p->w_neigh_d[i] << endl;
                 }
                 
                 out << p->s_neigh.size() << endl;
                 for(int i = 0; i < p->s_neigh.size(); ++i){
-                    out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << endl;
+                    out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << "," << p->s_neigh_d[i] << endl;
                 }
             }
         }
@@ -1588,18 +1614,19 @@ void cblok::hndl_land_data(){
             out << p->r_neigh.size() << endl;
             for(int i = 0; i < p->r_neigh.size(); ++i){
                 out << p->r_neigh[i]->bid << "," << mbloksIndexB[p->r_neigh[i]->mbk->mid] << ",";
-                if(p->r_neigh[i]->h_d == NULL) out << 0 << endl;
-                else out << 1 << endl;
+                if(p->r_neigh[i]->h_d == NULL) out << 0 << ",";
+                else out << 1 << ",";
+                out << p->r_neigh_d[i] << endl;
             }
             
             out << p->w_neigh.size() << endl;
             for(int i = 0; i < p->w_neigh.size(); ++i){
-                out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << endl;
+                out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << "," << p->w_neigh_d[i] << endl;
             }
             
             out << p->s_neigh.size() << endl;
             for(int i = 0; i < p->s_neigh.size(); ++i){
-                out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << endl;
+                out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << "," << p->s_neigh_d[i] << endl;
             }
         }
         
@@ -1615,18 +1642,19 @@ void cblok::hndl_land_data(){
             out << p->r_neigh.size() << endl;
             for(int i = 0; i < p->r_neigh.size(); ++i){
                 out << p->r_neigh[i]->bid << "," << mbloksIndexB[p->r_neigh[i]->mbk->mid] << ",";
-                if(p->r_neigh[i]->h_d == NULL) out << 0 << endl;
-                else out << 1 << endl;
+                if(p->r_neigh[i]->h_d == NULL) out << 0 << ",";
+                else out << 1 << ",";
+                out << p->r_neigh_d[i] << endl;
             }
             
             out << p->w_neigh.size() << endl;
             for(int i = 0; i < p->w_neigh.size(); ++i){
-                out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << endl;
+                out << p->w_neigh[i]->wid << "," << mbloksIndexB[p->w_neigh[i]->mbk->mid] << "," << p->w_neigh_d[i] << endl;
             }
             
             out << p->s_neigh.size() << endl;
             for(int i = 0; i < p->s_neigh.size(); ++i){
-                out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << endl;
+                out << p->s_neigh[i]->sid << "," << p->s_neigh[i]->level << "," << p->s_neigh_d[i] << endl;
             }
         }
         out.close();
@@ -1661,6 +1689,7 @@ void cblok::hndl_land_data(){
                     p = std::strtok(str, ",");    id = atoi(p);
                     p = std::strtok(NULL, ",");   mbk = p;
                     p = std::strtok(NULL, ",");   ocpy = p[0];
+                    p = std::strtok(NULL, ",");   double dd = atof(p);
                     m_bk = mbloks[mbloksIndexA[mbk]];
                     
                     rbldg *rb_2 = NULL;
@@ -1668,6 +1697,7 @@ void cblok::hndl_land_data(){
                     else rb_2 = m_bk->mblok_ocpy_rbldgs[id];
                     
                     rb->r_neigh.push_back(rb_2);
+                    rb->r_neigh_d.push_back(dd);
                     delete []str;
                 }
                 
@@ -1681,11 +1711,13 @@ void cblok::hndl_land_data(){
                     
                     p = std::strtok(str, ",");    id = atoi(p);
                     p = std::strtok(NULL, ",");   mbk = p;
+                    p = std::strtok(NULL, ",");   double dd = atof(p);
                     m_bk = mbloks[mbloksIndexA[mbk]];
                     
                     workp *wp = m_bk->mblok_workps[id];
                     
                     rb->w_neigh.push_back(wp);
+                    rb->w_neigh_d.push_back(dd);
                     delete []str;
                 }
                 
@@ -1699,6 +1731,7 @@ void cblok::hndl_land_data(){
                     
                     p = std::strtok(str, ",");    id = atoi(p);
                     p = std::strtok(NULL, ",");   char level = p[0];
+                    p = std::strtok(NULL, ",");   double dd = atof(p);
                     
                     schol *sh = NULL;
                     if(level == 'E' || level == 'B') sh = cblok_e_schols[id];
@@ -1706,6 +1739,7 @@ void cblok::hndl_land_data(){
                     else sh = cblok_c_schols[id];
                     
                     rb->s_neigh.push_back(sh);
+                    rb->s_neigh_d.push_back(dd);
                     delete []str;
                 }
             }
@@ -1727,6 +1761,7 @@ void cblok::hndl_land_data(){
                     p = std::strtok(str, ",");    id = atoi(p);
                     p = std::strtok(NULL, ",");   mbk = p;
                     p = std::strtok(NULL, ",");   char ocpy = p[0];
+                    p = std::strtok(NULL, ",");   double dd = atof(p);
                     m_bk = mbloks[mbloksIndexA[mbk]];
                     
                     rbldg *rb_2 = NULL;
@@ -1734,6 +1769,7 @@ void cblok::hndl_land_data(){
                     else rb_2 = m_bk->mblok_ocpy_rbldgs[id];
                     
                     wp->r_neigh.push_back(rb_2);
+                    wp->r_neigh_d.push_back(dd);
                     delete []str;
                 }
                 
@@ -1748,11 +1784,13 @@ void cblok::hndl_land_data(){
                     
                     p = std::strtok(str, ",");    id = atoi(p);
                     p = std::strtok(NULL, ",");   mbk = p;
+                    p = std::strtok(NULL, ",");   double dd = atof(p);
                     m_bk = mbloks[mbloksIndexA[mbk]];
                     
                     workp *wp_2 = m_bk->mblok_workps[id];
                     
                     wp->w_neigh.push_back(wp_2);
+                    wp->w_neigh_d.push_back(dd);
                     delete []str;
                 }
                 
@@ -1767,6 +1805,7 @@ void cblok::hndl_land_data(){
                     
                     p = std::strtok(str, ",");    id = atoi(p);
                     p = std::strtok(NULL, ",");   char level = p[0];
+                    p = std::strtok(NULL, ",");   double dd = atof(p);
                     
                     schol *sh = NULL;
                     if(level == 'E' || level == 'B') sh = cblok_e_schols[id];
@@ -1774,6 +1813,8 @@ void cblok::hndl_land_data(){
                     else sh = cblok_c_schols[id];
                     
                     wp->s_neigh.push_back(sh);
+                    wp->s_neigh_d.push_back(dd);
+                    delete []str;
                 }
             }
             else{
@@ -1798,6 +1839,7 @@ void cblok::hndl_land_data(){
                     p = std::strtok(str, ",");    id = atoi(p);
                     p = std::strtok(NULL, ",");   string mbk = p;
                     p = std::strtok(NULL, ",");   char ocpy = p[0];
+                    p = std::strtok(NULL, ",");   double dd = atof(p);
                     mblok *m_bk = mbloks[mbloksIndexA[mbk]];
                     
                     rbldg *rb_2 = NULL;
@@ -1805,6 +1847,7 @@ void cblok::hndl_land_data(){
                     else rb_2 = m_bk->mblok_ocpy_rbldgs[id];
                     
                     sh->r_neigh.push_back(rb_2);
+                    sh->r_neigh_d.push_back(dd);
                     delete []str;
                 }
                 
@@ -1819,11 +1862,13 @@ void cblok::hndl_land_data(){
                     
                     p = std::strtok(str, ",");    id = atoi(p);
                     p = std::strtok(NULL, ",");   string mbk = p;
+                    p = std::strtok(NULL, ",");   double dd = atof(p);
                     mblok *m_bk = mbloks[mbloksIndexA[mbk]];
                     
                     workp *wp = m_bk->mblok_workps[id];
                     
                     sh->w_neigh.push_back(wp);
+                    sh->w_neigh_d.push_back(dd);
                     delete []str;
                 }
                 
@@ -1832,12 +1877,22 @@ void cblok::hndl_land_data(){
                 num = atoi(line.c_str());
                 
                 while(num-- > 0){
+                    getline(in, line);
+                    str = new char[line.size()+1];
+                    std::strcpy(str, line.c_str());
+                    
+                    p = std::strtok(str, ",");    id = atoi(p);
+                    p = std::strtok(NULL, ",");   char level = p[0];
+                    p = std::strtok(NULL, ",");   double dd = atof(p);
+                    
                     schol *sh_2 = NULL;
                     if(level == 'E' || level == 'B') sh_2 = cblok_e_schols[id];
                     else if(level == 'H') sh_2 = cblok_h_schols[id];
                     else sh_2 = cblok_c_schols[id];
                     
                     sh->s_neigh.push_back(sh_2);
+                    sh->s_neigh_d.push_back(dd);
+                    delete []str;
                 }
             }
         }

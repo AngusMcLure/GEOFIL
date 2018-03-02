@@ -53,19 +53,16 @@ void agent::calc_risk(double prv){
     else if(age <= 15) c = c5_15;
 
     double p = r_b*c * prv * r_w;      //bites * positive * probability reciving mated worm
-    //cout << fixed << setprecision(5) << p << endl;
     if(drand48() < p) ++worms;
 }
 
 void agent::renew_epidemics(){
     if(epids == 's'){
-        if(worms > 0){
-            if(drand48() < s_w){
-                epids = 'e';
-                clock_pre = 210;
-            }
-            worms = 0;
+        if(drand48() < 1-pow(1-s_w, worms)){
+            epids = 'e';
+            clock_pre = 210;
         }
+        worms = 0;
     }
     else if(epids == 'e'){
         if(clock_pre > 0) --clock_pre;
