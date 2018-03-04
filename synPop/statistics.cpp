@@ -121,8 +121,9 @@ void cblok::get_epidemics(int year){
     cout << "hhold prevalence = " << fixed << setprecision(2) << inf_indiv.size()/total*100 << "%" << endl;
 }
 
-void cblok::out_epidemics(int year){
-    string file = outdir;   file = file + to_string(year+2010);  file = file + "_epidemics.csv";
+void cblok::out_epidemics(int year, int day){
+    string file = outdir;   file = file + to_string(year+2010);
+    file = file + to_string(day);    file = file + "_epidemics.csv";
     ofstream out(file.c_str());
     
     out << "year,id,age,hhold_id,hhold_lat,hhold_log" << endl;
@@ -134,7 +135,8 @@ void cblok::out_epidemics(int year){
     }
     out.close();
     
-    file = outdir;   file = file + to_string(year+2010);  file = file + "_comm_graph.csv";
+    file = outdir;   file = file + to_string(year+2010);
+    file = file + to_string(day);    file = file + "_comm_graph.csv";
     out.open(file.c_str());
     
     out << "year,id,age,hhold_lat,hhold_log,dest_lat,dest_log" << endl;

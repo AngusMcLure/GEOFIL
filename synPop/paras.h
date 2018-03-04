@@ -57,8 +57,8 @@
 #define commuting_ratio     0.703       //2010 data, 289/411
 
 //parameters for risk
-#define r_r                 100             //risk range, 150 m average, Aedes polynesiensis
-#define r_b                 10               //bitten rate per half day
+#define r_r                 100             //risk range, 100m average, Aedes polynesiensis
+#define r_b                 100             //bitten rate per half day
 #define r_w                 0.0325          //probability of receiving both sexes of worms at a single bite
 #define c0_4                0.25            //relative exposure to mosquitos, age 0-4
 #define c5_15               0.75            //relative exposure to mosquitos, age 5-15
@@ -68,7 +68,7 @@
 #define s_w                 0.0033          //survive to adult worms
 
 //epidemic seeds
-#define prl                 0.0005
+#define prl                 0.0001
 
 //functions
 int ztpoisson(double l_lambda);

@@ -18,16 +18,16 @@ void cblok::sim_pop(int year){
     
     if(year == 0){
         seed_epidemics();
-        seed_epidemics(0.0005, 15, 69);
+        seed_epidemics(prl, 15, 69);
     }
     
     get_epidemics(year);
-    if(year%10 == 0 || year == 39) out_epidemics(year);
     cout << "year = " << year+2010 << " cpop = " << cpop << endl;
     get_students(year);
     get_works(year);
     
     for(int day = 0; day < 365; ++day){
+        if(day % 60 == 0) out_epidemics(year, day);
         //get_epidemics(year);
         renew_epidemics(year, day);
         calc_risk(year, day);

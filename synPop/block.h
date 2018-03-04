@@ -229,7 +229,7 @@ public:
     void get_geographic(int year);
     void get_bbldgarea(int year);
     void get_epidemics(int year);
-    void out_epidemics(int year);
+    void out_epidemics(int year, int day);
     void prt_hhold(std::ofstream &out, hhold* hh);
 };
 
