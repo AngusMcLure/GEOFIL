@@ -89,6 +89,7 @@ public:
     double lat, log;
     
     int cpop;
+    int cchild;
     int chold;
     int next_aid;
     

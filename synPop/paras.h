@@ -58,17 +58,18 @@
 
 //parameters for risk
 #define r_r                 100             //risk range, 100m average, Aedes polynesiensis
-#define r_b                 100             //bitten rate per half day
+#define rb_day              100             //bitten rate per half day
+#define rb_night            100
 #define r_w                 0.0325          //probability of receiving both sexes of worms at a single bite
 #define c0_4                0.25            //relative exposure to mosquitos, age 0-4
 #define c5_15               0.75            //relative exposure to mosquitos, age 5-15
-#define r_l                 1.0/365         //loss of immune rate
+#define r_l                 1.0/(365*2)     //loss of immune rate
 #define s_l3                0.1093          //survive to more than 13 days (L3 larave)
 #define r_i                 0.3881          //infected of mosquitos survive to L3
 #define s_w                 0.0033          //survive to adult worms
 
 //epidemic seeds
-#define prl                 0.0001
+#define prl                 0.032
 
 //functions
 int ztpoisson(double l_lambda);

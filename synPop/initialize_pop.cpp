@@ -16,6 +16,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
     this->log = log;
     
     cpop = 0;
+    cchild = 0;
     next_aid = 1;
     next_hid = 1;
     next_sid = 1;

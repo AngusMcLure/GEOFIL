@@ -151,7 +151,7 @@ void cblok::hndl_jobs(int year){
     
     cpop = 0;
     labor_force = 0;
-    
+    cchild = 0;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
         mbk->labors = 0;
@@ -163,6 +163,8 @@ void cblok::hndl_jobs(int year){
             
             int age = int(cur->age/365);
             if(age < 70 && age >= 15) mbk->labors += LFPR_by_age[0][age-15];          //age 15-69
+            
+            if(age < 15) ++cchild;
             
             double p_1 = 0, p_2 = 0;
             if(age > 15 && age <= 70) p_1 = LFPR_by_age[0][age-16];
@@ -204,6 +206,8 @@ void cblok::hndl_jobs(int year){
             
             int age = int(cur->age/365);
             if(age < 70 && age >= 15) mbk->labors += LFPR_by_age[1][age-15];          //age 15-69
+            
+            if(age < 15) ++cchild;
             
             double p_1 = 0, p_2 = 0;
             if(age > 15 && age <= 70) p_1 = LFPR_by_age[1][age-16];
@@ -445,7 +449,7 @@ void cblok::calc_risk(int year, int day){
         
         for(int i = 0; i < r_indiv.size(); ++i){
             agent *p = r_indiv[i];
-            p->calc_risk(prv);
+            p->calc_risk(prv, 'd');
             p->renew_epidemics();
             
             if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -516,7 +520,7 @@ void cblok::calc_risk(int year, int day){
             agent *p = k->second;
             if(p->epids != 's') continue;
             
-            p->calc_risk(prv);
+            p->calc_risk(prv, 'd');
             p->renew_epidemics();
             
             if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -584,7 +588,7 @@ void cblok::calc_risk(int year, int day){
             agent *p = k->second;
             if(p->epids != 's') continue;
             
-            p->calc_risk(prv);
+            p->calc_risk(prv, 'd');
             p->renew_epidemics();
             
             if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -628,7 +632,7 @@ void cblok::calc_risk(int year, int day){
         for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
             agent *p = k->second;
             if(p->epids != 's') continue;
-            p->calc_risk(prv);
+            p->calc_risk(prv, 'n');
             p->renew_epidemics();
             
             if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -781,58 +785,6 @@ void cblok::renew_epidemics(int year, int day){
         p->renew_epidemics();
         if(p->epids == 's') rmv_indiv.erase(j++);
         else ++j;
-    }
-}
-
-void cblok::seed_epidemics(double p, int age_dn, int age_up){
-    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        mblok *mbk = j->second;
-        for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
-            agent *cur = k->second;
-            int age = int(cur->age/365);
-            
-            if(age >= age_dn && age <= age_up && drand48() <= p){
-                cur->epids = 'i';
-                cur->clock_inf = 0;
-                inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
-            }
-        }
-        
-        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
-            agent *cur = k->second;
-            int age = int(cur->age/365);
-            
-            if(age >= age_dn && age <= age_up && drand48() <= p){
-                cur->epids = 'i';
-                cur->clock_inf = 0;
-                cur->clock_pre = 0;
-                inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
-            }
-        }
-    }
-}
-
-void cblok::seed_epidemics(){
-    int sid = 10;
-    if(cblok_e_schols.find(sid) == cblok_e_schols.end()){
-        cout << "err: schol not found" << endl;
-        exit(1);
-    }
-    schol *sh = cblok_e_schols[sid];
-    
-    int num = 2;
-    while(num-- > 0){
-        int rnd = rand() % sh->student.size();
-        map<int, agent*>::iterator j = sh->student.begin();
-        while(rnd-- > 0) ++j;
-        agent *p = j->second;
-        
-        if(p->epids == 'i') continue;
-        
-        p->epids = 'i';
-        p->clock_inf = 0;
-        p->clock_pre = 0;
-        inf_indiv.insert(pair<int, agent*>(p->aid, p));
     }
 }
 

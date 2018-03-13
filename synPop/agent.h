@@ -49,7 +49,7 @@ public:
     ~agent();
     
     void add_child(agent *p);
-    void calc_risk(double prv);
+    void calc_risk(double prv, char time);
     void renew_epidemics();
 };
 

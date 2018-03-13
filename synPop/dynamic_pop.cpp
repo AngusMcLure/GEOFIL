@@ -69,12 +69,15 @@ void cblok::rmv_agent(agent *p){        //remove dead agent
 }
 
 void cblok::renew_pop(int year, int day){
+    cchild = 0;
     vector<agent*> v_1, v_2;    //v_1, death; v_2, new adult move out
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
         
         for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
             agent *cur = k->second;
+            
+            if(int(cur->age/365) < 15) ++cchild;
             
             int index = int(int(cur->age/365)/5)+1;
             if(cur->age < 365) index = 0;
@@ -91,6 +94,8 @@ void cblok::renew_pop(int year, int day){
         
         for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
             agent *cur = k->second;
+            
+            if(int(cur->age/365) < 15) ++cchild;
             
             int index = int(int(cur->age/365)/5)+1;
             if(cur->age < 365) index = 0;

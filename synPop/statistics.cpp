@@ -108,34 +108,52 @@ void cblok::get_bbldgarea(int year){
 }
 
 void cblok::get_epidemics(int year){
+    double total = 0, adults = 0, child = 0;
+    map<int, hhold*> vec;
+    for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
+        if(int(j->second->age/365) >= 15) ++adults;
+        else ++child;
+        
+        hhold *hd = j->second->h_d;
+        vec.insert(pair<int, hhold*>(hd->hid, hd));
+    }
     cout << year+2010 << ": " << "prepatent = " << pre_indiv.size() << " infectious = " << inf_indiv.size() << " removed = " << rmv_indiv.size() << endl;
+    cout << "adult prevalence = " << fixed << setprecision(2) << adults/(double)(cpop-cchild)*100 << "%" << endl;
+    cout << "child prevalence = " << fixed << setprecision(2) << child/(double)cchild*100 << "%" << endl;
     cout << "overall prevalence = " << fixed << setprecision(2) << inf_indiv.size()/(double)cpop*100 << "%" << endl;
     
-    double total = 0;
-    for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
-        //agent *p = j->second;
-        //cout << p->aid << " " << int(p->age/365) << " " << p->gendr << " " << p->clock_pre << "  " << p->clock_inf << " " << p->epids << endl;
-        total += j->second->h_d->mmbrs.size();
+    for(map<int, hhold*>::iterator j = vec.begin(); j != vec.end(); ++j){
+        total += j->second->mmbrs.size();
     }
+    vec.clear();
+    
     if(inf_indiv.size() == 0) total = 1;
     cout << "hhold prevalence = " << fixed << setprecision(2) << inf_indiv.size()/total*100 << "%" << endl;
 }
 
 void cblok::out_epidemics(int year, int day){
-    string file = outdir;   file = file + to_string(year+2010);
+    string file = outdir;   file = file + to_string(year+2010); file = file + "_";
     file = file + to_string(day);    file = file + "_epidemics.csv";
     ofstream out(file.c_str());
     
-    out << "year,id,age,hhold_id,hhold_lat,hhold_log" << endl;
+    map<int, hhold*> vec;
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
-        agent *p = j->second;
-        out << year << "," << p->aid << "," << int(p->age/365) << "," << p->h_d->hid << ",";
+        hhold *hd = j->second->h_d;
+        vec.insert(pair<int, hhold*>(hd->hid, hd));
+    }
+    
+    out << "year,hhold_id,hhold_lat,hhold_log" << endl;
+    for(map<int, hhold*>::iterator j = vec.begin(); j != vec.end(); ++j){
+        hhold *p = j->second;
+        out << year << "," << p->hid << ",";
         out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
-        out << p->h_d->lat << "," << p->h_d->log << endl;
+        out << p->lat << "," << p->log << endl;
     }
     out.close();
     
-    file = outdir;   file = file + to_string(year+2010);
+    vec.clear();
+    
+    /*file = outdir;   file = file + to_string(year+2010);    file = file + "_";
     file = file + to_string(day);    file = file + "_comm_graph.csv";
     out.open(file.c_str());
     
@@ -156,7 +174,7 @@ void cblok::out_epidemics(int year, int day){
             out << hd->lat << "," << hd->log << "," << wp->lat << "," << wp->log << endl;
         }
     }
-    out.close();
+    out.close();*/
 }
 
 void cblok::prt_hhold(std::ofstream &out, hhold* hh){

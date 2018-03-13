@@ -46,13 +46,15 @@ void agent::add_child(agent *p){
     chdr.insert(pair<int, agent*>(p->aid, p));
 }
 
-void agent::calc_risk(double prv){
+void agent::calc_risk(double prv, char time){
     double c = 1;
     int age = int(this->age/365);
     if(age <= 4) c = c0_4;
     else if(age <= 15) c = c5_15;
 
-    double p = r_b*c * prv * r_w;      //bites * positive * probability reciving mated worm
+    double p;
+    if(time == 'd') p = rb_day*c * prv * r_w;      //bites * positive * probability reciving mated worm
+    else p = rb_night*c * prv * r_w;
     if(drand48() < p) ++worms;
 }
 
