@@ -11,6 +11,7 @@
 double max_prv;
 
 void cblok::sim_pop(int year){
+    
     max_prv = 0;
     
     hndl_jobs(year);

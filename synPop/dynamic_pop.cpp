@@ -167,13 +167,14 @@ void cblok::rnd_jobs(agent *p){
     
     while(true){
         int ii = 0;
+        map<int, double>::iterator j = mbk->mblok_commuting.begin();
         double rnd = drand48();
-        while(rnd >= mbk->mblok_comm[ii]->p && ii < mbk->mblok_comm.size()-1) {
-            rnd -= mbk->mblok_comm[ii]->p;
-            ++ii;
+        while(rnd >= j->second && ii < mbk->mblok_commuting.size()-1) {
+            rnd -= j->second;
+            ++j; ++ii;
         }
         
-        int mid = mbk->mblok_comm[ii]->mid;
+        int mid = j->first;
         mblok *dst = mbloks[mid];
         
         if(dst->mblok_working.size() == 0) continue;
