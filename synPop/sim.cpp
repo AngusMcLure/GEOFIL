@@ -11,7 +11,6 @@
 double max_prv;
 
 void cblok::sim_pop(int year){
-    
     max_prv = 0;
     
     hndl_jobs(year);
@@ -23,6 +22,9 @@ void cblok::sim_pop(int year){
     }
     
     get_epidemics(year);
+    get_cpop(year);
+    get_sexratiob(year);
+    
     cout << "year = " << year+2010 << " cpop = " << cpop << endl;
     get_students(year);
     get_works(year);

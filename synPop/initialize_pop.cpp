@@ -28,8 +28,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
     
     pre_indiv.clear();
     inf_indiv.clear();
-    rmv_indiv.clear();
-    
+  
     cblok_schols.clear();
     cblok_schols.shrink_to_fit();
     
@@ -344,14 +343,11 @@ void cblok::reset_cpop(){
     //clear population
     pre_indiv.clear();
     inf_indiv.clear();
-    rmv_indiv.clear();
     
     fmal_marry.clear();
     for(int i = 0; i < 11; ++i) fmal_cbrs[i].clear();
     
     //clear meshblocks, households, buildings
-    for(map<int, workp*>::iterator j = cblok_workps.begin(); j != cblok_workps.end(); ++j)
-        delete j->second;
     cblok_workps.clear();
     
     for(int i = 0; i < cblok_schols.size(); ++i)

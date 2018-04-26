@@ -58,18 +58,18 @@
 
 //parameters for risk
 #define r_r                 100             //risk range, 100m average, Aedes polynesiensis
-#define rb_day              100             //bitten rate per half day
-#define rb_night            100
+#define rb_day              80             //bitten rate per half day
+#define rb_night            80
 #define r_w                 0.0325          //probability of receiving both sexes of worms at a single bite
 #define c0_4                0.25            //relative exposure to mosquitos, age 0-4
 #define c5_15               0.75            //relative exposure to mosquitos, age 5-15
-#define r_l                 1.0/(365*2)     //loss of immune rate
 #define s_l3                0.1093          //survive to more than 13 days (L3 larave)
 #define r_i                 0.3881          //infected of mosquitos survive to L3
 #define s_w                 0.0033          //survive to adult worms
 
 //epidemic seeds
 #define prl                 0.032
+#define iter                5
 
 //functions
 int ztpoisson(double l_lambda);
@@ -132,7 +132,7 @@ double gaussian(double m_mu, double s_sigma);
 #define syn_pop_stat            "syn_pop_stat.csv"
 #define syn_hhold_stat          "syn_hhold_stat.csv"
 #define syn_sex_ratios          "syn_sex_ratios.dat"
-#define syn_sex_ratios_broad    "syn_sex_ratios_broad.dat"
+#define syn_sex_ratios_broad    "syn_sex_ratios_broad.csv"
 #define syn_geo_stat            "syn_geo_stat.dat"
 #define syn_total_pop           "syn_total_pop.dat"
 

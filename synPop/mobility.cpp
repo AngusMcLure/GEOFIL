@@ -90,7 +90,7 @@ void cblok::radt_model(char m){
         }
     }
     
-    /*string file = outdir;   file = file + "commuting.csv";
+    string file = outdir;   file = file + "commuting.csv";
     ofstream out(file.c_str());
     out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
     
@@ -101,5 +101,5 @@ void cblok::radt_model(char m){
                 out << mbk->lat << "," << mbk->log << "," << mbloks[k->first]->lat << "," << mbloks[k->first]->log << "," << k->second*mbk->labors << endl;
         }
     }
-    out.close();*/
+    out.close();
 }

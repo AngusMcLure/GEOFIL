@@ -79,8 +79,6 @@ void agent::renew_epidemics(){
         if(clock_inf > 0) --clock_inf;
         
         --active_len;
-        if(active_len == 0) epids = 'r';
+        if(active_len == 0) epids = 's';
     }
-    else if(epids == 'r' && drand48() > 0.99726402359/*exp(-r_l)*/)
-        epids = 's';
 }

@@ -28,7 +28,7 @@ public:
     int bth_wind;   //birth window closed for female just having a baby
     
     int worms;
-    char epids;     //s - susceptible, e - prepatent, i - infectious, r - removed
+    char epids;     //s - susceptible, e - prepatent, i - infectious
     int clock_pre;
     int clock_inf;
     int active_len; //active period in days, 6-8 years

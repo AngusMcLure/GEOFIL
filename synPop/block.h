@@ -101,7 +101,6 @@ public:
     //map<int, agent*> risk_indiv;       //individuals at risk
     map<int, agent*> pre_indiv;        //latent individuals
     map<int, agent*> inf_indiv;        //infectious individuals
-    map<int, agent*> rmv_indiv;        //removed individuals
     
     map<int, rbldg*> inf_rbldg_day;
     map<int, rbldg*> inf_rbldg_night;
@@ -221,10 +220,17 @@ public:
     void seed_epidemics(double p, int age_dn, int age_up);
     void seed_epidemics();      //Lupelele Elementary School, two positive
     
+    double adult_prv[40];
+    double child_prv[40];
+    double all_prv[40];
+    double hhold_prv[40];
+    
+    void reset_prv();
     void get_works(int year);
     void get_hhold(int year);
     void get_students(int year);
     void get_hhold_size(int year);
+    void get_cpop(int year);
     void get_sexratio(int year);
     void get_sexratiob(int year);
     void get_geographic(int year);

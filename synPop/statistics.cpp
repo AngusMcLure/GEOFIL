@@ -8,6 +8,13 @@
 
 #include "block.h"
 
+void cblok::reset_prv(){
+    memset(adult_prv, 0, sizeof(double)*40);
+    memset(child_prv, 0, sizeof(double)*40);
+    memset(all_prv, 0, sizeof(double)*40);
+    memset(hhold_prv, 0, sizeof(double)*40);
+}
+
 void cblok::get_works(int year){
     int t_1 = 0, t_2 = 0, t_3 = 0;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
@@ -91,12 +98,125 @@ void cblok::get_hhold_size(int year){
     vec.clear();
 }
 
+void cblok::get_cpop(int year){
+    string outdata = outdir;   outdata = outdata + syn_pop_stat;
+    ofstream out;
+    
+    ifstream in;
+    in.open(outdata.c_str());
+    if(!in){
+        out.open(outdata.c_str());
+        out << "age group,0-4,5-9,10-14,15-19,20-24,25-34,35-44,45-54,55-59,60-64,65-74,75-79,80-84,85+" << endl;
+        out.close();
+    }
+    else in.close();
+    
+    out.open(outdata.c_str(), std::ios::app);
+    
+    int cc[14];     memset(cc, 0, sizeof(int)*14);
+    int index = -1;
+    int max_age = 0;
+    for(map<int, mblok*>::iterator k = mbloks.begin(); k != mbloks.end(); ++k){
+        for(map<int, agent*>::iterator j = k->second->mblok_males.begin(); j != k->second->mblok_males.end(); ++j){
+            if(max_age < j->second->age) max_age = j->second->age;
+            
+            if(j->second->age < 25*365) index = int(int(j->second->age/365)/5);
+            else if(j->second->age >= 25*365 && j->second->age < 35*365) index = 5;
+            else if(j->second->age >= 35*365 && j->second->age < 45*365) index = 6;
+            else if(j->second->age >= 45*365 && j->second->age < 55*365) index = 7;
+            else if(j->second->age >= 55*365 && j->second->age < 60*365) index = 8;
+            else if(j->second->age >= 60*365 && j->second->age < 65*365) index = 9;
+            else if(j->second->age >= 65*365 && j->second->age < 75*365) index = 10;
+            else if(j->second->age >= 75*365 && j->second->age < 80*365) index = 11;
+            else if(j->second->age >= 80*365 && j->second->age < 85*365) index = 12;
+            else if(j->second->age >= 85*365) index = 13;
+            
+            cc[index]++;
+        }
+        
+        for(map<int, agent*>::iterator j = k->second->mblok_fmals.begin(); j != k->second->mblok_fmals.end(); ++j){
+            if(max_age < j->second->age) max_age = j->second->age;
+            
+            if(j->second->age < 25*365) index = int(int(j->second->age/365)/5);
+            else if(j->second->age >= 25*365 && j->second->age < 35*365) index = 5;
+            else if(j->second->age >= 35*365 && j->second->age < 45*365) index = 6;
+            else if(j->second->age >= 45*365 && j->second->age < 55*365) index = 7;
+            else if(j->second->age >= 55*365 && j->second->age < 60*365) index = 8;
+            else if(j->second->age >= 60*365 && j->second->age < 65*365) index = 9;
+            else if(j->second->age >= 65*365 && j->second->age < 75*365) index = 10;
+            else if(j->second->age >= 75*365 && j->second->age < 80*365) index = 11;
+            else if(j->second->age >= 80*365 && j->second->age < 85*365) index = 12;
+            else if(j->second->age >= 85*365) index = 13;
+            
+            cc[index]++;
+        }
+    }
+    out << year+2010 << ",";
+    for(int j = 0; j < 14; ++j){
+        out << cc[j]/(double)cpop << ",";
+    }
+    out << endl;
+    out.close();
+}
+
 void cblok::get_sexratio(int year){
     
 }
 
 void cblok::get_sexratiob(int year){
+    ofstream out;
+    ifstream in;
     
+    string outdata = outdir;
+    outdata = outdata + syn_sex_ratios_broad;
+    in.open(outdata.c_str());
+    if(!in){
+        out.open(outdata.c_str());
+        out << "age group,0-14,15-64,65+" << endl;
+        out.close();
+    }
+    else in.close();
+    
+    double mm[3], ff[3];
+    memset(mm, 0, sizeof(double)*3);
+    memset(ff, 0, sizeof(double)*3);
+    
+    int index = -1;
+    int max_age = 0;
+    for(map<int, mblok*>::iterator k = mbloks.begin(); k != mbloks.end(); ++k){
+        for(map<int, agent*>::iterator j = k->second->mblok_males.begin(); j != k->second->mblok_males.end(); ++j){
+            if(max_age < j->second->age) max_age = j->second->age;
+            
+            if(j->second->age < 15*365) index = 0;
+            else if(j->second->age >= 15*365 && j->second->age < 65*365) index = 1;
+            else if(j->second->age >= 65*365) index = 2;
+            
+            mm[index]++;
+        }
+        
+        for(map<int, agent*>::iterator j = k->second->mblok_fmals.begin(); j != k->second->mblok_fmals.end(); ++j){
+            if(max_age < j->second->age) max_age = j->second->age;
+            
+            if(j->second->age < 15*365) index = 0;
+            else if(j->second->age >= 15*365 && j->second->age < 65*365) index = 1;
+            else if(j->second->age >= 65*365) index = 2;
+            
+            ff[index]++;
+        }
+    }
+    
+    outdata = outdir;
+    outdata = outdata + syn_sex_ratios_broad;
+    out.open(outdata.c_str(), std::ios::app);
+    
+    //cout << t << endl;
+    out << year+2010 << ",";
+    for(int j = 0; j < 3; ++j){
+        out << (double)100*mm[j]/ff[j] << ",";
+        //cout << mm[j] << " " << ff[j] << endl;
+    }
+    out << cpop << endl;
+    out.close();
 }
 
 void cblok::get_geographic(int year){
@@ -117,10 +237,15 @@ void cblok::get_epidemics(int year){
         hhold *hd = j->second->h_d;
         vec.insert(pair<int, hhold*>(hd->hid, hd));
     }
-    cout << year+2010 << ": " << "prepatent = " << pre_indiv.size() << " infectious = " << inf_indiv.size() << " removed = " << rmv_indiv.size() << endl;
+    
+    cout << year+2010 << ": " << "prepatent = " << pre_indiv.size() << " infectious = " << inf_indiv.size() << endl;
     cout << "adult prevalence = " << fixed << setprecision(2) << adults/(double)(cpop-cchild)*100 << "%" << endl;
     cout << "child prevalence = " << fixed << setprecision(2) << child/(double)cchild*100 << "%" << endl;
     cout << "overall prevalence = " << fixed << setprecision(2) << inf_indiv.size()/(double)cpop*100 << "%" << endl;
+    
+    adult_prv[year] = adults/(double)(cpop-cchild);
+    child_prv[year] = child/(double)cchild;
+    all_prv[year] = inf_indiv.size()/(double)cpop;
     
     for(map<int, hhold*>::iterator j = vec.begin(); j != vec.end(); ++j){
         total += j->second->mmbrs.size();
@@ -129,6 +254,7 @@ void cblok::get_epidemics(int year){
     
     if(inf_indiv.size() == 0) total = 1;
     cout << "hhold prevalence = " << fixed << setprecision(2) << inf_indiv.size()/total*100 << "%" << endl;
+    hhold_prv[year] = inf_indiv.size()/total;
 }
 
 void cblok::out_epidemics(int year, int day){
