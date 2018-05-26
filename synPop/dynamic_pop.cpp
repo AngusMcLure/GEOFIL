@@ -13,6 +13,7 @@ extern int births;
 void cblok::rmv_agent(agent *p){        //remove dead agent
     if(p->epids == 'e') pre_indiv.erase(p->aid);
     else if(p->epids == 'i') inf_indiv.erase(p->aid);
+    else if(p->epids == 'r') rmv_indiv.erase(p->aid);
     
     hhold *h_hold = p->h_d;
     mblok *mbk = h_hold->rdg->mbk;

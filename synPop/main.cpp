@@ -65,9 +65,9 @@ int main(int argc, const char * argv[]) {
         for(int j = 0; j < 40; ++j) out << "," << cbk->all_prv[j];
         out << endl;
         
-        out << "hhold";
+        /*out << "hhold";
         for(int j = 0; j < 40; ++j) out << "," << cbk->hhold_prv[j];
-        out << endl;
+        out << endl;*/
     }
     
     return 0;

@@ -228,37 +228,44 @@ void cblok::get_bbldgarea(int year){
 }
 
 void cblok::get_epidemics(int year){
-    double total = 0, adults = 0, child = 0;
+    double n_1 = 0, n_2 = 0;
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        for(map<int, agent*>::iterator k = j->second->mblok_males.begin(); k != j->second->mblok_males.end(); ++k){
+            int age = int(k->second->age/365);
+            if(age >= 8) ++n_1;
+            else if(age >=6 && age <= 7) ++n_2;
+        }
+        
+        for(map<int, agent*>::iterator k = j->second->mblok_fmals.begin(); k != j->second->mblok_fmals.end(); ++k){
+            int age = int(k->second->age/365);
+            if(age >= 8) ++n_1;
+            else if(age >=6 && age <= 7) ++n_2;
+        }
+    }
+    
+    double i_1 = 0, i_2 = 0;
     map<int, hhold*> vec;
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
-        if(int(j->second->age/365) >= 15) ++adults;
-        else ++child;
+        int age = int(j->second->age/365);
+        if(age >= 8) ++i_1;
+        else if(age >=6 && age <= 7) ++i_2;
         
         hhold *hd = j->second->h_d;
         vec.insert(pair<int, hhold*>(hd->hid, hd));
     }
     
     cout << year+2010 << ": " << "prepatent = " << pre_indiv.size() << " infectious = " << inf_indiv.size() << endl;
-    cout << "adult prevalence = " << fixed << setprecision(2) << adults/(double)(cpop-cchild)*100 << "%" << endl;
-    cout << "child prevalence = " << fixed << setprecision(2) << child/(double)cchild*100 << "%" << endl;
+    cout << "community-based prevalence = " << fixed << setprecision(2) << i_1/(double)n_1*100 << "%" << endl;
+    cout << "school-based prevalence = " << fixed << setprecision(2) << i_2/(double)n_2*100 << "%" << endl;
     cout << "overall prevalence = " << fixed << setprecision(2) << inf_indiv.size()/(double)cpop*100 << "%" << endl;
     
-    adult_prv[year] = adults/(double)(cpop-cchild);
-    child_prv[year] = child/(double)cchild;
+    adult_prv[year] = i_1/(double)n_1;
+    child_prv[year] = i_2/(double)n_2;
     all_prv[year] = inf_indiv.size()/(double)cpop;
-    
-    for(map<int, hhold*>::iterator j = vec.begin(); j != vec.end(); ++j){
-        total += j->second->mmbrs.size();
-    }
-    vec.clear();
-    
-    if(inf_indiv.size() == 0) total = 1;
-    cout << "hhold prevalence = " << fixed << setprecision(2) << inf_indiv.size()/total*100 << "%" << endl;
-    hhold_prv[year] = inf_indiv.size()/total;
 }
 
 void cblok::out_epidemics(int year, int day){
-    string file = outdir;   file = file + to_string(year+2010); file = file + "_";
+    /*string file = outdir;   file = file + to_string(year+2010); file = file + "_";
     file = file + to_string(day);    file = file + "_epidemics.csv";
     ofstream out(file.c_str());
     
@@ -277,30 +284,7 @@ void cblok::out_epidemics(int year, int day){
     }
     out.close();
     
-    vec.clear();
-    
-    /*file = outdir;   file = file + to_string(year+2010);    file = file + "_";
-    file = file + to_string(day);    file = file + "_comm_graph.csv";
-    out.open(file.c_str());
-    
-    out << "year,id,age,hhold_lat,hhold_log,dest_lat,dest_log" << endl;
-    for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
-        agent *p = j->second;
-        hhold *hd = p->h_d;
-        if(p->s_h != NULL){
-            schol *sh = p->s_h;
-            out << year+2010 << "," << p->aid << "," << int(p->age/365) << ",";
-            out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
-            out << hd->lat << "," << hd->log << "," << sh->lat << "," << sh->log << endl;
-        }
-        else if(p->w_p != NULL){
-            workp *wp = p->w_p;
-            out << year+2010 << "," << p->aid << "," << int(p->age/365) << ",";
-            out << std::setprecision(2) << std::setiosflags(std::ios::fixed);
-            out << hd->lat << "," << hd->log << "," << wp->lat << "," << wp->log << endl;
-        }
-    }
-    out.close();*/
+    vec.clear();*/
 }
 
 void cblok::prt_hhold(std::ofstream &out, hhold* hh){

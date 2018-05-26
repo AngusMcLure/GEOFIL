@@ -62,7 +62,7 @@ void agent::renew_epidemics(){
     if(epids == 's'){
         if(drand48() < 1-pow(1-s_w, worms)){
             epids = 'e';
-            clock_pre = 210;
+            clock_pre = 180 + drand48()*180;
         }
         worms = 0;
     }
@@ -72,13 +72,20 @@ void agent::renew_epidemics(){
         if(clock_pre == 0){
             epids = 'i';
             clock_inf = 14;
-            active_len = 6*365 + drand48()*2*365;   
+            active_len = 4*365 + drand48()*2*365;
         }
     }
     else if(epids == 'i'){
         if(clock_inf > 0) --clock_inf;
         
         --active_len;
-        if(active_len == 0) epids = 's';
+        if(active_len == 0){
+            epids = 'r';
+            clock_rmv = 2*365 + drand48()*365;
+        }
+    }
+    else if(epids == 'r'){
+        if(clock_rmv > 0) --clock_rmv;
+        if(clock_rmv == 0) epids = 's';
     }
 }
