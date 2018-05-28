@@ -232,13 +232,13 @@ void cblok::get_epidemics(int year){
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         for(map<int, agent*>::iterator k = j->second->mblok_males.begin(); k != j->second->mblok_males.end(); ++k){
             int age = int(k->second->age/365);
-            if(age >= 8) ++n_1;
+            if(age >= 15) ++n_1;
             else if(age >=6 && age <= 7) ++n_2;
         }
         
         for(map<int, agent*>::iterator k = j->second->mblok_fmals.begin(); k != j->second->mblok_fmals.end(); ++k){
             int age = int(k->second->age/365);
-            if(age >= 8) ++n_1;
+            if(age >= 15) ++n_1;
             else if(age >=6 && age <= 7) ++n_2;
         }
     }
@@ -247,7 +247,7 @@ void cblok::get_epidemics(int year){
     map<int, hhold*> vec;
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
         int age = int(j->second->age/365);
-        if(age >= 8) ++i_1;
+        if(age >= 15) ++i_1;
         else if(age >=6 && age <= 7) ++i_2;
         
         hhold *hd = j->second->h_d;
@@ -255,8 +255,8 @@ void cblok::get_epidemics(int year){
     }
     
     cout << year+2010 << ": " << "prepatent = " << pre_indiv.size() << " infectious = " << inf_indiv.size() << endl;
-    cout << "community-based prevalence = " << fixed << setprecision(2) << i_1/(double)n_1*100 << "%" << endl;
-    cout << "school-based prevalence = " << fixed << setprecision(2) << i_2/(double)n_2*100 << "%" << endl;
+    cout << ">=15 years' prevalence = " << fixed << setprecision(2) << i_1/(double)n_1*100 << "%" << endl;
+    cout << "6-7 years' prevalence = " << fixed << setprecision(2) << i_2/(double)n_2*100 << "%" << endl;
     cout << "overall prevalence = " << fixed << setprecision(2) << inf_indiv.size()/(double)cpop*100 << "%" << endl;
     
     adult_prv[year] = i_1/(double)n_1;

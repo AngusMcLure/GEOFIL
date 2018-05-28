@@ -778,6 +778,27 @@ void cblok::read_parmtrs(){
     }
     in.close();
     
+    //read exposure by age
+    file = parameters;    file = file + exposure_age;
+    in.open(file.c_str());
+    if(!in){
+        cout << "open " << file << " failed" << endl;
+        exit(1);
+    }
+    getline(in, line);
+    while(getline(in,line)){
+        char *str = new char[line.size()+1];
+        std::strcpy(str, line.c_str());
+        char *p = NULL;
+        p = std::strtok(str, ",");      int age = atoi(p);
+        p = std::strtok(NULL, ",");
+        p = std::strtok(NULL, ",");     double expo = atof(p);
+        
+        exposure_by_age[age] = expo;
+        delete []str;
+    }
+    in.close();
+    
     //2. reading annual net migrants
     file = parameters;    file = file + net_pop_loss;
     in.open(file.c_str());

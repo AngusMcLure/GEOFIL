@@ -46,12 +46,7 @@ void agent::add_child(agent *p){
     chdr.insert(pair<int, agent*>(p->aid, p));
 }
 
-void agent::calc_risk(double prv, char time){
-    double c = 1;
-    int age = int(this->age/365);
-    if(age <= 4) c = c0_4;
-    else if(age <= 15) c = c5_15;
-
+void agent::calc_risk(double prv, char time, double c){
     double p;
     if(time == 'd') p = rb_day*c * prv * r_w;      //bites * positive * probability reciving mated worm
     else p = rb_night*c * prv * r_w;
@@ -60,10 +55,13 @@ void agent::calc_risk(double prv, char time){
 
 void agent::renew_epidemics(){
     if(epids == 's'){
+        clock_pre = 182 + drand48()*183;
+        double s_w = pow(0.13, clock_pre/(double)75);
+        
         if(drand48() < 1-pow(1-s_w, worms)){
             epids = 'e';
-            clock_pre = 180 + drand48()*180;
         }
+        else clock_pre = 0;
         worms = 0;
     }
     else if(epids == 'e'){

@@ -18,8 +18,8 @@ void cblok::sim_pop(int year){
     
     if(year == 0){
         //seed_epidemics();
-        seed_epidemics(0.0023, 8, 14);
-        seed_epidemics(0.0046, 15, 100);
+        seed_epidemics(0.0025, 8, 14);
+        seed_epidemics(0.0050, 15, 100);
     }
     
     get_epidemics(year);
@@ -59,7 +59,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up){
             if(age >= age_dn && age <= age_up && drand48() <= p){
                 cur->epids = 'i';
                 cur->clock_inf = 0;
-                cur->active_len = drand48()*6*365;
+                cur->active_len = 4*365 + drand48()*2*365;
                 inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
             }
         }
@@ -74,7 +74,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up){
                 cur->epids = 'i';
                 cur->clock_inf = 0;
                 cur->clock_pre = 0;
-                cur->active_len = drand48()*6*365;
+                cur->active_len = 4*365 + drand48()*2*365;
                 inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
             }
         }

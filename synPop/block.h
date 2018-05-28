@@ -172,13 +172,14 @@ public:
     double live_birth_order_pro[10];        //birth order probability
     double live_birth_age_pro[10][7];       //birth age prob
     
-    double mmortlty[18];                //male mortatlity
-    double fmortlty[18];                //female mortatlity
+    double mmortlty[18];                    //male mortatlity
+    double fmortlty[18];                    //female mortatlity
     
-    double sex_ratio[age_grps];               //sex ratios by age groups
-    double fertlty[sim_nd-sim_bg+1][7]; //fertility by age groups
+    double sex_ratio[age_grps];             //sex ratios by age groups
+    double fertlty[sim_nd-sim_bg+1][7];     //fertility by age groups
     
-    double pop_loss[sim_nd-sim_bg+1];      //net annual population loss due to migration
+    double pop_loss[sim_nd-sim_bg+1];       //net annual population loss due to migration
+    double exposure_by_age[16];                //exposure by age: 0-4, 0.25; 5-15, 0.75
     
     cblok(int cid, string cname, double lat, double log);
     bool pop_reload();

@@ -449,7 +449,13 @@ void cblok::calc_risk(int year, int day){
         
         for(int i = 0; i < r_indiv.size(); ++i){
             agent *p = r_indiv[i];
-            p->calc_risk(prv, 'd');
+            
+            double c = 1;
+            int age = int(p->age/365);
+            if(age <= 15)
+                c = exposure_by_age[age];
+            
+            p->calc_risk(prv, 'd', c);
             p->renew_epidemics();
             
             if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -520,7 +526,12 @@ void cblok::calc_risk(int year, int day){
             agent *p = k->second;
             if(p->epids != 's') continue;
             
-            p->calc_risk(prv, 'd');
+            double c = 1;
+            int age = int(p->age/365);
+            if(age <= 15)
+                c = exposure_by_age[age];
+            
+            p->calc_risk(prv, 'd', c);
             p->renew_epidemics();
             
             if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -588,7 +599,12 @@ void cblok::calc_risk(int year, int day){
             agent *p = k->second;
             if(p->epids != 's') continue;
             
-            p->calc_risk(prv, 'd');
+            double c = 1;
+            int age = int(p->age/365);
+            if(age <= 15)
+                c = exposure_by_age[age];
+            
+            p->calc_risk(prv, 'd', c);
             p->renew_epidemics();
             
             if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -632,7 +648,13 @@ void cblok::calc_risk(int year, int day){
         for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
             agent *p = k->second;
             if(p->epids != 's') continue;
-            p->calc_risk(prv, 'n');
+            
+            double c = 1;
+            int age = int(p->age/365);
+            if(age <= 15)
+                c = exposure_by_age[age];
+            
+            p->calc_risk(prv, 'n', c);
             p->renew_epidemics();
             
             if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));

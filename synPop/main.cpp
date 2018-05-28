@@ -53,15 +53,15 @@ int main(int argc, const char * argv[]) {
         else in.close();
         
         out.open(prv_dat.c_str(), ios::app);
-        out << "adult";
+        out << ">=15 yro";
         for(int j = 0; j < 40; ++j) out << "," << cbk->adult_prv[j];
         out << endl;
         
-        out << "child";
+        out << "6-7 yro";
         for(int j = 0; j < 40; ++j) out << "," << cbk->child_prv[j];
         out << endl;
         
-        out << "all";
+        out << "overall";
         for(int j = 0; j < 40; ++j) out << "," << cbk->all_prv[j];
         out << endl;
         
