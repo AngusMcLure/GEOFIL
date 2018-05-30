@@ -795,21 +795,23 @@ void cblok::renew_epidemics(int year, int day){
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end();){
         agent *p = j->second;
         p->renew_epidemics();
-        if(p->epids == 'r'){
+        /*if(p->epids == 'r'){
             inf_indiv.erase(j++);
             rmv_indiv.insert(pair<int, agent*>(p->aid, p));
-        }
+        }*/
+        if(p->epids == 's')
+            inf_indiv.erase(j++);
         else ++j;
     }
     
-    for(map<int, agent*>::iterator j = rmv_indiv.begin(); j != rmv_indiv.end();){
+    /*for(map<int, agent*>::iterator j = rmv_indiv.begin(); j != rmv_indiv.end();){
         agent *p = j->second;
         p->renew_epidemics();
         if(p->epids == 's'){
             rmv_indiv.erase(j++);
         }
         else ++j;
-    }
+    }*/
 }
 
 void cblok::validate_pop(int year, int day){

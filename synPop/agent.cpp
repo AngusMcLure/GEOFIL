@@ -78,12 +78,13 @@ void agent::renew_epidemics(){
         
         --active_len;
         if(active_len == 0){
-            epids = 'r';
-            clock_rmv = 2*365 + drand48()*365;
+            /*epids = 'r';
+            clock_rmv = 2*365 + drand48()*365;*/
+            epids = 's';
         }
     }
-    else if(epids == 'r'){
+    /*else if(epids == 'r'){
         if(clock_rmv > 0) --clock_rmv;
         if(clock_rmv == 0) epids = 's';
-    }
+    }*/
 }

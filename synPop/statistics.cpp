@@ -265,7 +265,7 @@ void cblok::get_epidemics(int year){
 }
 
 void cblok::out_epidemics(int year, int day){
-    /*string file = outdir;   file = file + to_string(year+2010); file = file + "_";
+    string file = outdir;   file = file + to_string(year+2010); file = file + "_";
     file = file + to_string(day);    file = file + "_epidemics.csv";
     ofstream out(file.c_str());
     
@@ -284,7 +284,7 @@ void cblok::out_epidemics(int year, int day){
     }
     out.close();
     
-    vec.clear();*/
+    vec.clear();
 }
 
 void cblok::prt_hhold(std::ofstream &out, hhold* hh){

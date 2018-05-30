@@ -101,7 +101,7 @@ public:
     //map<int, agent*> risk_indiv;     //individuals at risk
     map<int, agent*> pre_indiv;        //latent individuals
     map<int, agent*> inf_indiv;        //infectious individuals
-    map<int, agent*> rmv_indiv;        //removed individuals
+    //map<int, agent*> rmv_indiv;        //removed individuals
     
     map<int, rbldg*> inf_rbldg_day;
     map<int, rbldg*> inf_rbldg_night;
@@ -219,7 +219,7 @@ public:
     void risk_loc_day(int year, int day);
     void risk_loc_night(int year, int day);        //time = 'd' or 'n', day/night
     void renew_epidemics(int year, int day);
-    void seed_epidemics(double p, int age_dn, int age_up);
+    void seed_epidemics(double p, int age_dn, int age_up, string village = "all");
     void seed_epidemics();      //Lupelele Elementary School, two positive
     
     double adult_prv[40];
