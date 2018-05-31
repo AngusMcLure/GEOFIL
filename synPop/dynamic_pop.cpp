@@ -7,8 +7,8 @@
 //
 
 #include "block.h"
-extern int deaths;
-extern int births;
+//extern int deaths;
+//extern int births;
 
 void cblok::rmv_agent(agent *p){        //remove dead agent
     if(p->epids == 'e') pre_indiv.erase(p->aid);
@@ -117,7 +117,7 @@ void cblok::renew_pop(int year, int day){
         }
     }
     
-    deaths += v_1.size();
+    //deaths += v_1.size();
     
     //remove dead agents
     while(v_1.size() > 0){
@@ -210,7 +210,7 @@ void cblok::hndl_birth(int year, int day){
         }
     }
     
-    births += total_birth;
+    //births += total_birth;
     
     while(total_birth > 0){
         double rnd = drand48();

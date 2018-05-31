@@ -20,7 +20,10 @@ void cblok::sim_pop(int year){
         //seed_epidemics();
         seed_epidemics(0.0025, 8, 14);
         seed_epidemics(0.0050, 15, 100);
-        //seed_epidemics(0.0344, 2, 100, "Fagalii");
+        /*seed_epidemics(0.172/5.00, 2, 100, "Fagalii");
+        seed_epidemics(0.024/5.00, 2, 100, "Iliili");
+        seed_epidemics(0.024/5.00, 2, 100, "Vaitogi");
+        seed_epidemics(0.024/5.00, 2, 100, "Futiga");*/
     }
     
     get_epidemics(year);
@@ -48,6 +51,10 @@ void cblok::sim_pop(int year){
 }
 
 void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
+    if(village != "all" && mbloksIndexA.find(village) == mbloksIndexA.end()){
+        cout << village << " not found" << endl;
+        exit(1);
+    }
     cchild = 0;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
@@ -61,7 +68,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                 if(age >= age_dn && age <= age_up && drand48() <= p){
                     cur->epids = 'i';
                     cur->clock_inf = 0;
-                    cur->active_len = 4*365 + drand48()*2*365;
+                    cur->active_len = drand48()*6*365;
                     inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                 }
             }
@@ -76,7 +83,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                     cur->epids = 'i';
                     cur->clock_inf = 0;
                     cur->clock_pre = 0;
-                    cur->active_len = 4*365 + drand48()*2*365;
+                    cur->active_len = drand48()*6*365;
                     inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                 }
             }

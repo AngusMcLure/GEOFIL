@@ -7,6 +7,8 @@
 //
 #include "agent.h"
 
+extern int rb_working, rb_offwork;
+
 agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, schol *s_h){
     this->aid = aid;
     this->age = age;
@@ -48,8 +50,8 @@ void agent::add_child(agent *p){
 
 void agent::calc_risk(double prv, char time, double c){
     double p;
-    if(time == 'd') p = rb_day*c * prv * r_w;      //bites * positive * probability reciving mated worm
-    else p = rb_night*c * prv * r_w;
+    if(time == 'd') p = rb_working*c * prv * r_w;      //bites * positive * probability reciving mated worm
+    else p = rb_offwork*c * prv * r_w;
     if(drand48() < p) ++worms;
 }
 

@@ -9,7 +9,7 @@
 #include "agent.h"
 #include "block.h"
 
-extern int rup;
+//extern int rup;
 
 hhold::hhold(int hid, int size, agent *holder){
     this->hid = hid;
@@ -336,7 +336,7 @@ void cblok::hndl_hold_rupt(int year){
         cur->update_hhold();
         if(cur->size == 0) mbk->rmv_hhold(cur);
         
-        ++rup;
+        //++rup;
         
         for(int i = 0; i < vec.size(); ++i) delete vec[i];
         vec.clear();    vec.shrink_to_fit();
