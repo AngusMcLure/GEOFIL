@@ -58,8 +58,8 @@
 
 //parameters for risk
 #define r_r                 100            //risk range, 100m average, Aedes polynesiensis
-//#define rb_working          50             //bitten rate per half day
-//#define rb_offwork          50
+#define rb_working          50             //bitten rate per half day
+#define rb_offwork          50
 #define r_w                 0.1412         //probability of presence of mated worms due to one bite
 #define c0_4                0.25           //relative exposure to mosquitos, age 0-4
 #define c5_15               0.75           //relative exposure to mosquitos, age 5-15

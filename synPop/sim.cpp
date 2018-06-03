@@ -17,13 +17,12 @@ void cblok::sim_pop(int year){
     hndl_schol(year);
     
     if(year == 0){
-        //seed_epidemics();
-        seed_epidemics(0.0025, 8, 14);
-        seed_epidemics(0.0050, 15, 100);
-        /*seed_epidemics(0.172/5.00, 2, 100, "Fagalii");
+        //seed_epidemics(0.0025, 8, 14);
+        //seed_epidemics(0.0050, 15, 100);
+        seed_epidemics(0.172/5.00, 2, 100, "Fagalii");
         seed_epidemics(0.024/5.00, 2, 100, "Iliili");
         seed_epidemics(0.024/5.00, 2, 100, "Vaitogi");
-        seed_epidemics(0.024/5.00, 2, 100, "Futiga");*/
+        seed_epidemics(0.024/5.00, 2, 100, "Futiga");
     }
     
     get_epidemics(year);
@@ -35,7 +34,7 @@ void cblok::sim_pop(int year){
     get_works(year);
     
     for(int day = 0; day < 365; ++day){
-        //if((year*365+day) % 60 == 0) out_epidemics(year, day);
+        if((year*365+day) % 60 == 0) out_epidemics(year, day);
         //get_epidemics(year);
         renew_epidemics(year, day);
         calc_risk(year, day);

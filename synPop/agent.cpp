@@ -7,7 +7,7 @@
 //
 #include "agent.h"
 
-extern int rb_working, rb_offwork;
+//extern int rb_working, rb_offwork;
 
 agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, schol *s_h){
     this->aid = aid;

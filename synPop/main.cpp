@@ -11,7 +11,7 @@
 #include "main.h"
 using namespace std;
 
-int rb_working, rb_offwork;
+//int rb_working, rb_offwork;
 
 int main(int argc, const char * argv[]) {
 	unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
@@ -22,12 +22,12 @@ int main(int argc, const char * argv[]) {
     // insert code here...
     cblok *cbk = new cblok(as_cid, "American Samoa", as_lat, as_long);
     
-    int rb_working_array[4] = {50, 60, 40, 40};
-    int rb_offwork_array[4] = {50, 40, 60, 40};
+    //int rb_working_array[4] = {50, 60, 40, 40};
+    //int rb_offwork_array[4] = {50, 40, 60, 40};
     
-    for(int p = 0; p < 4; ++p){
+    /*for(int p = 0; p < 4; ++p){
         rb_working = rb_working_array[p];
-        rb_offwork = rb_offwork_array[p];
+        rb_offwork = rb_offwork_array[p];*/
         
         for(int i = 0; i < iter; ++i){
             cbk->reset_cpop();
@@ -59,12 +59,8 @@ int main(int argc, const char * argv[]) {
             out << "overall";
             for(int j = 0; j < 40; ++j) out << "," << cbk->all_prv[j];
             out << endl;
-            
-            /*out << "hhold";
-             for(int j = 0; j < 40; ++j) out << "," << cbk->hhold_prv[j];
-             out << endl;*/
         }
-    }
+    //}
     
     return 0;
 }
