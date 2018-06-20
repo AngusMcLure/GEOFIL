@@ -2197,6 +2197,8 @@ mblok::mblok(int mid, cblok *cbk, double lat, double log){
     this->cbk = cbk;
     this->lat = lat;
     this->log = log;
+    
+    this->sum_mf = 0;
 }
 
 mblok::~mblok(){

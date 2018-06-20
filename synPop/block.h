@@ -23,6 +23,8 @@ public:
     double lat, log;                    //latitude & longitude
     cblok *cbk;                         //city block
     
+    double sum_mf;
+    
     map<int, agent*> mblok_males;
     map<int, agent*> mblok_fmals;
     map<int, hhold*> mblok_hholds;

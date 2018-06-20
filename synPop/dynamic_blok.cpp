@@ -788,6 +788,8 @@ void cblok::renew_epidemics(int year, int day){
         if(p->epids == 'i'){
             pre_indiv.erase(j++);
             inf_indiv.insert(pair<int, agent*>(p->aid, p));
+            
+            p->h_d->rdg->mbk->sum_mf++;
         }
         else ++j;
     }
