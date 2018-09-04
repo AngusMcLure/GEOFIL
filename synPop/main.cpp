@@ -60,33 +60,6 @@ int main(int argc, const char * argv[]) {
             for(int j = 0; j < 40; ++j) out << "," << cbk->all_prv[j];
             out << endl;
             
-            double sum = 0;
-            for(map<int, mblok*>::iterator j = cbk->mbloks.begin(); j != cbk->mbloks.end(); ++j){
-                sum += j->second->sum_mf;
-            }
-            out.close();
-            
-            string mapping = outdir;    mapping = mapping + "risk_mapping.csv";
-            in.open(mapping.c_str());
-            if(!in){
-                out.open(mapping.c_str());
-                out << "village,";
-                
-                for(map<int, mblok*>::iterator j = cbk->mbloks.begin(); j != cbk->mbloks.end(); ++j){
-                    out << cbk->mbloksIndexB[j->first] << ",";
-                }
-                out << endl;
-                
-                out.close();
-            }
-            else in.close();
-            
-            out.open(mapping.c_str(), ios::app);
-            out << "percentage";
-            for(map<int, mblok*>::iterator j = cbk->mbloks.begin(); j != cbk->mbloks.end(); ++j){
-                out << "," << j->second->sum_mf/sum;
-            }
-            out << endl;
             out.close();
         }
     //}

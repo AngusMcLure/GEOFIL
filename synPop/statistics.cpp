@@ -286,6 +286,35 @@ void cblok::out_epidemics(int year, int day){
     out.close();
     
     vec.clear();
+    
+    string mapping = outdir;    mapping = mapping + "risk_mapping.csv";
+    ifstream in;
+    in.open(mapping.c_str());
+    if(!in){
+        out.open(mapping.c_str());
+        out << "village,";
+        
+        for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+            out << mbloksIndexB[j->first] << ",";
+        }
+        out << endl;
+        
+        out.close();
+    }
+    else in.close();
+    
+    double sum = 0;
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        sum += j->second->sum_mf;
+    }
+    
+    out.open(mapping.c_str(), ios::app);
+    out << year << "-" << day;
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        out << "," << j->second->sum_mf/sum;
+    }
+    out << endl;
+    out.close();
 }
 
 void cblok::prt_hhold(std::ofstream &out, hhold* hh){
