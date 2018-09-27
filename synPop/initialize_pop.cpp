@@ -29,7 +29,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
     pre_indiv.clear();
     inf_indiv.clear();
     //rmv_indiv.clear();
-  
+    
     cblok_schols.clear();
     cblok_schols.shrink_to_fit();
     
@@ -213,7 +213,7 @@ bool cblok::pop_reload(){
                 if(int(age/365) < 50) fmal_cbrs[births].insert(pair<int, agent*>(id, pp));
                 else fmal_marry.insert(pair<int, agent*>(id, pp));
             }
-                
+            
             delete []str;
         }
         in.close();
@@ -344,7 +344,6 @@ void cblok::reset_cpop(){
     //clear population
     pre_indiv.clear();
     inf_indiv.clear();
-    //rmv_indiv.clear();
     
     fmal_marry.clear();
     for(int i = 0; i < 11; ++i) fmal_cbrs[i].clear();
@@ -355,10 +354,26 @@ void cblok::reset_cpop(){
     for(int i = 0; i < cblok_schols.size(); ++i)
         delete cblok_schols[i];
     cblok_schols.clear();
-    cblok_schols.shrink_to_fit();
     cblok_e_schols.clear();
     cblok_h_schols.clear();
     cblok_c_schols.clear();
+    
+    inf_rbldg_day.clear();
+    inf_rbldg_night.clear();
+    inf_schol.clear();
+    inf_workp.clear();
+
+    risk_rbldg.clear();
+    risk_schol.clear();
+    risk_workp.clear();
+    
+    for(int i = 0; i < vg_agrps; ++i){
+        mvec[i].clear();
+        fvec[i].clear();
+    }
+    
+    vector<agent*> mvec[vg_agrps];
+    vector<agent*> fvec[vg_agrps];
     
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j)
         delete j->second;
@@ -520,14 +535,14 @@ void cblok::read_demgrphcs(){
         str = new char[line.size()+1];
         std::strcpy(str, line.c_str());
         p = std::strtok(str, ",");  //village name may have space
-     
+        
         //deal with gender record
         int mid = mbloksIndexA[p];
         if(mblok_mpops.find(mid) != mblok_mpops.end()){
             cout << "village name: " << p << " already exist, read gender data!" << endl;
             exit(1);
         }
-     
+        
         int males = 0, females = 0;
         p = std::strtok(NULL, ", ");    males = atoi(p);
         p = std::strtok(NULL, ", ");    females = atoi(p);
@@ -886,7 +901,7 @@ void cblok::read_parmtrs(){
         delete []str;
     }
     in.close();
-
+    
     file = datadir;    file = file + marital_female;
     in.open(file.c_str());
     getline(in, line);          //header
@@ -1216,7 +1231,7 @@ void cblok::hndl_land_data(){
             
             mblok *mbk_p = mbloks[mbloksIndexA[mbk]];
             rbldg *bg = new rbldg(bid, log, lat, area, mbk_p, this);
-
+            
             mbk_p->add_rbldg(bg);
             delete []str;
         }
@@ -1362,7 +1377,7 @@ void cblok::hndl_land_data(){
             
             schol *sh = new schol(sid, name, level, log, lat);
             cblok_schols.push_back(sh);
-
+            
             if(level == 'E') cblok_e_schols.insert(pair<int, schol*>(sh->sid, sh));
             else if(level == 'H') cblok_h_schols.insert(pair<int, schol*>(sh->sid, sh));
             else if(level == 'B'){
@@ -2032,10 +2047,10 @@ void cblok::hndl_rbldg(string ff, int low, int upper, int min_dist){
                 if(d < pow(min_dist,2)) continue;
                 
                 double log = (p->second->log + q->second->log)/2, lat = (p->second->lat + q->second->lat)/2, area = (p->second->area + q->second->area)/2;
-        
+                
                 ++max_bid;
                 rbldg *pp = new rbldg(max_bid, log, lat, area, j->second, this);
-                    
+                
                 j->second->add_rbldg(pp);
                 
                 --k;
@@ -2090,10 +2105,6 @@ void cblok::allct_rbldgs(){
         v_1.clear(); v_1.shrink_to_fit();
         v_2.clear(); v_2.shrink_to_fit();
     }
-}
-
-void cblok::calc_bldg_dist(){
-    
 }
 
 void cblok::calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL){
@@ -2272,11 +2283,11 @@ void mblok::bld_hhold(){
     } _younger;
     
     stable_sort(m_svec.begin(), m_svec.end(), _younger);
-
+    
     for(int j = 0; j < famly.size(); ++j){
         famly[j]->mother->births = int(famly[j]->child.size()+famly[j]->avail_ages.size());
     }
-
+    
     int pop = int(mblok_males.size() + mblok_fmals.size());
     int allocated = 0;
     while (famly.size() + m_svec.size() > 0){
@@ -2943,21 +2954,21 @@ void mblok::allocate_child(vector<agent*> &chld_vec, vector<unit*> &famly){
     }
     
     /*for(int i = 0; i < famly.size(); ++i){
-        unit *cur = famly[i];
-        agent *p = cur->father;
-        agent *q = cur->mother;
-        for(int j = 0; j < cur->child.size(); ++j){
-            agent *b = cur->child[j];
-            
-            if(p != NULL){
-                p->add_child(b);
-                b->dad = p;
-            }
-            
-            q->add_child(b);
-            b->mom = q;
-        }
-    }*/
+     unit *cur = famly[i];
+     agent *p = cur->father;
+     agent *q = cur->mother;
+     for(int j = 0; j < cur->child.size(); ++j){
+     agent *b = cur->child[j];
+     
+     if(p != NULL){
+     p->add_child(b);
+     b->dad = p;
+     }
+     
+     q->add_child(b);
+     b->mom = q;
+     }
+     }*/
     
     family.clear();
     family.shrink_to_fit();

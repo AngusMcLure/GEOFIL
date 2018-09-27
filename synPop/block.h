@@ -222,11 +222,12 @@ public:
     void risk_loc_night(int year, int day);        //time = 'd' or 'n', day/night
     void renew_epidemics(int year, int day);
     void seed_epidemics(double p, int age_dn, int age_up, string village = "all");
-    void seed_epidemics();      //Lupelele Elementary School, two positive
     
     double adult_prv[40];
     double child_prv[40];
     double all_prv[40];
+    double fagalli[40];
+    double iliili[40];
     double hhold_prv[40];
     
     void reset_prv();
@@ -240,7 +241,9 @@ public:
     void get_geographic(int year);
     void get_bbldgarea(int year);
     void get_epidemics(int year);
+    void get_mosquitoes(int year);
     void out_epidemics(int year, int day);
+    void out_riskmap(int year, int day);
     void prt_hhold(std::ofstream &out, hhold* hh);
 };
 

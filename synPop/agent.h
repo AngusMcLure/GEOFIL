@@ -13,10 +13,35 @@
 using namespace std;
 
 //individuals
+class worm;
 class agent;
 class hhold;
 class workp;
 class schol;
+
+class worm{
+public:
+    char status;    //p - prepatent, m - mf producing, d - to be removed
+    int clock_pp;
+    int clock_mf; //active period in days, 4-6 years
+    
+    worm(char s, int p, int l){
+        status = s;
+        clock_pp = p;
+        clock_mf = l;
+    }
+    
+    void update(){
+        if(status == 'p'){
+            --clock_pp;
+            if(clock_pp == 0) status = 'm';
+        }
+        else if(status == 'm'){
+            --clock_mf;
+            if(clock_mf == 0) status = 'd';
+        }
+    }
+};
 
 class agent{
 public:
@@ -28,11 +53,9 @@ public:
     int bth_wind;   //birth window closed for female just having a baby
     
     int worms;
-    char epids;     //s - susceptible, e - prepatent, i - infectious
-    int clock_pre;
+    vector<worm*> wvec;
     int clock_inf;
-    int active_len; //active period in days, 4-6 years
-    int clock_rmv;
+    char epids;     //s - susceptible, e - prepatent, i - infectious
     
     agent *spw;
     agent *dad;
@@ -52,6 +75,7 @@ public:
     void add_child(agent *p);
     void calc_risk(double prv, char time, double c);
     void renew_epidemics();
+    void update();
 };
 
 #endif /* agent_hpp */

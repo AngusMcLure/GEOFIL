@@ -12,6 +12,8 @@ void cblok::reset_prv(){
     memset(adult_prv, 0, sizeof(double)*40);
     memset(child_prv, 0, sizeof(double)*40);
     memset(all_prv, 0, sizeof(double)*40);
+    memset(fagalli, 0, sizeof(double)*40);
+    memset(iliili, 0, sizeof(double)*40);
     memset(hhold_prv, 0, sizeof(double)*40);
 }
 
@@ -228,7 +230,7 @@ void cblok::get_bbldgarea(int year){
 }
 
 void cblok::get_epidemics(int year){
-    double n_1 = 0, n_2 = 0;
+    double n_1 = 0, n_2 = 0, fagalii_residents = 0, ilili_residents = 0;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         for(map<int, agent*>::iterator k = j->second->mblok_males.begin(); k != j->second->mblok_males.end(); ++k){
             int age = int(k->second->age/365);
@@ -243,9 +245,26 @@ void cblok::get_epidemics(int year){
         }
     }
     
-    double i_1 = 0, i_2 = 0;
+    int fagali_mid = mbloksIndexA["Fagalii"];
+    int futiga_mid = mbloksIndexA["Futiga"];
+    int iliili_mid = mbloksIndexA["Iliili"];
+    int vaitogi_mid = mbloksIndexA["Vaitogi"];
+    
+    fagalii_residents += mbloks[fagali_mid]->mblok_fmals.size() + mbloks[fagali_mid]->mblok_males.size();
+    ilili_residents += mbloks[futiga_mid]->mblok_fmals.size() + mbloks[futiga_mid]->mblok_males.size();
+    ilili_residents += mbloks[iliili_mid]->mblok_fmals.size() + mbloks[iliili_mid]->mblok_males.size();
+    ilili_residents += mbloks[vaitogi_mid]->mblok_fmals.size() + mbloks[vaitogi_mid]->mblok_males.size();
+    
+    double i_1 = 0, i_2 = 0, iliili_inf = 0, fagalii_inf = 0;
     map<int, hhold*> vec;
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
+        int mid = j->second->h_d->rdg->mbk->mid;
+        if(mid == fagali_mid)
+            ++fagalii_inf;
+        
+        if(mid == futiga_mid || mid == iliili_mid || mid == vaitogi_mid)
+            ++iliili_inf;
+        
         int age = int(j->second->age/365);
         if(age >= 15) ++i_1;
         else if(age >=6 && age <= 7) ++i_2;
@@ -257,10 +276,14 @@ void cblok::get_epidemics(int year){
     cout << year+2010 << ": " << "prepatent = " << pre_indiv.size() << " infectious = " << inf_indiv.size() << endl;
     cout << ">=15 years' prevalence = " << fixed << setprecision(2) << i_1/(double)n_1*100 << "%" << endl;
     cout << "6-7 years' prevalence = " << fixed << setprecision(2) << i_2/(double)n_2*100 << "%" << endl;
+    cout << "fagalii prevalence = " << fixed << setprecision(2) << fagalii_inf/(double)fagalii_residents*100 << "%" << endl;
+    cout << "iliili prevalence = " << fixed << setprecision(2) << iliili_inf/(double)ilili_residents*100 << "%" << endl;
     cout << "overall prevalence = " << fixed << setprecision(2) << inf_indiv.size()/(double)cpop*100 << "%" << endl;
     
     adult_prv[year] = i_1/(double)n_1;
     child_prv[year] = i_2/(double)n_2;
+    fagalli[year] = fagalii_inf/fagalii_residents;
+    iliili[year] = iliili_inf/ilili_residents;
     all_prv[year] = inf_indiv.size()/(double)cpop;
 }
 
@@ -286,14 +309,16 @@ void cblok::out_epidemics(int year, int day){
     out.close();
     
     vec.clear();
-    
+}
+
+void cblok::out_riskmap(int year, int day){
     string mapping = outdir;    mapping = mapping + "risk_mapping.csv";
     ifstream in;
     in.open(mapping.c_str());
+    
+    ofstream out;
     if(!in){
         out.open(mapping.c_str());
-        out << "village,";
-        
         for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
             out << mbloksIndexB[j->first] << ",";
         }
@@ -309,9 +334,119 @@ void cblok::out_epidemics(int year, int day){
     }
     
     out.open(mapping.c_str(), ios::app);
-    out << year << "-" << day;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        out << "," << j->second->sum_mf/sum;
+        out << j->second->sum_mf/sum << ",";
+    }
+    out << endl;
+    out << endl;
+    out.close();
+}
+
+void cblok::get_mosquitoes(int year){
+    int pools = 10;
+    vector<rbldg*> rbldg_ids;
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        if(j->second->mblok_ocpy_rbldgs.size() <= pools){
+            for(map<int, rbldg*>::iterator k = j->second->mblok_ocpy_rbldgs.begin(); k != j->second->mblok_ocpy_rbldgs.end(); ++k)
+                rbldg_ids.push_back(k->second);
+        }
+        else{
+            for(int i = 0; i < pools; ++i){
+                int index = rand() % j->second->mblok_ocpy_rbldgs.size();
+                map<int, rbldg*>::iterator it = j->second->mblok_ocpy_rbldgs.begin();
+                while(index-- > 0) ++it;
+                
+                rbldg_ids.push_back(it->second);
+            }
+        }
+    }
+
+    map<int, vector<double>> mp;
+    for(int i = 0; i < rbldg_ids.size(); ++i){
+        rbldg *rg = rbldg_ids[i];
+        
+        double prv_day = 0, prv_night = 0;
+        
+        rg->t_f = 1.0;
+        double t_f2 = 1.0;
+        
+        //r_neigbors
+        for(int i = 0; i < rg->r_neigh.size(); ++i){
+            rbldg *r_2 = rg->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            rg->t_f += 1 - rg->r_neigh_d[i]/r_r;
+            t_f2 += 1 - rg->r_neigh_d[i]/r_r;
+        }
+        
+        //s_neigbors
+        for(int i = 0; i < rg->s_neigh.size(); ++i){
+            schol *sh = rg->s_neigh[i];
+            if(sh->student.size() == 0) continue;
+            rg->t_f += 1 - rg->s_neigh_d[i]/r_r;
+        }
+        
+        //w_neigbors
+        for(int i = 0; i < rg->w_neigh.size(); ++i){
+            workp *wp = rg->w_neigh[i];
+            if(wp->workers.size() == 0) continue;
+            rg->t_f += 1 - rg->w_neigh_d[i]/r_r;
+        }
+        
+        double f = 1.0 / rg->t_f;
+        prv_day += f * rg->day_p;
+        
+        f = 1.0 / t_f2;
+        prv_night += f * rg->night_p;
+        
+        for(int i = 0; i < rg->r_neigh.size(); ++i){
+            rbldg *r_2 = rg->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            
+            f = (1 - rg->r_neigh_d[i]/r_r) / rg->t_f;
+            prv_day += f * r_2->day_p;
+            
+            f = (1 - rg->r_neigh_d[i]/r_r) / t_f2;
+            prv_night += f * r_2->night_p;
+        }
+        
+        for(int i = 0; i < rg->s_neigh.size(); ++i){
+            schol *sh = rg->s_neigh[i];
+            if(sh->student.size() == 0) continue;
+            f = (1 - rg->s_neigh_d[i]/r_r) / rg->t_f;
+            prv_day += f * sh->day_p;
+        }
+        
+        for(int i = 0; i < rg->w_neigh.size(); ++i){
+            workp *wp = rg->w_neigh[i];
+            if(wp->workers.size() == 0) continue;
+            f = (1 - rg->w_neigh_d[i]/r_r) / rg->t_f;
+            prv_day += f * wp->day_p;
+        }
+        
+        prv_day *= (r_i * s_l3);
+        prv_night *= (r_i * s_l3);
+        
+        double pp = (prv_day + prv_night) / 2;
+        mp[rg->mbk->mid].push_back(pp);
+    }
+    
+    string data = outdir;
+    data = data + syn_mosquitoes;
+    
+    ofstream out(data.c_str(), ios::app);
+
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        map<int, vector<double>>::iterator it = mp.find(j->first);
+        
+        if(it == mp.end()) out << " ,";
+        else{
+            double p = 0;
+            for(int i = 0; i < it->second.size(); ++i){
+                if(p < it->second[i]) p = it->second[i];
+            }
+            
+            out << p << ",";
+        }
     }
     out << endl;
     out.close();

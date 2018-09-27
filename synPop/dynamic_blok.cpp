@@ -348,6 +348,33 @@ void cblok::select_schol(agent *p, char level){
 }
 
 void cblok::calc_risk(int year, int day){
+    //reset
+    for(map<int, rbldg*>::iterator j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j){
+        rbldg *rb = j->second;
+        rb->day_p = 0;
+        rb->night_p = 0;
+    }
+    
+    for(map<int, rbldg*>::iterator j = inf_rbldg_day.begin(); j != inf_rbldg_day.end(); ++j){
+        rbldg *rb = j->second;
+        rb->day_p = 0;
+        rb->night_p = 0;
+    }
+    
+    for(map<int, schol*>::iterator j = inf_schol.begin(); j != inf_schol.end(); ++j){
+        schol *sh = j->second;
+        sh->day_p = 0;
+    }
+    
+    for(map<int, workp*>::iterator j = inf_workp.begin(); j != inf_workp.end(); ++j){
+        workp *wp = j->second;
+        wp->day_p = 0;
+    }
+    inf_rbldg_day.clear();
+    inf_rbldg_night.clear();
+    inf_schol.clear();
+    inf_workp.clear();
+    
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
         agent *cur = j->second;
         hhold *hd = cur->h_d;
@@ -355,23 +382,27 @@ void cblok::calc_risk(int year, int day){
         schol *sh = cur->s_h;
         workp *wp = cur->w_p;
         
+        int age = int(cur->age/365);
+        double c = 1;
+        if(age <= 15) c = exposure_by_age[age];
+        
         int sum = 0;
         for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
             if(k->second->s_h == NULL && k->second->w_p == NULL) ++sum;
         }
         
         inf_rbldg_night.insert(pair<int, rbldg*>(rb->bid, rb));
-        rb->night_p += 1.0/(double)hd->mmbrs.size();
+        rb->night_p += c/(double)hd->mmbrs.size();
         if(sh != NULL){
-            sh->day_p += 1.0/(double)sh->student.size();
+            sh->day_p += c/(double)sh->student.size();
             inf_schol.insert(pair<int, schol*>(sh->sid, sh));
         }
         if(wp != NULL){
-            wp->day_p += 1.0/(double)wp->workers.size();
+            wp->day_p += c/(double)wp->workers.size();
             inf_workp.insert(pair<int, workp*>(wp->wid, wp));
         }
         if(sh == NULL && wp == NULL){
-            rb->day_p += 1.0/(double)sum;
+            rb->day_p += c/(double)sum;
             inf_rbldg_day.insert(pair<int, rbldg*>(rb->bid, rb));
         }
     }
@@ -388,7 +419,7 @@ void cblok::calc_risk(int year, int day){
         r_indiv.shrink_to_fit();
         for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
             agent *p = k->second;
-            if(p->epids == 's' && p->s_h == NULL && p->w_p == NULL)
+            if(p->s_h == NULL && p->w_p == NULL)
                 r_indiv.push_back(p);
         }
         if(r_indiv.size() == 0) continue;
@@ -449,16 +480,16 @@ void cblok::calc_risk(int year, int day){
         
         for(int i = 0; i < r_indiv.size(); ++i){
             agent *p = r_indiv[i];
+            char ps = p->epids;
             
             double c = 1;
             int age = int(p->age/365);
-            if(age <= 15)
-                c = exposure_by_age[age];
+            if(age <= 15) c = exposure_by_age[age];
             
             p->calc_risk(prv, 'd', c);
             p->renew_epidemics();
             
-            if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
+            if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
         
         r_indiv.clear();
@@ -524,7 +555,7 @@ void cblok::calc_risk(int year, int day){
         
         for(map<int, agent*>::iterator k = sh->student.begin(); k != sh->student.end(); ++k){
             agent *p = k->second;
-            if(p->epids != 's') continue;
+            char ps = p->epids;
             
             double c = 1;
             int age = int(p->age/365);
@@ -534,7 +565,7 @@ void cblok::calc_risk(int year, int day){
             p->calc_risk(prv, 'd', c);
             p->renew_epidemics();
             
-            if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
+            if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
     }
     
@@ -597,7 +628,7 @@ void cblok::calc_risk(int year, int day){
         
         for(map<int, agent*>::iterator k = wp->workers.begin(); k != wp->workers.end(); ++k){
             agent *p = k->second;
-            if(p->epids != 's') continue;
+            char ps = p->epids;
             
             double c = 1;
             int age = int(p->age/365);
@@ -607,7 +638,7 @@ void cblok::calc_risk(int year, int day){
             p->calc_risk(prv, 'd', c);
             p->renew_epidemics();
             
-            if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
+            if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
     }
     
@@ -647,7 +678,7 @@ void cblok::calc_risk(int year, int day){
         
         for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
             agent *p = k->second;
-            if(p->epids != 's') continue;
+            char ps = p->epids;
             
             double c = 1;
             int age = int(p->age/365);
@@ -657,36 +688,9 @@ void cblok::calc_risk(int year, int day){
             p->calc_risk(prv, 'n', c);
             p->renew_epidemics();
             
-            if(p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
+            if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
     }
-    
-    //reset
-    for(map<int, rbldg*>::iterator j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j){
-        rbldg *rb = j->second;
-        rb->day_p = 0;
-        rb->night_p = 0;
-    }
-    
-    for(map<int, rbldg*>::iterator j = inf_rbldg_day.begin(); j != inf_rbldg_day.end(); ++j){
-        rbldg *rb = j->second;
-        rb->day_p = 0;
-        rb->night_p = 0;
-    }
-    
-    for(map<int, schol*>::iterator j = inf_schol.begin(); j != inf_schol.end(); ++j){
-        schol *sh = j->second;
-        sh->day_p = 0;
-    }
-    
-    for(map<int, workp*>::iterator j = inf_workp.begin(); j != inf_workp.end(); ++j){
-        workp *wp = j->second;
-        wp->day_p = 0;
-    }
-    inf_rbldg_day.clear();
-    inf_rbldg_night.clear();
-    inf_schol.clear();
-    inf_workp.clear();
 }
 
 void cblok::risk_loc_day(int year, int day){
@@ -784,7 +788,7 @@ void cblok::risk_loc_night(int year, int day){
 void cblok::renew_epidemics(int year, int day){
     for(map<int, agent*>::iterator j = pre_indiv.begin(); j != pre_indiv.end();){
         agent *p = j->second;
-        p->renew_epidemics();
+        p->update();
         if(p->epids == 'i'){
             pre_indiv.erase(j++);
             inf_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -796,24 +800,16 @@ void cblok::renew_epidemics(int year, int day){
     
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end();){
         agent *p = j->second;
-        p->renew_epidemics();
-        /*if(p->epids == 'r'){
-            inf_indiv.erase(j++);
-            rmv_indiv.insert(pair<int, agent*>(p->aid, p));
-        }*/
+        p->update();
+        
         if(p->epids == 's')
             inf_indiv.erase(j++);
-        else ++j;
-    }
-    
-    /*for(map<int, agent*>::iterator j = rmv_indiv.begin(); j != rmv_indiv.end();){
-        agent *p = j->second;
-        p->renew_epidemics();
-        if(p->epids == 's'){
-            rmv_indiv.erase(j++);
+        else if(p->epids == 'e'){
+            pre_indiv.insert(pair<int, agent*>(p->aid, p));
+            inf_indiv.erase(j++);
         }
         else ++j;
-    }*/
+    }
 }
 
 void cblok::validate_pop(int year, int day){

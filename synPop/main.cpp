@@ -28,11 +28,22 @@ int main(int argc, const char * argv[]) {
     /*for(int p = 0; p < 4; ++p){
         rb_working = rb_working_array[p];
         rb_offwork = rb_offwork_array[p];*/
-        
+    
+    string data = outdir;
+    data = data + syn_mosquitoes;
+    
+    ofstream out(data.c_str());
+    for(map<int, mblok*>::iterator j = cbk->mbloks.begin(); j != cbk->mbloks.end(); ++j){
+        out << cbk->mbloksIndexB[j->first] << ",";
+    }
+    out << endl;
+    out.close();
+    
         for(int i = 0; i < iter; ++i){
             cbk->reset_cpop();
             cbk->reset_prv();
-            for(int year = 0; year < 40; ++year)
+            
+            for(int year = 0; year < 21; ++year)
                 cbk->sim_pop(year);
             
             string prv_dat = outdir;    prv_dat = prv_dat + "prv_dat.csv";
@@ -41,7 +52,7 @@ int main(int argc, const char * argv[]) {
             if(!in){
                 out.open(prv_dat.c_str());
                 out << "Year,";
-                for(int i = 2010; i < 2050; ++i) out << i << ",";
+                for(int i = 2010; i < 2031; ++i) out << i << ",";
                 out << endl;
                 out.close();
             }
@@ -49,15 +60,23 @@ int main(int argc, const char * argv[]) {
             
             out.open(prv_dat.c_str(), ios::app);
             out << ">=15 yro";
-            for(int j = 0; j < 40; ++j) out << "," << cbk->adult_prv[j];
+            for(int j = 0; j < 21; ++j) out << "," << cbk->adult_prv[j];
             out << endl;
             
             out << "6-7 yro";
-            for(int j = 0; j < 40; ++j) out << "," << cbk->child_prv[j];
+            for(int j = 0; j < 21; ++j) out << "," << cbk->child_prv[j];
+            out << endl;
+            
+            out << "Fagalii";
+            for(int j = 0; j < 21; ++j) out << "," << cbk->fagalli[j];
+            out << endl;
+            
+            out << "Iliili";
+            for(int j = 0; j < 21; ++j) out << "," << cbk->iliili[j];
             out << endl;
             
             out << "overall";
-            for(int j = 0; j < 40; ++j) out << "," << cbk->all_prv[j];
+            for(int j = 0; j < 21; ++j) out << "," << cbk->all_prv[j];
             out << endl;
             
             out.close();
