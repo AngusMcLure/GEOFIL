@@ -18,7 +18,7 @@ void cblok::sim_pop(int year){
     
     if(year == 0){
         //Scenario A
-        /*for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
+        for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
              if(j->second != "Fagalii"){
              seed_epidemics(0.0047, 15, 100, j->second);
              seed_epidemics(0.0047/2, 8, 14, j->second);
@@ -28,7 +28,7 @@ void cblok::sim_pop(int year){
              seed_epidemics(0.0476, 15, 100, "Fagalii");
              seed_epidemics(0.0476/2, 8, 14, "Fagalii");
              }
-         }*/
+         }
         
         //Scenario B
         /*for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
@@ -49,7 +49,7 @@ void cblok::sim_pop(int year){
          }*/
 
         //Scenario C
-        seed_epidemics(0.0516, 15, 100, "Atuu");
+        /*seed_epidemics(0.0516, 15, 100, "Atuu");
         seed_epidemics(0.0476, 15, 100, "Fagalii");
         seed_epidemics(0.0310, 15, 100, "Amaua");
         seed_epidemics(0.0269, 15, 100, "Iliili");
@@ -85,10 +85,11 @@ void cblok::sim_pop(int year){
         seed_epidemics(0.0070/2, 8, 14, "Aua");
         seed_epidemics(0.0055/2, 8, 14, "Malaeimi");
         seed_epidemics(0.0043/2, 8, 14, "Asili");
-        seed_epidemics(0.0042/2, 8, 14, "Pago");
+        seed_epidemics(0.0042/2, 8, 14, "Pago");*/
     }
     
     get_epidemics(year);
+    
     get_cpop(year);
     get_sexratiob(year);
     
@@ -97,15 +98,18 @@ void cblok::sim_pop(int year){
     get_works(year);
     
     for(int day = 0; day < 365; ++day){
-        //if((year*365+day) % 60 == 0) out_epidemics(year, day);
-        if(year == 20 && day == 364) out_riskmap(year, day);
-        //get_epidemics(year);
+        if((year*365+day) % 30 == 0) out_epidemics(year, day);
+        //if(year == 20 && day == 364) out_riskmap(year);
+        //if(year == 0 && day == 0) out_vg_prv(year);
+        //if(year == 10 && day == 364) out_vg_prv(year);
+        //if(year == 20 && day == 364) out_vg_prv(year);
+        
         calc_risk(year, day);
         renew_epidemics(year, day);
         renew_pop(year, day);
         hndl_birth(year, day);
     }
-    if(year == 6) get_mosquitoes(year);
+    //if(year == 6) get_mosquitoes(year);
     cout << "max prevalence of positive mosquitos = " << max_prv*100 << "%" << endl;
     
     hndl_marrg(year);

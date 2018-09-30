@@ -68,7 +68,7 @@
 //#define s_w               0.0005833    //survive to adult worms
 
 //epidemic seeds
-#define iter                50
+#define iter                1
 
 //functions
 int ztpoisson(double l_lambda);

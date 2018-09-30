@@ -243,7 +243,8 @@ public:
     void get_epidemics(int year);
     void get_mosquitoes(int year);
     void out_epidemics(int year, int day);
-    void out_riskmap(int year, int day);
+    void out_riskmap(int year);
+    void out_vg_prv(int year);
     void prt_hhold(std::ofstream &out, hhold* hh);
 };
 

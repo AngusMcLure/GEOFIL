@@ -257,8 +257,10 @@ void cblok::get_epidemics(int year){
     
     double i_1 = 0, i_2 = 0, iliili_inf = 0, fagalii_inf = 0;
     map<int, hhold*> vec;
+    
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
         int mid = j->second->h_d->rdg->mbk->mid;
+        
         if(mid == fagali_mid)
             ++fagalii_inf;
         
@@ -311,7 +313,7 @@ void cblok::out_epidemics(int year, int day){
     vec.clear();
 }
 
-void cblok::out_riskmap(int year, int day){
+void cblok::out_riskmap(int year){
     string mapping = outdir;    mapping = mapping + "risk_mapping.csv";
     ifstream in;
     in.open(mapping.c_str());
@@ -336,6 +338,44 @@ void cblok::out_riskmap(int year, int day){
     out.open(mapping.c_str(), ios::app);
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         out << j->second->sum_mf/sum << ",";
+    }
+    out << endl;
+    out << endl;
+    out.close();
+}
+
+void cblok::out_vg_prv(int year){
+    //output village prevalence
+    map<int, double> vg_prv;    //output village prevalence
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j)
+        vg_prv[j->first] = 0;
+    
+    for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
+        int mid = j->second->h_d->rdg->mbk->mid;
+        vg_prv[mid]++;
+    }
+    
+    string mapping = outdir;    mapping = mapping + "vg_prv.csv";
+    ifstream in;
+    in.open(mapping.c_str());
+    
+    ofstream out;
+    if(!in){
+        out.open(mapping.c_str());
+        out << "village,";
+        for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+            out << mbloksIndexB[j->first] << ",";
+        }
+        out << endl;
+        
+        out.close();
+    }
+    else in.close();
+    
+    out.open(mapping.c_str(), ios::app);
+    out << year+2010 << ",";
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        out << vg_prv[j->first]/(j->second->mblok_fmals.size() + j->second->mblok_males.size()) << ",";
     }
     out << endl;
     out << endl;
@@ -442,10 +482,10 @@ void cblok::get_mosquitoes(int year){
         else{
             double p = 0;
             for(int i = 0; i < it->second.size(); ++i){
-                if(p < it->second[i]) p = it->second[i];
+                p += it->second[i];
             }
             
-            out << p << ",";
+            out << p/it->second.size() << ",";
         }
     }
     out << endl;
