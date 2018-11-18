@@ -223,6 +223,8 @@ public:
     void renew_epidemics(int year, int day);
     void seed_epidemics(double p, int age_dn, int age_up, string village = "all");
     
+    void implement_MDA(double c, double r1, double r2, int l);           //c - coverage, r1 - % worms killed, r2 - % worms sterilize, l - protect length in days
+    
     double adult_prv[40];
     double child_prv[40];
     double all_prv[40];
@@ -245,7 +247,6 @@ public:
     void out_epidemics(int year, int day);
     void out_riskmap(int year);
     void out_vg_prv(int year);
-    void prt_hhold(std::ofstream &out, hhold* hh);
 };
 
 #endif /* blocks_hpp */

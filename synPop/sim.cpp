@@ -88,6 +88,10 @@ void cblok::sim_pop(int year){
         seed_epidemics(0.0042/2, 8, 14, "Pago");*/
     }
     
+    //if(year >= 8 && year <= 12) implement_MDA(coverage, 0.5, 0.33, 365);    //DA, 83% for 12 months
+    if(year == 8) implement_MDA(coverage, 0.5, 0.46, 3*365);                       //IDA, 96% for 36 months
+    if(year == 10) implement_MDA(coverage, 0.5, 0.46, 3*365);
+    
     get_epidemics(year);
     
     get_cpop(year);
@@ -98,7 +102,7 @@ void cblok::sim_pop(int year){
     get_works(year);
     
     for(int day = 0; day < 365; ++day){
-        if((year*365+day) % 30 == 0) out_epidemics(year, day);
+        //if((year*365+day) % 30 == 0) out_epidemics(year, day);
         //if(year == 20 && day == 364) out_riskmap(year);
         //if(year == 0 && day == 0) out_vg_prv(year);
         //if(year == 10 && day == 364) out_vg_prv(year);
@@ -109,7 +113,10 @@ void cblok::sim_pop(int year){
         renew_pop(year, day);
         hndl_birth(year, day);
     }
-    //if(year == 6) get_mosquitoes(year);
+    if(year == 6) get_mosquitoes(year);
+    
+    //test mda
+    
     cout << "max prevalence of positive mosquitos = " << max_prv*100 << "%" << endl;
     
     hndl_marrg(year);

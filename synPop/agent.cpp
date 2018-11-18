@@ -29,6 +29,7 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, s
     worms = 0;
     epids = 's';
     clock_inf = -1;
+    mda_f = 0;
 }
 
 agent::~agent(){
@@ -92,6 +93,7 @@ void agent::renew_epidemics(){
 void agent::update(){
     if(wvec.size() > 0){
         for(int i = 0; i < wvec.size();){
+            //cout << wvec[i]->status << " " << wvec[i]->clock_mda << " " << wvec[i]->clock_mf << " " << wvec[i]->clock_pp << endl;
             wvec[i]->update();
             
             if(wvec[i]->status == 'd'){
@@ -102,13 +104,39 @@ void agent::update(){
         }
     }
     
-    if(wvec.size() == 0) epids = 's';
+    if(wvec.size() == 0){
+        epids = 's';
+        mda_f = 0;
+    }
     else{
         if(wvec.size() > 0) epids = 'e';
+        
         for(int i = 0; i < wvec.size(); ++i){
             if(wvec[i]->status == 'm'){
-                epids = 'i'; break;
+                if(epids != 'i'){
+                    epids = 'i';
+                    mda_f = wvec[i]->mda_f;
+                }
+                else{
+                    if(mda_f > wvec[i]->mda_f) mda_f = wvec[i]->mda_f;
+                }
             }
+            
+            if(epids == 'i' && mda_f == 0) break;
+        }
+    }
+}
+
+void agent::get_drugs(double r1, double r2, int l){
+    if(wvec.size() > 0){
+        double rr = drand48();
+        
+        for(int i = 0; i < wvec.size(); ++i){
+            wvec[i]->clock_mda = l;
+            
+            if(rr <= r1) wvec[i]->status = 'd';
+            else if(rr <= r1 + r2) wvec[i]->mda_f = 1.0;
+            else wvec[i]->mda_f = 0.5;
         }
     }
 }

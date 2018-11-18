@@ -385,6 +385,7 @@ void cblok::calc_risk(int year, int day){
         int age = int(cur->age/365);
         double c = 1;
         if(age <= 15) c = exposure_by_age[age];
+        c = c * (1 - cur->mda_f);       //for mda strategy
         
         int sum = 0;
         for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
@@ -789,7 +790,8 @@ void cblok::renew_epidemics(int year, int day){
     for(map<int, agent*>::iterator j = pre_indiv.begin(); j != pre_indiv.end();){
         agent *p = j->second;
         p->update();
-        if(p->epids == 'i'){
+        if(p->epids == 's') pre_indiv.erase(j++);
+        else if(p->epids == 'i'){
             pre_indiv.erase(j++);
             inf_indiv.insert(pair<int, agent*>(p->aid, p));
             
@@ -848,3 +850,16 @@ void cblok::validate_pop(int year, int day){
     }
 }
 
+void cblok::implement_MDA(double c, double r1, double r2, int l){
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        for(map<int, agent*>::iterator k = j->second->mblok_males.begin(); k != j->second->mblok_males.end(); ++k){
+            int age = int(k->second->age/365.0);
+            if(age > 2 && drand48() <= c) k->second->get_drugs(r1, r2, l);
+        }
+        
+        for(map<int, agent*>::iterator k = j->second->mblok_fmals.begin(); k != j->second->mblok_fmals.end(); ++k){
+            int age = int(k->second->age/365.0);
+            if(age > 2 && drand48() <= c*c_female) k->second->get_drugs(r1, r2, l);
+        }
+    }
+}

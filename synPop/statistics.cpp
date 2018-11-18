@@ -383,7 +383,7 @@ void cblok::out_vg_prv(int year){
 }
 
 void cblok::get_mosquitoes(int year){
-    int pools = 10;
+    int pools = 5;
     vector<rbldg*> rbldg_ids;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         if(j->second->mblok_ocpy_rbldgs.size() <= pools){
@@ -490,8 +490,4 @@ void cblok::get_mosquitoes(int year){
     }
     out << endl;
     out.close();
-}
-
-void cblok::prt_hhold(std::ofstream &out, hhold* hh){
-    
 }
