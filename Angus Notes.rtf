@@ -1,0 +1,78 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw12240\paperh15840\margl1440\margr1440\vieww9000\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b\fs24 \cf0 Calculating prevalence by age group:\
+
+\b0 	In the original code by Sting, these were calculated by the function get_epidemics() in statistics.cpp in the function which is called by sim_pop which is in turn called in main()\
+\
+	out_epidemics() finds all the houses with cases. Might be helpful to study when doing house-hold based followup screening\
+\
+\
+\
+\
+
+\b mda_f
+\b0 \
+What is it?\
+\
+Every person has a mda_f\
+Every worm in a person has a mda_f\
+\
+For a person with no worms mda_f = 0\
+For a person in the infectious stage their mda_f is the minimum of the mda_f's of all their worms\
+\
+It's a discounting factor for how fertile a pair of mated worms are and hence how infectious their human host is to mosquitoes.\
+The drugs can have one of three effects on a worm. Kill, sterilise (mda_f = 1) or less effective (mda_f=0.5).  \
+\
+\
+
+\b t_f\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\b0 \cf0 This is the total of all the dispersal factors of all the buildings in range. the prevalence of mosquitos at a location is the weighted average of the prevalence in humans at that locations and the surrounding locations, weighted by how far away people are (the dispersal factor).\
+\
+These are recalculated every day! Could be calculated every time the matrix of distances is calculated\
+\
+Dividing by t_f doesn't make sense to me. It should probably have the population of each of these places in the denominator. However means that they would have to be recalculated every time the number of people in each of these places changes. However, this is not more intensive than the current (inefficient) implementation of model\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \
+
+\b Within-host worm reproduction\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\b0 \cf0 Seems to assume that at most one new worm can be deposited in each person by mosquito bites in each time increment. If this is updated at small enough time intervals, or the worm burden isn't particularly important this might be ok. But otherwise it might be a little problematic because the number of infective bites in an interval of time is probably compound poisson? (i.e. the number of infective bites is poisson and the number of worms transmitted has some other distribution?)\
+\
+\
+\
+\
+
+\b LIST OF MY CHANGES\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\b0 \cf0 Have moved many of the 'magic numbers' to paras.h\
+\
+I have adjusted the way worms are handled. Before if a worm was destined to never make it to adulthood, it was not counted to be around for its pre-patent stage. Prepatent worms now our explicitly modelled even if they die before reaching an Mf stage\
+\
+I now track for each agent how many days it has been since their last adult worm died inside them (0 if they are currently infected and NA if they have never been infected)\
+\
+I have added a method for agent which prints their linelist data to file\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\
+\
+\
+}

@@ -11,6 +11,7 @@
 
 //extern int rup;
 
+// Constructor of household, with id, size, householder
 hhold::hhold(int hid, int size, agent *holder){
     this->hid = hid;
     this->size = size;
@@ -28,12 +29,14 @@ hhold::hhold(int hid, int size, agent *holder){
     if(holder != NULL) add_member(holder);
 }
 
+// Destructor
 hhold::~hhold(){
     this->rdg = NULL;
     this->hldr = NULL;
     this->mmbrs.clear();
 }
 
+// assign household into a residential building
 void hhold::asg_rbldg(rbldg *rdg){
     this->rdg = rdg;
 
@@ -47,6 +50,7 @@ void hhold::asg_rbldg(rbldg *rdg){
     rdg->cbk->rmv_vcnt_rbldg(rdg);
 }
 
+// change householder to be agent p
 bool hhold::asg_holder(agent *p){
     if(p != NULL) hldr = p;
     else{
@@ -69,6 +73,7 @@ bool hhold::asg_holder(agent *p){
     return true;
 }
 
+// add an agent p to a household
 void hhold::add_member(agent *p){
     p->h_d = this;
     mmbrs.insert(pair<int, agent*>(p->aid, p));
@@ -76,6 +81,7 @@ void hhold::add_member(agent *p){
     exp = true;
 }
 
+// remove an agent p from a household
 void hhold::rmv_member(agent *p){
     p->h_d = NULL;
     if(hldr != NULL && hldr->aid == p->aid){
@@ -85,11 +91,14 @@ void hhold::rmv_member(agent *p){
     mmbrs.erase(p->aid);
 }
 
+// check if p is a member of a household
 bool hhold::is_member(agent *p){
     if(p->h_d != NULL && p->h_d->hid == hid) return true;
     return false;
 }
 
+// in some extreme cases (e.g., both parents die and only children left),
+// household members will be adopted by members in other households
 void hhold::adopted(){
     agent *q = NULL;
     if(rdg->cbk->fmal_cbrs[0].size() > 0) q = rdg->cbk->fmal_cbrs[0].begin()->second;
@@ -123,6 +132,9 @@ void hhold::adopted(){
     q->h_d->update_hhold();
 }
 
+// update the household information each household has to be of a householder.
+// if any changes lead to a household without a householder (e.g., householder dies, or moves out),
+// the function will assign a member to be the householder
 void hhold::update_hhold(){
     //choose the most aged one to be new householder
     if(hldr == NULL && mmbrs.size() > 0){
@@ -146,6 +158,8 @@ void hhold::update_hhold(){
     size = int(mmbrs.size());
 }
 
+// agent p move to a new household h_hold, children move with p
+// if children move, a new closer school will be chosen
 void cblok::re_location(agent *p, hhold *h_hold){
     hhold *p_h = p->h_d;
     mblok *p_bk = p_h->rdg->mbk;
@@ -196,6 +210,7 @@ void cblok::re_location(agent *p, hhold *h_hold){
     }
 }
 
+// every year, large households with member changes have a probability to fracture into small households
 void cblok::hndl_hold_rupt(int year){
     vector<hhold*> h_vec;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){

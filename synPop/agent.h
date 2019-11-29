@@ -18,7 +18,10 @@ class agent;
 class hhold;
 class workp;
 class schol;
+class drugs;
+class mda_strat;
 
+// LF mated worms
 class worm{
 public:
     char status;    //p - prepatent, m - mf producing, d - to be removed
@@ -37,21 +40,10 @@ public:
         mda_f = 0;
     }
     
-    void update(){
-        if(status == 'p'){
-            --clock_pp;
-            if(clock_pp == 0) status = 'm';
-        }
-        else if(status == 'm'){
-            --clock_mf;
-            if(clock_mf == 0) status = 'd';
-        }
-        
-        if(clock_mda > 0) --clock_mda;
-        else mda_f = 0;
-    }
+    void update();
 };
 
+// human individual
 class agent{
 public:
     int aid;
@@ -86,7 +78,8 @@ public:
     void calc_risk(double prv, char time, double c);
     void renew_epidemics();
     void update();
-    void get_drugs(double r1, double r2, int l);
+    void get_drugs(drugs drug);
+    void write_line_list(int SimNum, int y, int s);
 };
 
 #endif /* agent_hpp */

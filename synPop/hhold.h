@@ -36,6 +36,7 @@ struct unit{
     }
 };
 
+//households
 class hhold{
 public:
     int hid;                            //hhold id

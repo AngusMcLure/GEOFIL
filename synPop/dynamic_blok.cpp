@@ -8,17 +8,20 @@
 
 #include "block.h"
 
-extern double max_prv;
+extern double max_prv;      // get the max prevalence of infective mosquitoes
 
+// add household p to village
 void mblok::add_hhold(hhold *p){
     mblok_hholds.insert(pair<int, hhold*>(p->hid, p));
 }
 
+// add agent p to village
 void mblok::add_member(agent *p){
     if(p->gendr == 'm') mblok_males.insert(pair<int, agent*>(p->aid, p));
     else mblok_fmals.insert(pair<int, agent*>(p->aid, p));
 }
 
+// remove household p from village
 void mblok::rmv_hhold(hhold *p){
     if(p->mmbrs.size() > 0 || p->hldr != NULL){
         cout << "err: hhold not empty to be removed" << endl;
@@ -36,16 +39,20 @@ void mblok::rmv_hhold(hhold *p){
     delete p;
 }
 
+// remove agent p from village
 void mblok::rmv_member(agent *p){
     if(p->gendr == 'm') mblok_males.erase(p->aid);
     else mblok_fmals.erase(p->aid);
 }
 
+// add workplace p to village
 void mblok::add_workp(workp *p){
     mblok_workps.insert(pair<int, workp*>(p->wid, p));
     cbk->cblok_workps.insert(pair<int, workp*>(p->wid, p));
 }
 
+// add a residential building to village
+// the building can either be occupied or unoccupied
 void mblok::add_rbldg(rbldg *p, hhold* h_hold){
     if(h_hold == NULL){
         mblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
@@ -54,6 +61,7 @@ void mblok::add_rbldg(rbldg *p, hhold* h_hold){
     else mblok_ocpy_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
 }
 
+// estimate agent p's martial status according to demographics
 void mblok::rnd_margs(agent *p){
     int index = int((int(p->age/365)-15)/5);
     index = index>10? 10 : index;
@@ -79,6 +87,7 @@ void mblok::rnd_margs(agent *p){
     else p->margs = 'd';
 }
 
+// deal with adopting children
 void mblok::adpt_chldrs(hhold *p){
     agent *pp = NULL;
     if(cbk->fmal_cbrs[0].size() > 0) pp = cbk->fmal_cbrs[0].begin()->second;
@@ -115,14 +124,18 @@ void mblok::adpt_chldrs(hhold *p){
     pp->h_d->update_hhold();
 }
 
+// add an unoccupied residential building to AS
 void cblok::add_vcnt_rbldg(rbldg *p){
     cblok_vcnt_rbldgs.insert(pair<int, rbldg*>(p->bid, p));
 }
 
+// remove an unoccupied residential building to AS
 void cblok::rmv_vcnt_rbldg(rbldg *p){
     cblok_vcnt_rbldgs.erase(p->bid);
 }
 
+// every 5 years, recalculate the commuting flux according to radiation model
+// any new job seeker will follow the recalibrated commuting flux to find jobs
 void cblok::hndl_jobs(int year){
     if(year % 5 == 0) radt_model('r');
     
@@ -248,6 +261,7 @@ void cblok::hndl_jobs(int year){
     }
 }
 
+// schooling children enrol according to age
 void cblok::hndl_schol(int year){
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
@@ -292,6 +306,7 @@ void cblok::hndl_schol(int year){
     }
 }
 
+// schooling children choose the closest school to their residential building
 void cblok::select_schol(agent *p, char level){
     hhold *hd = p->h_d;
     rbldg *rb = hd->rdg;
@@ -347,6 +362,11 @@ void cblok::select_schol(agent *p, char level){
     sh->student.insert(pair<int, agent*>(p->aid, p));
 }
 
+// calcualte the force of infection in AS
+// FOI has to be calculated separately for day/night, since mosquitoes are different and human locations are different
+// for each building with infective mosquitoes, buildings in a range centred at the building will be at risk
+// for example, if a school is of infective mosquitoes, it will affect all buildings centred at the school during day
+// and only residential buildings during night (people stay at home during night)
 void cblok::calc_risk(int year, int day){
     //reset
     for(map<int, rbldg*>::iterator j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j){
@@ -375,7 +395,7 @@ void cblok::calc_risk(int year, int day){
     inf_schol.clear();
     inf_workp.clear();
     
-    for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){
+    for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){ //for each infected  agent add their contributon to the FOI (via mosquito infection prevalence) to the appropriate buildings day and night
         agent *cur = j->second;
         hhold *hd = cur->h_d;
         rbldg *rb = cur->h_d->rdg;
@@ -385,12 +405,9 @@ void cblok::calc_risk(int year, int day){
         int age = int(cur->age/365);
         double c = 1;
         if(age <= 15) c = exposure_by_age[age];
-        c = c * (1 - cur->mda_f);       //for mda strategy
+        c = c * (1 - cur->mda_f);       //if all the person's adult mated worms were around during an mdf they will have their infectiousness discounted by proportion mda_f
         
-        int sum = 0;
-        for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
-            if(k->second->s_h == NULL && k->second->w_p == NULL) ++sum;
-        }
+
         
         inf_rbldg_night.insert(pair<int, rbldg*>(rb->bid, rb));
         rb->night_p += c/(double)hd->mmbrs.size();
@@ -403,7 +420,12 @@ void cblok::calc_risk(int year, int day){
             inf_workp.insert(pair<int, workp*>(wp->wid, wp));
         }
         if(sh == NULL && wp == NULL){
-            rb->day_p += c/(double)sum;
+            // count all the people who live their house who don't work or go to school
+            int FamAtHome = 0;
+            for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
+                if(k->second->s_h == NULL && k->second->w_p == NULL) ++FamAtHome;
+            }
+            rb->day_p += c/(double)FamAtHome;
             inf_rbldg_day.insert(pair<int, rbldg*>(rb->bid, rb));
         }
     }
@@ -416,11 +438,11 @@ void cblok::calc_risk(int year, int day){
         rbldg *r_1 = j->second;
         hhold *hd = r_1->h_d;
         
-        vector<agent*> r_indiv;
+        vector<agent*> r_indiv; //A list of all the retired/unemployed members of the household (who will therefore be home during the day)
         r_indiv.shrink_to_fit();
         for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
             agent *p = k->second;
-            if(p->s_h == NULL && p->w_p == NULL)
+            if(p->s_h == NULL && p->w_p == NULL) //if they don't have a school or a workplace then they will be at home
                 r_indiv.push_back(p);
         }
         if(r_indiv.size() == 0) continue;
@@ -476,8 +498,8 @@ void cblok::calc_risk(int year, int day){
             prv += f * wp->day_p;
         }
         
-        prv *= (r_i * s_l3);
-        if(max_prv < prv) max_prv = prv;
+        prv *= (r_i * s_l3); //account for probability that exposed mosquitos survive to become infectious
+        if(max_prv < prv) max_prv = prv; //keep track of which building has the maximum prevalence
         
         for(int i = 0; i < r_indiv.size(); ++i){
             agent *p = r_indiv[i];
@@ -490,6 +512,7 @@ void cblok::calc_risk(int year, int day){
             p->calc_risk(prv, 'd', c);
             p->renew_epidemics();
             
+            //Add new exposure to the list of prepatent agents
             if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
         
@@ -694,6 +717,7 @@ void cblok::calc_risk(int year, int day){
     }
 }
 
+// calculate the buildings at risk during day
 void cblok::risk_loc_day(int year, int day){
     risk_rbldg.clear();
     risk_schol.clear();
@@ -769,6 +793,7 @@ void cblok::risk_loc_day(int year, int day){
     }
 }
 
+// calculate the buildings at risk during night
 void cblok::risk_loc_night(int year, int day){
     risk_rbldg.clear();
     risk_schol.clear();
@@ -786,6 +811,7 @@ void cblok::risk_loc_night(int year, int day){
     }
 }
 
+// update epidemic status in AS
 void cblok::renew_epidemics(int year, int day){
     for(map<int, agent*>::iterator j = pre_indiv.begin(); j != pre_indiv.end();){
         agent *p = j->second;
@@ -794,7 +820,7 @@ void cblok::renew_epidemics(int year, int day){
         else if(p->epids == 'i'){
             pre_indiv.erase(j++);
             inf_indiv.insert(pair<int, agent*>(p->aid, p));
-            
+            // add infected person to village/meshblock running tally
             p->h_d->rdg->mbk->sum_mf++;
         }
         else ++j;
@@ -814,6 +840,8 @@ void cblok::renew_epidemics(int year, int day){
     }
 }
 
+// validate the population dynamics according to some simple criteria
+// for example, if in a's information, b is a's wife; then in b's information, a has to be b's husband
 void cblok::validate_pop(int year, int day){
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
@@ -850,16 +878,99 @@ void cblok::validate_pop(int year, int day){
     }
 }
 
-void cblok::implement_MDA(double c, double r1, double r2, int l){
-    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
-        for(map<int, agent*>::iterator k = j->second->mblok_males.begin(); k != j->second->mblok_males.end(); ++k){
-            int age = int(k->second->age/365.0);
-            if(age > 2 && drand48() <= c) k->second->get_drugs(r1, r2, l);
+// implement MDA, c is coverage, r1 indicates % of worms killed; r2 indicates % of worms sterlized; l indicates effective length
+void cblok::implement_MDA(int year, mda_strat strat){
+    //First we calculate the number of people in the target group for MDA (i.e. people over 2 years except pregnant or breastfeeding women)
+    int under_min_age1 = 0;
+    int child_bearing_age_women = 0;
+    int under_nine_months = 0;
+    //int breast_feeding = 0;
+    int n_males = 0;
+    int n_females = 0;
+    
+    int treat_m = 0; //number of males treated this year
+    int treat_f = 0; //number of females treated this year
+
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){ //for every village
+        n_males += j->second->mblok_males.size();
+        n_females += j->second->mblok_fmals.size();
+        for(map<int, agent*>::iterator k = j->second->mblok_males.begin(); k != j->second->mblok_males.end(); ++k){ //for all males in that village
+            double age = k->second->age/365.0;
+            if(age<0.75) ++under_nine_months; // Count number of recent births (proxy estimate of number of women currntly pregnant)
+            if(age < strat.MinAge1){
+                ++under_min_age1; // Count number of people under the lowest age group (these will get no drugs)
+            }
         }
-        
-        for(map<int, agent*>::iterator k = j->second->mblok_fmals.begin(); k != j->second->mblok_fmals.end(); ++k){
-            int age = int(k->second->age/365.0);
-            if(age > 2 && drand48() <= c*c_female) k->second->get_drugs(r1, r2, l);
+        for(map<int, agent*>::iterator k = j->second->mblok_fmals.begin(); k != j->second->mblok_fmals.end(); ++k){ //for all females in that village
+            double age = k->second->age/365.0;
+            if(age<0.75) ++under_nine_months; // Count number of recent births (proxy estimate of number of women currntly pregnant)
+            if(age < strat.MinAge1){
+                ++under_min_age1; // Count number of people under the lowest age group (these will get no drugs)
+            }else if(age>=15 && age<49) ++child_bearing_age_women;
+/*            if(k ->second -> chdr.size()){ //if they have children
+                for(map<int, agent*>::iterator c = k->second->chdr.begin(); c !=  k->second->chdr.end(); ++c){
+                    cout << "child is age " << c->second->age/365.0 << endl;
+                }
+                cout << "birth window is " << k->second->bth_wind << endl;
+
+                if(k->second->bth_wind) ++breast_feeding; //if youngest child is under 1
+            }
+*/
+            //if(k->second->bth_wind) ++breast_feeding; //if they gave birth less than 1 year ago assume breastfeeding
         }
     }
+    //double target_prop = 1 - (under_min_age + under_nine_months + breast_feeding)/(double)cpop;
+    double target_prop = 1 - (under_min_age1 + under_nine_months)/(double)cpop;
+    double prop_preg_childbearing = under_nine_months/(double)child_bearing_age_women; //estimates the number of women that are pregnant now by the number of infants under 9 months now
+    
+    cout << endl << prop_preg_childbearing*100 << "% of women of childbearing age are pregnant" << endl;
+    cout << target_prop*100 << "% of people are in the target population" << endl;
+    
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){ //for every village
+        for(map<int, agent*>::iterator k = j->second->mblok_males.begin(); k != j->second->mblok_males.end(); ++k){ //for all males in that village
+            double age = k->second->age/365.0;
+            if(drand48() <= strat.Coverage/(double)target_prop){
+                if(age >= strat.MinAge1){
+                    if(age >= strat.MinAge2){
+                    k->second->get_drugs(strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
+                    }else{
+                        k->second->get_drugs(strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
+                    }
+                    ++treat_m;
+                }
+            }
+        }
+        for(map<int, agent*>::iterator k = j->second->mblok_fmals.begin(); k != j->second->mblok_fmals.end(); ++k){ //for all females in that village
+            double age = k->second->age/365.0;
+            //if(age >= strat.MinAge && !(k->second->bth_wind)){ // if over min age for drugs and not breastfeeding (i.e. have not given birth less than one year ago)
+                if(age >= 49 || age < 15){ //non child-bearing age
+                    if(drand48() <= strat.Coverage/(double)target_prop){
+                        if(age >= strat.MinAge1){
+                            if(age >= strat.MinAge2){
+                                k->second->get_drugs(strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
+                            }else{
+                                k->second->get_drugs(strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
+                            }
+                            ++treat_f;
+                        }
+                    }
+                } else if(drand48() <= (1-prop_preg_childbearing) * strat.Coverage/(double)target_prop){ // for women of child-bearing age
+                    if(age >= strat.MinAge1){
+                        if(age >= strat.MinAge2){
+                            k->second->get_drugs(strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
+                        }else{
+                            k->second->get_drugs(strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
+                        }
+                        ++treat_f;
+                    }
+                }
+            
+        }
+    }
+    
+    // The actually achieved coverage proportions
+    achieved_coverage[year] = (treat_m + treat_f)/(double)cpop;
+    achieved_coverage_m[year] = treat_m/(double)n_males;
+    achieved_coverage_f[year] = treat_f/(double)n_females;
 }

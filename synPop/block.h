@@ -11,11 +11,12 @@
 
 #include "hhold.h"
 #include "agrps.h"
+#include "mda.h"
 using namespace std;
 
 //census blocks
-class mblok;   //meshblock, smallest census unit
-class cblok;   //cities or other large census area
+class mblok;   //meshblock, smallest census unit, village here
+class cblok;   //cities or other large census area, AS here
 
 class mblok{
 public:
@@ -25,12 +26,12 @@ public:
     
     double sum_mf;
     
-    map<int, agent*> mblok_males;
-    map<int, agent*> mblok_fmals;
-    map<int, hhold*> mblok_hholds;
+    map<int, agent*> mblok_males;       // village male pop
+    map<int, agent*> mblok_fmals;       // village female pop
+    map<int, hhold*> mblok_hholds;      // village household
     
-    map<int, rbldg*> mblok_ocpy_rbldgs;
-    map<int, rbldg*> mblok_vcnt_rbldgs;
+    map<int, rbldg*> mblok_ocpy_rbldgs; // occupied residential building
+    map<int, rbldg*> mblok_vcnt_rbldgs; // unoccupied residential building
     //map<int, rbldg*> mblok_rbldgs;
     
     struct w_node{
@@ -40,9 +41,9 @@ public:
         w_node(int wid, double p): wid(wid), p(p){ }
     };
     
-    double labors;
-    map<int, workp*> mblok_workps;
-    vector<w_node*> mblok_working;
+    double labors;                      // number of labor force
+    map<int, workp*> mblok_workps;      // workplaces
+    vector<w_node*> mblok_working;   
     
     struct c_node{
         int mid;
@@ -205,7 +206,7 @@ public:
     
     void radt_model(char m);
     
-    void sim_pop(int year);
+    void sim_pop(int year, mda_strat strategy);
     void rnd_jobs(agent *p);
     void hndl_jobs(int year);
     void hndl_schol(int year);
@@ -223,10 +224,16 @@ public:
     void renew_epidemics(int year, int day);
     void seed_epidemics(double p, int age_dn, int age_up, string village = "all");
     
-    void implement_MDA(double c, double r1, double r2, int l);           //c - coverage, r1 - % worms killed, r2 - % worms sterilize, l - protect length in days
+    void implement_MDA(int year, mda_strat strat);
+    double achieved_coverage[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
+    double achieved_coverage_m[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
+    double achieved_coverage_f[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
+
     
     double adult_prv[40];
-    double child_prv[40];
+    double child_6_7_prv[40];
+    double child_11_12_prv[40];
+    double teen_15_16_prv[40];
     double all_prv[40];
     double fagalli[40];
     double iliili[40];
@@ -242,7 +249,7 @@ public:
     void get_sexratiob(int year);
     void get_geographic(int year);
     void get_bbldgarea(int year);
-    void get_epidemics(int year);
+    void get_epidemics(int year,mda_strat strategy);
     void get_mosquitoes(int year);
     void out_epidemics(int year, int day);
     void out_riskmap(int year);

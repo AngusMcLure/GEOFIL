@@ -8,6 +8,7 @@
 
 #include "block.h"
 
+//radiation model
 void cblok::radt_model(char m){
     double *d = NULL;
     if(m == 'r') d = road_dst;

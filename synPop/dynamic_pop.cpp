@@ -10,7 +10,8 @@
 //extern int deaths;
 //extern int births;
 
-void cblok::rmv_agent(agent *p){        //remove dead agent
+// remove agent from pop
+void cblok::rmv_agent(agent *p){
     if(p->epids == 'e') pre_indiv.erase(p->aid);
     else if(p->epids == 'i') inf_indiv.erase(p->aid);
     //else if(p->epids == 'r') rmv_indiv.erase(p->aid);
@@ -68,6 +69,7 @@ void cblok::rmv_agent(agent *p){        //remove dead agent
     delete p;
 }
 
+// update pop
 void cblok::renew_pop(int year, int day){
     cchild = 0;
     vector<agent*> v_1, v_2;    //v_1, death; v_2, new adult move out
@@ -162,6 +164,7 @@ void cblok::renew_pop(int year, int day){
     v_2.shrink_to_fit();
 }
 
+// random a job for agent p according to commuting flux
 void cblok::rnd_jobs(agent *p){
     mblok *mbk = p->h_d->rdg->mbk;
     
@@ -195,6 +198,7 @@ void cblok::rnd_jobs(agent *p){
     }
 }
 
+// deal with new borns
 void cblok::hndl_birth(int year, int day){
     int total_birth = 0;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
@@ -282,6 +286,7 @@ void cblok::hndl_birth(int year, int day){
     }
 }
 
+// deal with newly formed couples
 void cblok::hndl_marrg(int year){
     vector<agent*> v_1, v_2;
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
@@ -379,6 +384,7 @@ void cblok::hndl_marrg(int year){
     v_2.shrink_to_fit();
 }
 
+// deal with divorce
 void cblok::hndl_divrc(int year){
     vector<agent*> v_1;
     
@@ -427,6 +433,7 @@ void cblok::hndl_divrc(int year){
     v_1.shrink_to_fit();
 }
 
+// deal with migration
 void cblok::hndl_migrt(int year){
     int migrants = int(cpop*pop_loss[year]/1000);
     

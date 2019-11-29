@@ -9,6 +9,7 @@
 #include "block.h"
 using namespace std;
 
+// Constructor of AS
 cblok::cblok(int cid, string cname, double lat, double log){
     this->cid = cid;
     this->cname = cname;
@@ -132,6 +133,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
     read_parmtrs();
 }
 
+// reload pop for multiple simulations
 bool cblok::pop_reload(){
     //calculate hhold_threshold
     hhold_threshold = 1;
@@ -340,6 +342,7 @@ bool cblok::pop_reload(){
     return true;
 }
 
+// reset pop
 void cblok::reset_cpop(){
     //clear population
     pre_indiv.clear();
@@ -415,6 +418,7 @@ void cblok::reset_cpop(){
     read_parmtrs();
 }
 
+// read demographics
 void cblok::read_demgrphcs(){
     ifstream in;
     string line, file;
@@ -755,6 +759,7 @@ void cblok::read_demgrphcs(){
     }
 }
 
+// read other parameters
 void cblok::read_parmtrs(){
     ifstream in;
     string line, file;
@@ -772,7 +777,7 @@ void cblok::read_parmtrs(){
         std::strcpy(str, line.c_str());
         char *p = NULL;
         
-        p = std::strtok(str, ",");      int yy = atoi(p) - 2010;
+        p = std::strtok(str, ",");      int yy = atoi(p) - sim_bg;
         p = std::strtok(NULL, ",");     double asfr15_19 = atof(p);
         p = std::strtok(NULL, ",");     double asfr20_24 = atof(p);
         p = std::strtok(NULL, ",");     double asfr25_29 = atof(p);
@@ -827,7 +832,7 @@ void cblok::read_parmtrs(){
         char *str = new char[line.size()+1];
         std::strcpy(str, line.c_str());
         char *p = NULL;
-        p = std::strtok(str, ",");      int yy = atoi(p) - 2010;
+        p = std::strtok(str, ",");      int yy = atoi(p) - sim_bg;
         p = std::strtok(NULL, ",");     double net = atof(p);
         pop_loss[yy] = net;
         
@@ -1111,6 +1116,7 @@ void cblok::read_parmtrs(){
     }
 }
 
+// build villages in AS
 void cblok::bld_mbloks(){
     for(map<int, double*>::iterator j = mblok_crdnt.begin(); j != mblok_crdnt.end(); ++j){
         int mid = j->first;
@@ -1119,6 +1125,7 @@ void cblok::bld_mbloks(){
     }
 }
 
+// synthetic pop generation
 void cblok::bld_cblok_pop(){
     //create cpop based on smoothed male/female by age group
     if(!init){
@@ -1177,6 +1184,7 @@ void cblok::bld_cblok_pop(){
     }
 }
 
+// generate household
 void cblok::bld_cblok_hhold(){
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
@@ -1184,6 +1192,7 @@ void cblok::bld_cblok_hhold(){
     }
 }
 
+// deal with land use data to extract residential building, workplace, school
 void cblok::hndl_land_data(){
     //read residential
     bool residential_init = false;
@@ -1935,6 +1944,9 @@ void cblok::hndl_land_data(){
     }
 }
 
+// deal with residential buildings
+// there are lots of issues in the land use data, data has to be first processed
+// for example, the components of one building are treated different buildings
 void cblok::hndl_rbldg(string ff, int low, int upper, int min_dist){
     ifstream in(ff.c_str());
     
@@ -2061,6 +2073,7 @@ void cblok::hndl_rbldg(string ff, int low, int upper, int min_dist){
     cout << "bldgs number with reconstruction is " << cblok_vcnt_rbldgs.size() << endl;
 }
 
+// match household & residential building in synthetic pop generation stage
 void cblok::allct_rbldgs(){
     struct _comp_bldg{
         bool operator() (const rbldg *lhs, const rbldg *rhs){
@@ -2107,6 +2120,7 @@ void cblok::allct_rbldgs(){
     }
 }
 
+// create smoothed pop distribution from age group data
 void cblok::calc_smoothed_pop_agrp(int *p, int pL, int *res, int rL){
     //calculate basic probability
     double *tmp = new double[rL];
@@ -2182,6 +2196,7 @@ void cblok::calc_smoothed_agrp(double *p, int pL, double *res, int rL){
     }
 }
 
+// estimate marital probability
 void cblok::calc_marital_prob(){
     //calculate prob with power-law fitted line
     for(int i = 0; i < marital_ages; ++i){
@@ -2203,6 +2218,7 @@ void cblok::calc_marital_prob(){
     }
 }
 
+// constructor of villages
 mblok::mblok(int mid, cblok *cbk, double lat, double log){
     this->mid = mid;
     this->cbk = cbk;
@@ -2239,12 +2255,17 @@ mblok::~mblok(){
     mblok_workps.clear();
 }
 
+// generate village pop
 void mblok::bld_mblok_pop(){
     int mm = cbk->mblok_mpops[mid], ff = cbk->mblok_fpops[mid];
     agrps *pp = cbk->mblok_agrps[mid];
     bld_pop(mm, ff, pp);
 }
 
+// generate village household
+// allocation agents into household
+// generated households have to be plausible in member composition and size
+// AS has larger average household size ~ 5.7, leading to difficulties in building households
 void mblok::bld_hhold(){
     //initialize marriage status
     vector<agent*> m_svec, m_mvec, m_wvec, m_dvec;
@@ -2573,6 +2594,7 @@ void mblok::bld_hhold(){
     famly.clear();      famly.shrink_to_fit();
 }
 
+// generate village pop
 void mblok::bld_pop(int mm, int ff, agrps *pp){
     int *pop_vg = pp->pop;
     int *male_vg = pp->male;
@@ -2677,6 +2699,7 @@ void mblok::bld_pop(int mm, int ff, agrps *pp){
     }
 }
 
+// village pop is first allocated into family units, then into households
 void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
                             vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
                             vector<agent*> &chld, vector<unit*> &famly){
@@ -2744,6 +2767,7 @@ void mblok::bld_family_unit(vector<agent*> &m_mvec, vector<agent*> &m_svec, vect
     
 }
 
+// function to match couple
 void mblok::match_couple(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<agent*> &m_dvec, vector<agent*> &m_wvec,
                          vector<agent*> &f_mvec, vector<agent*> &f_svec, vector<agent*> &f_dvec, vector<agent*> &f_wvec,
                          vector<unit*> &famly){
@@ -2843,6 +2867,7 @@ void mblok::match_couple(vector<agent*> &m_mvec, vector<agent*> &m_svec, vector<
     }
 }
 
+// match children with parents
 void mblok::allocate_child(vector<agent*> &chld_vec, vector<unit*> &famly){
     //sort agents by age
     struct _comp{
@@ -2975,6 +3000,7 @@ void mblok::allocate_child(vector<agent*> &chld_vec, vector<unit*> &famly){
     chld_vec.shrink_to_fit();
 }
 
+// binary search
 int mblok::binary_search(vector<agent*> &vec, int age){
     if(vec.size() == 0) return -1;
     

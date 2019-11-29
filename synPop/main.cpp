@@ -8,26 +8,35 @@
 
 #include <iostream>
 #include <ctime>
+#include <unistd.h>
 #include "main.h"
+#include "mda.h"
+
 using namespace std;
 
-//int rb_working, rb_offwork;
+
+// Simulation number and random seed are made global so that they can be accessed for writing data to files from across the program -- shouldn't be too difficult to rework to pass them through but it's a job...
+int SimulationNumber;
+unsigned seed;
+auto t = time(nullptr);
+auto tm = *localtime(&t);
+__iom_t10<char> SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
+string prv_out_loc;
+
 
 int main(int argc, const char * argv[]) {
-	unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-	srand(seed);
-	std::default_random_engine generator(seed);
-	srand48(seed);
     
-    // insert code here...
+    //get location for outputting prevalence data
+    cout << "Please enter a file name for the output file with annual prevalence reports:";
+    getline(cin, prv_out_loc);
+    
+    char * dir = getcwd(NULL, 0);
+    printf("Current dir: %s", dir);
+    cout << endl;
+    
+    // contructor of AS, if no config pop data avaiable, synthetic generation will be called to generate pop
+    // otherwise, the function will read pop config data to contruct the pop
     cblok *cbk = new cblok(as_cid, "American Samoa", as_lat, as_long);
-    
-    //int rb_working_array[4] = {50, 60, 40, 40};
-    //int rb_offwork_array[4] = {50, 40, 60, 40};
-    
-    /*for(int p = 0; p < 4; ++p){
-        rb_working = rb_working_array[p];
-        rb_offwork = rb_offwork_array[p];*/
     
     string data = outdir;
     data = data + syn_mosquitoes;
@@ -39,49 +48,32 @@ int main(int argc, const char * argv[]) {
     out << endl;
     out.close();
     
-        for(int i = 0; i < iter; ++i){
+    string MDAScenarioLoc = parameters; MDAScenarioLoc = MDAScenarioLoc + MDAParams;
+    int NumMDAScenarios = count_mda_scenarios(MDAScenarioLoc);
+    cout << "There are " << NumMDAScenarios << " scenarios" << endl;
+    for(int ScenarioCount = 0; ScenarioCount<NumMDAScenarios; ++ScenarioCount){
+        mda_strat strategy = get_nth_mda_strat(MDAScenarioLoc,ScenarioCount+1);
+        strategy.print_mda_strat();
+        for(int i = 0; i < strategy.NumSims; ++i){ // for every simulation
+            // Set random seeds -- I am getting a new seed for each simulation so that each simulation is reproducible (rather than having to run the whole batch to reproduce)
+            seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
+            srand(seed);
+            std::default_random_engine generator(seed);
+            srand48(seed);
+            
+            SimulationNumber = i+1;
+            auto t = time(nullptr);
+            auto tm = *localtime(&t);
+            SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
+            
             cbk->reset_cpop();
             cbk->reset_prv();
             
-            for(int year = 0; year < 21; ++year)
-                cbk->sim_pop(year);
-            
-            string prv_dat = outdir;    prv_dat = prv_dat + "prv_dat.csv";
-            ofstream out;   ifstream in;
-            in.open(prv_dat.c_str());
-            if(!in){
-                out.open(prv_dat.c_str());
-                out << "Year,";
-                for(int i = 2010; i < 2031; ++i) out << i << ",";
-                out << endl;
-                out.close();
+            for(int year = 0; year < sim_years; ++year){ // for each year
+                cbk->sim_pop(year,strategy);
             }
-            else in.close();
-            
-            out.open(prv_dat.c_str(), ios::app);
-            out << ">=15 yro";
-            for(int j = 0; j < 21; ++j) out << "," << cbk->adult_prv[j];
-            out << endl;
-            
-            out << "6-7 yro";
-            for(int j = 0; j < 21; ++j) out << "," << cbk->child_prv[j];
-            out << endl;
-            
-            out << "Fagalii";
-            for(int j = 0; j < 21; ++j) out << "," << cbk->fagalli[j];
-            out << endl;
-            
-            out << "Iliili";
-            for(int j = 0; j < 21; ++j) out << "," << cbk->iliili[j];
-            out << endl;
-            
-            out << "overall";
-            for(int j = 0; j < 21; ++j) out << "," << cbk->all_prv[j];
-            out << endl;
-            
-            out.close();
         }
-    //}
+    }
     
     return 0;
 }

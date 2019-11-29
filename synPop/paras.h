@@ -65,12 +65,24 @@
 #define c5_15               0.75           //relative exposure to mosquitos, age 5-15
 #define s_l3                0.1093         //survive to more than 13 days (L3 larave)
 #define r_i                 0.3881         //infected of mosquitos survive to L3
-//#define s_w               0.0005833    //survive to adult worms
+//define s_w                0.0005833      //survive to adult worms
+
+//these parameters define how long prepatent worms survive, the percent that die before maturity, the length of prepatency
+#define survive_dur         75
+#define survive_prop        0.13
+#define min_pre_period      182            //minimum time that worms spend prepatent (days)
+#define max_pre_period      365            //maximum time that worms spend prepatent (day)
+
+//how long adult worms survive and produce mf
+
+#define min_inf_period      4*365          //minimum time that worms spend infectious (days)
+#define max_inf_period      6*365          //maximum time that worms spend infectious (day)
 
 //epidemic seeds
-#define iter                50
-#define coverage            0.7
-#define c_female            0.93
+//define iter                1
+#define sim_years           26  // duration of simulaiton in years. Note that 2010 to 2035 is 26 years
+//define coverage            0.8
+//define c_female            0.93
 
 //functions
 int ztpoisson(double l_lambda);
@@ -80,14 +92,25 @@ double gaussian(double m_mu, double s_sigma);
 
 //files ----------------------------------------------------------------------------------
 //paths
-#define datadir                 "/Users/stingxu/Desktop/Coding/SynPop/data/"
-#define config                  "/Users/stingxu/Desktop/Coding/SynPop/$config/"
-#define config_pop              "/Users/stingxu/Desktop/Coding/SynPop/$config/pop/"
-#define config_hhold            "/Users/stingxu/Desktop/Coding/SynPop/$config/hold/"
-#define config_unit             "/Users/stingxu/Desktop/Coding/SynPop/$config/unit/"
-#define config_bldg             "/Users/stingxu/Desktop/Coding/SynPop/$config/bldg/"
-#define parameters              "/Users/stingxu/Desktop/Coding/SynPop/parameters/"
-#define outdir                  "/Users/stingxu/Desktop/Coding/SynPop/output/"
+//define datadir                 "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/data/"
+//define config                  "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/"
+//define config_pop              "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/pop/"
+//define config_hhold            "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/hold/"
+//define config_unit             "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/unit/"
+//define config_bldg             "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/bldg/"
+//define parameters              "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/parameters/"
+//define outdir                  "/Users/mclures/Documents/LF-SynPop-Outputs/"
+
+
+#define datadir                 "../data/"
+#define config                  "../$config/"
+#define config_pop              "../$config/pop/"
+#define config_hhold            "../$config/hold/"
+#define config_unit             "../$config/unit/"
+#define config_bldg             "../$config/bldg/"
+#define parameters              "../parameters/"
+#define outdir                  "../output/"
+
 
 //parameters
 #define fertility               "fertility.csv"
@@ -96,6 +119,7 @@ double gaussian(double m_mu, double s_sigma);
 #define mortality_female        "mortality_female.csv"
 #define labor_force_pp_rate     "LFPRs.csv"
 #define exposure_age            "exposure_age.csv"
+#define MDAParams               "MDAParams.csv"
 
 //demographics
 #define villages                "villages.dat"

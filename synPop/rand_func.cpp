@@ -8,6 +8,7 @@
 #include "paras.h"
 using namespace std;
 
+//function to generate random numbers with different distribution
 double gaussian(double m_mu, double s_sigma){
     unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);

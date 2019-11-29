@@ -17,6 +17,7 @@
 		9DEF233E1FAFE162008F520B /* statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233C1FAFE162008F520B /* statistics.cpp */; };
 		9DEF23401FAFE1A6008F520B /* mobility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF233F1FAFE1A6008F520B /* mobility.cpp */; };
 		9DEF23431FB13045008F520B /* dynamic_blok.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9DEF23421FB13045008F520B /* dynamic_blok.cpp */; };
+		F71E9BEE23022A3900DF8848 /* mda.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F71E9BED23022A3900DF8848 /* mda.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -34,7 +35,7 @@
 /* Begin PBXFileReference section */
 		9D3517C62015A54D00EA8AE0 /* units.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = units.h; sourceTree = "<group>"; };
 		9D3517C72015A64100EA8AE0 /* hhold.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hhold.h; sourceTree = "<group>"; };
-		9D7B63441FAAC3F70044FD3F /* synPop */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = synPop; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D7B63441FAAC3F70044FD3F /* synPop */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = synPop; path = "../../../../../../../../Google Drive/Angus/Work/Active/LF/synPop_Commented/product/synPop"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D7B63471FAAC3F70044FD3F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9D7B63511FAAC4490044FD3F /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		9D7B63521FAAC4610044FD3F /* rand_func.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = rand_func.cpp; sourceTree = "<group>"; };
@@ -50,6 +51,9 @@
 		9DEF233C1FAFE162008F520B /* statistics.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = statistics.cpp; sourceTree = "<group>"; };
 		9DEF233F1FAFE1A6008F520B /* mobility.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mobility.cpp; sourceTree = "<group>"; };
 		9DEF23421FB13045008F520B /* dynamic_blok.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_blok.cpp; sourceTree = "<group>"; };
+		F71E9BED23022A3900DF8848 /* mda.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = mda.cpp; sourceTree = "<group>"; };
+		F7A4CF6C228BA10300022F49 /* Angus Notes.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = "Angus Notes.rtf"; sourceTree = "<group>"; };
+		F7A55F6722FD0E20006B1D1D /* mda.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mda.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +70,7 @@
 		9D7B633B1FAAC3F70044FD3F = {
 			isa = PBXGroup;
 			children = (
+				F7A4CF6C228BA10300022F49 /* Angus Notes.rtf */,
 				9D7B63451FAAC3F70044FD3F /* Products */,
 				9D7B63461FAAC3F70044FD3F /* synPop */,
 			);
@@ -99,6 +104,8 @@
 				9D3517C72015A64100EA8AE0 /* hhold.h */,
 				9D7B63511FAAC4490044FD3F /* main.h */,
 				9DEF232F1FAE88E5008F520B /* paras.h */,
+				F7A55F6722FD0E20006B1D1D /* mda.h */,
+				F71E9BED23022A3900DF8848 /* mda.cpp */,
 			);
 			path = synPop;
 			sourceTree = "<group>";
@@ -160,6 +167,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F71E9BEE23022A3900DF8848 /* mda.cpp in Sources */,
 				9D7B63531FAAC4610044FD3F /* rand_func.cpp in Sources */,
 				9DCD0D18204948AF002D83D4 /* sim.cpp in Sources */,
 				9DEF23321FAE8C3C008F520B /* dynamic_pop.cpp in Sources */,
@@ -268,6 +276,7 @@
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;

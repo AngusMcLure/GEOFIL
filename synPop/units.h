@@ -12,12 +12,12 @@
 #include "agent.h"
 using namespace std;
 
-class rbldg;        //residential
+class rbldg;        //residential building
 class workp;        //work place
 class schol;        //school
 
-class mblok;
-class cblok;
+class mblok;        // village
+class cblok;        // AS
 
 class rbldg{
 public:
@@ -28,10 +28,12 @@ public:
     mblok *mbk;
     cblok *cbk;
     
+    //neighbouring buildings, workplaces and schools?
     vector<rbldg*> r_neigh;
     vector<workp*> w_neigh;
     vector<schol*> s_neigh;
     
+    //distance to these neighbouring places
     vector<double> r_neigh_d;
     vector<double> w_neigh_d;
     vector<double> s_neigh_d;

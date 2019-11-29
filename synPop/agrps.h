@@ -12,6 +12,7 @@
 #include "paras.h"
 using namespace std;
 
+// age groups
 class agrps{
 public:
     int age_dn[vg_agrps];

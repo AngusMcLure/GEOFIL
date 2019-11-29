@@ -8,28 +8,37 @@
 
 #include "block.h"
 
-double max_prv;
+double max_prv;     // max prevalence of infective mosquitoes
 
-void cblok::sim_pop(int year){
+// simulate the population & transmission
+void cblok::sim_pop(int year, mda_strat strategy){
+    
     max_prv = 0;
     
     hndl_jobs(year);
     hndl_schol(year);
     
     if(year == 0){
+/*        //Scenario 0
+        for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
+
+                seed_epidemics(0.000047, 15, 100, j->second);
+                seed_epidemics(0.000047/2, 8, 14, j->second);
+        }
+ */
         //Scenario A
         for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
              if(j->second != "Fagalii"){
              seed_epidemics(0.0047, 15, 100, j->second);
              seed_epidemics(0.0047/2, 8, 14, j->second);
              }
-         
+
              if(j->second == "Fagalii"){
              seed_epidemics(0.0476, 15, 100, "Fagalii");
              seed_epidemics(0.0476/2, 8, 14, "Fagalii");
              }
          }
-        
+
         //Scenario B
         /*for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
              if(j->second != "Fagalii" && j->second != "Iliili"){
@@ -88,16 +97,28 @@ void cblok::sim_pop(int year){
         seed_epidemics(0.0042/2, 8, 14, "Pago");*/
     }
     
-    //if(year >= 8 && year <= 12) implement_MDA(coverage, 0.5, 0.33, 365);    //DA, 83% for 12 months
-    if(year == 8) implement_MDA(coverage, 0.5, 0.46, 3*365);                       //IDA, 96% for 36 months
-    if(year == 10) implement_MDA(coverage, 0.5, 0.46, 3*365);
+    achieved_coverage[year] = 0;
+    achieved_coverage_m[year] = 0;
+    achieved_coverage_f[year] = 0;
+    if(strategy.is_mda_year(year+sim_bg)){
+        implement_MDA(year, strategy);
+        cout << endl << year+sim_bg << " is a MDA year" << endl;
+    }
     
-    get_epidemics(year);
+    //if(year >= 8 && year <= 12) implement_MDA(coverage, 0.50, 0.33, 365);             //DA, 83% for 12 months
     
-    get_cpop(year);
+    //This is the one that was not commented out in the code that Sting gave me
+    //if(year == 8 || year == 10 || year == 12 || year == 14 || year == 16) implement_MDA(coverage, 0.50, 0.46, 3*365);                       //IDA, 96% for 36 months
+    
+    
+    //if(year == 8 || year == 9) implement_MDA(coverage, 0.55, 0, 0);
+    
+    
+    get_epidemics(year,strategy); //write epidemic status summary to screen and linelist to csv
+    get_cpop(year); //write population breakdown by age group to csv (seems to overwrite with each new simulation?)
     get_sexratiob(year);
     
-    cout << "year = " << year+2010 << " cpop = " << cpop << endl;
+    cout << "year = " << year+sim_bg << " cpop = " << cpop << endl;
     get_students(year);
     get_works(year);
     
@@ -125,6 +146,7 @@ void cblok::sim_pop(int year){
     hndl_hold_rupt(year);
 }
 
+// seed the disease in the village, according to prevalence p in age group (age_dn, age_up)
 void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
     if(village != "all" && mbloksIndexA.find(village) == mbloksIndexA.end()){
         cout << village << " not found" << endl;
@@ -144,7 +166,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                     if(drand48() <= p){
                         cur->epids = 'i';
                         cur->clock_inf = 0;
-                        cur->wvec.push_back(new worm('m', 0, drand48()*6*365));
+                        cur->wvec.push_back(new worm('m', 0, drand48()*max_inf_period));
                         
                         inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                         cur->h_d->rdg->mbk->sum_mf++;
@@ -152,7 +174,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                     else if(drand48() < p/6){
                         cur->epids = 'e';
                         cur->clock_inf = 0;
-                        cur->wvec.push_back(new worm('p', drand48()*365, 4*365 + int(drand48()*2*365)));
+                        cur->wvec.push_back(new worm('p', drand48()*max_pre_period, min_inf_period + int(drand48()*(max_inf_period-min_inf_period))));
                         
                         pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
                     }
@@ -169,16 +191,16 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                     if(drand48() <= p){
                         cur->epids = 'i';
                         cur->clock_inf = 0;
-                        cur->wvec.push_back(new worm('m', 0, drand48()*6*365));
-                        
+                        cur->wvec.push_back(new worm('m', 0, drand48()*max_inf_period));
+
                         inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                         cur->h_d->rdg->mbk->sum_mf++;
                     }
                     else if(drand48() < p/6){
                         cur->epids = 'e';
                         cur->clock_inf = 0;
-                        cur->wvec.push_back(new worm('p', drand48()*365, 4*365 + int(drand48()*2*365)));
-                        
+                        cur->wvec.push_back(new worm('p', drand48()*max_pre_period, min_inf_period + int(drand48()*(max_inf_period-min_inf_period))));
+
                         pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
                     }
                 }
