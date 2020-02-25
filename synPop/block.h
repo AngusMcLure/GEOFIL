@@ -104,6 +104,7 @@ public:
     //map<int, agent*> risk_indiv;     //individuals at risk
     map<int, agent*> pre_indiv;        //latent individuals
     map<int, agent*> inf_indiv;        //infectious individuals
+    map<int, agent*> uninf_indiv;        //uninfectious individuals - these are people just a single gender of worm
     //map<int, agent*> rmv_indiv;        //removed individuals
     
     map<int, rbldg*> inf_rbldg_day;

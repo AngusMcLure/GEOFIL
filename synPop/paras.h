@@ -60,7 +60,8 @@
 #define r_r                 100            //risk range, 100m average, Aedes polynesiensis
 #define rb_working          70             //bitten rate per half day
 #define rb_offwork          70
-#define r_w                 0.1412         //probability of presence of mated worms due to one bite
+//#define r_w                 0.1412         //probability of presence of mated worms due to one bite
+
 #define c0_4                0.25           //relative exposure to mosquitos, age 0-4
 #define c5_15               0.75           //relative exposure to mosquitos, age 5-15
 #define s_l3                0.1093         //survive to more than 13 days (L3 larave)
@@ -68,19 +69,30 @@
 //define s_w                0.0005833      //survive to adult worms
 
 //these parameters define how long prepatent worms survive, the percent that die before maturity, the length of prepatency
-#define survive_dur         75
-#define survive_prop        0.13
+//#define survive_dur         75
+//#define survive_prop        0.13
 #define min_pre_period      182            //minimum time that worms spend prepatent (days)
 #define max_pre_period      365            //maximum time that worms spend prepatent (day)
+#define prob_worm_male      0.5            //proportion of worms that are male
+#define p_both_sex          0.0000106      //probability that a single bite from an infected mosquito will pass on exactly one worm of each gender that makes it to maturity
+#define p_one_sex           0.00440        //probability that a single bite from an infected mosquito will pass on exactly one worm that makes it to maturity
+#define prop_L3_leave_mosquito 0.414
+#define prop_L3_enter_blood 0.32
+#define prob_survive_prepatent 0.1          //alternative to the exponential decay model based on the cat model data
+//#define ztnb_mult           6.003           //multiplicative factor to adjust for the fact that number of larvae from bites from *infected* follows a *zero-truncated* negative binomial distribution but we are assuming it follows a negative binomial distribution
 
 //how long adult worms survive and produce mf
 
 #define min_inf_period      4*365          //minimum time that worms spend infectious (days)
 #define max_inf_period      6*365          //maximum time that worms spend infectious (day)
 
+//initialisation of infections
+#define Init_uninfect_infect_ratio 8
+#define Init_prepatent_infect_ratio 0.1667
+
 //epidemic seeds
 //define iter                1
-#define sim_years           26  // duration of simulaiton in years. Note that 2010 to 2035 is 26 years
+#define sim_years           11  // duration of simulaiton in years. Note that 2010 to 2035 is 26 years
 //define coverage            0.8
 //define c_female            0.93
 
@@ -89,27 +101,30 @@ int ztpoisson(double l_lambda);
 int binomial(int r, double p);
 double ztpoisson(int k, double l_lambda);
 double gaussian(double m_mu, double s_sigma);
+int poisson(double rate);
+int negbinomial(double rate);
+int L3LarvaePerMos();
 
 //files ----------------------------------------------------------------------------------
 //paths
-//define datadir                 "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/data/"
-//define config                  "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/"
-//define config_pop              "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/pop/"
-//define config_hhold            "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/hold/"
-//define config_unit             "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/unit/"
-//define config_bldg             "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/$config/bldg/"
-//define parameters              "/Users/mclures/Google Drive/Angus/Work/Active/LF/SynPop_Commented/parameters/"
-//define outdir                  "/Users/mclures/Documents/LF-SynPop-Outputs/"
+#define datadir                 "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/data/"
+#define config                  "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/"
+#define config_pop              "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/pop/"
+#define config_hhold            "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/hold/"
+#define config_unit             "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/unit/"
+#define config_bldg             "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/bldg/"
+#define parameters              "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/parameters/"
+#define outdir                  "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/output/"
 
 
-#define datadir                 "../data/"
-#define config                  "../$config/"
-#define config_pop              "../$config/pop/"
-#define config_hhold            "../$config/hold/"
-#define config_unit             "../$config/unit/"
-#define config_bldg             "../$config/bldg/"
-#define parameters              "../parameters/"
-#define outdir                  "../output/"
+//define datadir                 "../data/"
+//define config                  "../$config/"
+//define config_pop              "../$config/pop/"
+//define config_hhold            "../$config/hold/"
+//define config_unit             "../$config/unit/"
+//define config_bldg             "../$config/bldg/"
+//define parameters              "../parameters/"
+//define outdir                  "../output/"
 
 
 //parameters

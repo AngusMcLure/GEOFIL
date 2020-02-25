@@ -24,20 +24,22 @@ class mda_strat;
 // LF mated worms
 class worm{
 public:
-    char status;    //p - prepatent, m - mf producing, d - to be removed
+    char status;    //p - prepatent, m - mature, d - to be removed
     int clock_pp;
     int clock_mf; //active period in days, 4-6 years
     
     int clock_mda;
     double mda_f;
+    char gender;
     
-    worm(char s, int p, int l){
+    worm(char s, int p, int l, char g){
         status = s;
         clock_pp = p;
         clock_mf = l;
         
         clock_mda = 0;
         mda_f = 0;
+        gender = g;
     }
     
     void update();
@@ -53,11 +55,11 @@ public:
     char margs;     //m - married, s - single, d - divorce, w - widowed
     int bth_wind;   //birth window closed for female just having a baby
     
-    int worms;
+    int L3larvae;
     vector<worm*> wvec;
     int clock_inf;
     double mda_f;
-    char epids;     //s - susceptible, e - prepatent, i - infectious
+    char epids;     //s - susceptible, e - prepatent, i - infectious, u - infected with 'U'nmated worm (not infectious but antigen positive)
     
     agent *spw;
     agent *dad;

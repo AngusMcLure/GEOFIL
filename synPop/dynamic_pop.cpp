@@ -14,6 +14,8 @@
 void cblok::rmv_agent(agent *p){
     if(p->epids == 'e') pre_indiv.erase(p->aid);
     else if(p->epids == 'i') inf_indiv.erase(p->aid);
+    else if(p->epids == 'u') uninf_indiv.erase(p->aid);
+
     //else if(p->epids == 'r') rmv_indiv.erase(p->aid);
     
     hhold *h_hold = p->h_d;

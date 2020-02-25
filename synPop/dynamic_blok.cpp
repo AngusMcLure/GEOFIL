@@ -813,15 +813,37 @@ void cblok::risk_loc_night(int year, int day){
 
 // update epidemic status in AS
 void cblok::renew_epidemics(int year, int day){
+    //update the worms in each person with worms and update their epidemic status accordingly. Unfortunately people who go from prepatent to uninfected or infected or from uninfected to to infected get updated twice, but given that each update only progresses worms by a single day this shouldn't matter too much... Could patch by making an 'updated' attribute for humans that resets every day and indicates whether they have been updated that day yet
     for(map<int, agent*>::iterator j = pre_indiv.begin(); j != pre_indiv.end();){
         agent *p = j->second;
         p->update();
-        if(p->epids == 's') pre_indiv.erase(j++);
-        else if(p->epids == 'i'){
+        if(p->epids != 'e'){
             pre_indiv.erase(j++);
-            inf_indiv.insert(pair<int, agent*>(p->aid, p));
-            // add infected person to village/meshblock running tally
-            p->h_d->rdg->mbk->sum_mf++;
+            if(p->epids == 'i'){
+                inf_indiv.insert(pair<int, agent*>(p->aid, p));
+                // add infected person to village/meshblock running tally
+                p->h_d->rdg->mbk->sum_mf++;
+            }
+            else if(p->epids == 'u'){
+                uninf_indiv.insert(pair<int, agent*>(p->aid, p));
+            }
+        }
+        else ++j;
+    }
+    
+    for(map<int, agent*>::iterator j = uninf_indiv.begin(); j != uninf_indiv.end();){
+        agent *p = j->second;
+        p->update();
+        if(p->epids != 'u'){
+            uninf_indiv.erase(j++);
+            if(p->epids == 'i'){
+                inf_indiv.insert(pair<int, agent*>(p->aid, p));
+                // add infected person to village/meshblock running tally
+                p->h_d->rdg->mbk->sum_mf++;
+            }
+            else if(p->epids == 'e'){
+                pre_indiv.insert(pair<int, agent*>(p->aid, p));
+            }
         }
         else ++j;
     }
@@ -830,11 +852,14 @@ void cblok::renew_epidemics(int year, int day){
         agent *p = j->second;
         p->update();
         
-        if(p->epids == 's')
+        if(p->epids != 'i'){
             inf_indiv.erase(j++);
-        else if(p->epids == 'e'){
-            pre_indiv.insert(pair<int, agent*>(p->aid, p));
-            inf_indiv.erase(j++);
+            if(p->epids == 'e'){
+                pre_indiv.insert(pair<int, agent*>(p->aid, p));
+            }
+            else if(p->epids == 'u'){
+                uninf_indiv.insert(pair<int, agent*>(p->aid, p));
+            }
         }
         else ++j;
     }

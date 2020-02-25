@@ -359,12 +359,12 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     
     //Write some summaries to screen to monitor progress of simulations
     cout << endl;
-    cout << year+sim_bg << ": " << "prepatent = " << pre_indiv.size() << " infectious = " << inf_indiv.size() << endl;
+    cout << year+sim_bg << ": " << "prepatent = " << pre_indiv.size() << " uninfectious = " << uninf_indiv.size() << " infectious = " << inf_indiv.size() << endl;
     cout << ">=15 years' prevalence = " << fixed << setprecision(2) << inf_15_and_over/(double)n_15_and_over*100 << "%" << endl;
     cout << "6-7 years' prevalence = " << fixed << setprecision(2) << inf_6_7/(double)n_6_7*100 << "%" << endl;
     cout << "fagalii prevalence = " << fixed << setprecision(2) << fagalii_inf/(double)fagalii_residents*100 << "%" << endl;
     cout << "iliili prevalence = " << fixed << setprecision(2) << iliili_inf/(double)ilili_residents*100 << "%" << endl;
-    cout << "overall prevalence = " << fixed << setprecision(2) << inf_indiv.size()/(double)cpop*100 << "%" << endl;
+    cout << "overall mf prevalence = " << fixed << setprecision(2) << inf_indiv.size()/(double)cpop*100 << "%" << endl;
   
 /*  // This stores some summaries of prevalnce to be printed to file after full simulation (in main) I have changed this to print to file each year
     adult_prv[year] = inf_adult/(double)n_adult;

@@ -19,13 +19,15 @@ void cblok::sim_pop(int year, mda_strat strategy){
     hndl_schol(year);
     
     if(year == 0){
-/*        //Scenario 0
+/*
+        //Scenario 0
         for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
 
-                seed_epidemics(0.000047, 15, 100, j->second);
-                seed_epidemics(0.000047/2, 8, 14, j->second);
+                seed_epidemics(0.0005, 15, 100, j->second);
+                seed_epidemics(0.0005/2, 8, 14, j->second);
         }
- */
+*/
+
         //Scenario A
         for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
              if(j->second != "Fagalii"){
@@ -165,18 +167,30 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                 if(age >= age_dn && age <= age_up){
                     if(drand48() <= p){
                         cur->epids = 'i';
-                        cur->clock_inf = 0;
-                        cur->wvec.push_back(new worm('m', 0, drand48()*max_inf_period));
-                        
+                        //add one mature worms of each gender
+                        double worm_life = drand48()*max_inf_period;
+                        cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                        cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                         inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                         cur->h_d->rdg->mbk->sum_mf++;
                     }
-                    else if(drand48() < p/6){
+                    else if(drand48() < p * Init_prepatent_infect_ratio){
                         cur->epids = 'e';
-                        cur->clock_inf = 0;
-                        cur->wvec.push_back(new worm('p', drand48()*max_pre_period, min_inf_period + int(drand48()*(max_inf_period-min_inf_period))));
-                        
+                        //add one prepatent worm of each gender
+                        double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
+                        double worm_life_prepat = drand48()*max_pre_period;
+                        cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
+                        cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
+
                         pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
+                    }
+                    else if(drand48() < p * Init_uninfect_infect_ratio){
+                        cur->epids = 'u';
+                        //add one mature worm of one gender
+                        double worm_life = drand48() * max_inf_period;
+                        if(drand48() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                        else cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
+                        uninf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                     }
                 }
             }
@@ -190,16 +204,23 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                 if(age >= age_dn && age <= age_up){
                     if(drand48() <= p){
                         cur->epids = 'i';
-                        cur->clock_inf = 0;
-                        cur->wvec.push_back(new worm('m', 0, drand48()*max_inf_period));
-
+                        //cur->clock_inf = 0;
+                        //add one mature worm of each gender
+                        double worm_life = drand48()*max_inf_period;
+                        cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                        cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                         inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                         cur->h_d->rdg->mbk->sum_mf++;
                     }
                     else if(drand48() < p/6){
                         cur->epids = 'e';
-                        cur->clock_inf = 0;
-                        cur->wvec.push_back(new worm('p', drand48()*max_pre_period, min_inf_period + int(drand48()*(max_inf_period-min_inf_period))));
+                        //cur->clock_inf = 0;
+                        
+                        //add one prepatent worm of each gender
+                        double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
+                        double worm_life_prepat = drand48()*max_pre_period;
+                        cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
+                        cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
 
                         pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
                     }
