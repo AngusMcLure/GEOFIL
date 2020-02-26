@@ -74,11 +74,12 @@
 #define min_pre_period      182            //minimum time that worms spend prepatent (days)
 #define max_pre_period      365            //maximum time that worms spend prepatent (day)
 #define prob_worm_male      0.5            //proportion of worms that are male
-#define p_both_sex          0.0000106      //probability that a single bite from an infected mosquito will pass on exactly one worm of each gender that makes it to maturity
+
+#define p_both_sex          0.000440       //0.0000106  //probability that a single bite from an infected mosquito will pass on exactly one worm of each gender that makes it to maturity
 #define p_one_sex           0.00440        //probability that a single bite from an infected mosquito will pass on exactly one worm that makes it to maturity
-#define prop_L3_leave_mosquito 0.414
-#define prop_L3_enter_blood 0.32
-#define prob_survive_prepatent 0.1          //alternative to the exponential decay model based on the cat model data
+//#define prop_L3_leave_mosquito 0.414
+//#define prop_L3_enter_blood 0.32
+//#define prob_survive_prepatent 0.1          //alternative to the exponential decay model based on the cat model data
 //#define ztnb_mult           6.003           //multiplicative factor to adjust for the fact that number of larvae from bites from *infected* follows a *zero-truncated* negative binomial distribution but we are assuming it follows a negative binomial distribution
 
 //how long adult worms survive and produce mf
@@ -87,7 +88,7 @@
 #define max_inf_period      6*365          //maximum time that worms spend infectious (day)
 
 //initialisation of infections
-#define Init_uninfect_infect_ratio 8
+#define Init_uninfect_infect_ratio 5.5
 #define Init_prepatent_infect_ratio 0.1667
 
 //epidemic seeds

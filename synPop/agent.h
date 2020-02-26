@@ -55,7 +55,7 @@ public:
     char margs;     //m - married, s - single, d - divorce, w - widowed
     int bth_wind;   //birth window closed for female just having a baby
     
-    int L3larvae;
+    int InfectiveBites;
     vector<worm*> wvec;
     int clock_inf;
     double mda_f;

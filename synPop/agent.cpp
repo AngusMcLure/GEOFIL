@@ -31,7 +31,7 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, s
     births = 0;
     bth_wind = 0;
     
-    L3larvae = 0;
+    InfectiveBites = 0;
     epids = 's';
     //clock_inf = -1; // this seems to get changed and set a lot, but never actually used for anything of consequence
     mda_f = 0;
@@ -65,45 +65,29 @@ void agent::calc_risk(double prv, char time, double c){
     double pos_inf_bites_rate = c * prv; // mean number of possibly infected bites per period = bites per period * prevalence in mosquitoes
     if(time == 'd') pos_inf_bites_rate *= rb_working; //biting rate day vs night
     else pos_inf_bites_rate *= rb_offwork;
-    int bites = poisson(pos_inf_bites_rate); //actual random number of bites from infected mosquitoes
-    for(int bite = 0; bite<bites; ++bite){
-        int NL = L3LarvaePerMos();
-        int NLD = binomial(NL, prop_L3_leave_mosquito * prop_L3_enter_blood);
-        //cout << "In Mosquito: " << NL << " Deposited: " << NLD << endl;
-        L3larvae += NLD; //number of larvae deposited
-    }
+    InfectiveBites += poisson(pos_inf_bites_rate * (p_both_sex + p_one_sex)); //actual random number of bites from infected mosquitoes
 }
 
 // update epidemic status based on new bites (from calc_risk) and life-stage progression of exiting worms
 void agent::renew_epidemics(){
     
-    //add new worms
-    // note that in Sting's code the new worm is added at this time only if it will mature into a mature worm later. Therefore a large proportion are discarded at this point, and the number with prepatent worms in the model will not include those who have prepatent worms that will never make it to mature state and so will be an under-estimate. It also assumes that even if the person recieved more than one pair of mated worms (that day) only one of them survives with probability equal to to probability that at least one of them survives. To amend this we used this code rather than Sting's original (below)
-    for(int w = 0; w < L3larvae ; ++w){
-        int clock_pre = min_pre_period + int(drand48()*(max_pre_period-min_pre_period)); // prepatancy duration
-        //int clock_live_pre = int(log(drand48())*survive_dur/log(survive_prop)); // duration of life assuming prepatent
-        //if(clock_live_pre < clock_pre){
-        if(drand48() > prob_survive_prepatent){ // if the worm will die before adulthood
-            //do nothing -- uncomment below if we're interested in all prepatent worms
-            //wvec.push_back(new worm('p', clock_live_pre, 0)); // make a new prepatent worm with prepatent lifetime 'clock_live_pre' and no infectious lifetime
-        } else { // if the worm survives to adulthood
-            int active = min_inf_period + int(drand48()*(max_inf_period-min_inf_period)); //the active period (infectious lifetime) of the worm to be a random uniform between min and max duration
+    for(int b = 0; b < InfectiveBites ; ++b){
+        int clock_pre = min_pre_period + int(drand48()*(max_pre_period-min_pre_period)); //
+        int active = min_inf_period + int(drand48()*(max_inf_period-min_inf_period)); //the active period (infectious lifetime) of the worm to be a random uniform between min and max duration
+        if(drand48() < p_both_sex/(p_both_sex + p_one_sex)){
+            // make two new prepatent worms, one of each gender, with prepatent lifetimes 'clock_pre' and infectious lifetimes 'active'
+            wvec.push_back(new worm('p', clock_pre, active, 'm'));
+            wvec.push_back(new worm('p', clock_pre, active, 'f'));
+        }else{
             char gender = 'f';
             if(drand48() < prob_worm_male){
                 gender = 'm';
+                wvec.push_back(new worm('p', clock_pre, active, gender)); // make a new prepatent worm with prepatent lifetime 'clock_pre' and infectious lifetime 'active' and gender 'gender'
             }
-            wvec.push_back(new worm('p', clock_pre, active, gender)); // make a new prepatent worm with prepatent lifetime 'clock_pre' and infectious lifetime 'active' and gender 'gender'
         }
+        
     }
-    
-    
-// Sting's version of above
-//    int clock_pre = min_pre_period + int(drand48()*(max_pre_period-min_pre_period)); // prepatancy duration uniform random between min and max duration
-//    double s_w = pow(survive_prop, clock_pre/(double)survive_dur);
-//    if(drand48() < 1-pow(1-s_w, worms)){
-//        int active = min_inf_period + int(drand48()*(max_inf_period-min_inf_period)); //the active period (infectious lifetime) of the worm to be a random uniform between min and max duration
-//        wvec.push_back(new worm('p', clock_pre, active)); // make a new prepatent worm with prepatent lifetime 'clock_pre' and infectious lifetime 'active'
-//    }
+
     
     char ch = 's';
     //for individuals with worms, set their status to infected if at least one of mature worms of each gender,
@@ -126,8 +110,10 @@ void agent::renew_epidemics(){
     }
     
     epids = ch;
-    L3larvae = 0;
+    InfectiveBites = 0;
 }
+
+
 void worm::update(){
     if(status == 'p'){ // progress worm's prepatent count-down timer and move onto mature if time is up
         if(clock_pp == 0) status = 'm';
