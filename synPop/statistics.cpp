@@ -302,14 +302,33 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     double inf_6_9 = 0;
     double inf_11_12 = 0;
     double inf_15_16 = 0;
+    double inf_8_and_over = 0;
+    double inf_8_13 = 0;
     double inf_10_and_over = 0;
     double inf_15_and_over = 0;
+    double inf_16_and_over = 0;
     double inf_male = 0;
     double inf_female = 0;
-    double iliili_inf = 0;
-    double fagalii_inf = 0;
+    double inf_iliili = 0;
+    double inf_fagalii = 0;
     vector<double> inf_villages;
     inf_villages.resize(mbloks.size());
+    
+    double antigen_pos_6_7 = 0;
+    double antigen_pos_6_9 = 0;
+    double antigen_pos_11_12 = 0;
+    double antigen_pos_15_16 = 0;
+    double antigen_pos_8_and_over = 0;
+    double antigen_pos_8_13 = 0;
+    double antigen_pos_10_and_over = 0;
+    double antigen_pos_15_and_over = 0;
+    double antigen_pos_16_and_over = 0;
+    double antigen_pos_male = 0;
+    double antigen_pos_female = 0;
+    double antigen_pos_iliili = 0;
+    double antigen_pos_fagalii = 0;
+    vector<double> antigen_pos_villages;
+    antigen_pos_villages.resize(mbloks.size());
 //  map<int, hhold*> vec;
     
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){ // for each infected individual
@@ -318,10 +337,10 @@ void cblok::get_epidemics(int year, mda_strat strategy){
         
         // if they live in the key areas, add them to the appropriate tallies
         if(mid == fagali_mid)
-            ++fagalii_inf;
+            ++inf_fagalii;
         
         if(mid == futiga_mid || mid == iliili_mid || mid == vaitogi_mid)
-            ++iliili_inf;
+            ++inf_iliili;
         
         //Tally by village (all villages)
         ++inf_villages.at(mid-1);
@@ -341,40 +360,29 @@ void cblok::get_epidemics(int year, mda_strat strategy){
         if(a->gendr  == 'm') ++inf_male;
         if(a->gendr  == 'f') ++inf_female;
 
-        
-        //not sure what this does... looks like it might be keeping a list of all the households with infected individuals, but I'm not sure if this list can be/is accessed from elsewhere
- //       hhold *hd = a->h_d;
-  //      vec.insert(pair<int, hhold*>(hd->hid, hd));
-        
+
         //write each infected person's info to line list along with Sim number sim year and seed for batch of sims
         //a->write_line_list(SimulationNumber, year, seed);
     }
 
-/*    //write each prepatent person's info to line list along with Sim number sim year and seed for batch of sims
+
     for(map<int, agent*>::iterator j = pre_indiv.begin(); j != pre_indiv.end(); ++j){ // for each infected individual
         agent *a =  j->second;
+        
+        //write each prepatent person's info to line list along with Sim number sim year and seed for batch of sims
         a->write_line_list(SimulationNumber, year, seed);
     }
- */
+ 
     
     //Write some summaries to screen to monitor progress of simulations
     cout << endl;
     cout << year+sim_bg << ": " << "prepatent = " << pre_indiv.size() << " uninfectious = " << uninf_indiv.size() << " infectious = " << inf_indiv.size() << endl;
     cout << ">=15 years' prevalence = " << fixed << setprecision(2) << inf_15_and_over/(double)n_15_and_over*100 << "%" << endl;
     cout << "6-7 years' prevalence = " << fixed << setprecision(2) << inf_6_7/(double)n_6_7*100 << "%" << endl;
-    cout << "fagalii prevalence = " << fixed << setprecision(2) << fagalii_inf/(double)fagalii_residents*100 << "%" << endl;
-    cout << "iliili prevalence = " << fixed << setprecision(2) << iliili_inf/(double)ilili_residents*100 << "%" << endl;
+    cout << "fagalii prevalence = " << fixed << setprecision(2) << inf_fagalii/(double)fagalii_residents*100 << "%" << endl;
+    cout << "iliili prevalence = " << fixed << setprecision(2) << inf_iliili/(double)ilili_residents*100 << "%" << endl;
     cout << "overall mf prevalence = " << fixed << setprecision(2) << inf_indiv.size()/(double)cpop*100 << "%" << endl;
-  
-/*  // This stores some summaries of prevalnce to be printed to file after full simulation (in main) I have changed this to print to file each year
-    adult_prv[year] = inf_adult/(double)n_adult;
-    child_6_7_prv[year] = inf_6_7/(double)n_6_7;
-    child_11_12_prv[year] = inf_11_12/(double)n_11_12;
-    teen_15_16_prv[year] = inf_15_16/(double)n_15_16;
-    fagalli[year] = fagalii_inf/fagalii_residents;
-    iliili[year] = iliili_inf/ilili_residents;
-    all_prv[year] = inf_indiv.size()/(double)cpop;
-*/
+
 
     // write prevalence for the year to file
     // location where prevalence by year will be outputted

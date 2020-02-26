@@ -29,7 +29,7 @@ public:
     int clock_mf; //active period in days, 4-6 years
     
     int clock_mda;
-    double mda_f;
+    double mda_f; // the infectiousness of the worm. Defaults to 1. can be reduced by mda
     char gender;
     
     worm(char s, int p, int l, char g){
@@ -38,7 +38,7 @@ public:
         clock_mf = l;
         
         clock_mda = 0;
-        mda_f = 0;
+        mda_f = 1.0; //worms have fertility 1 by default. This can be reduced by MDA
         gender = g;
     }
     
@@ -58,8 +58,10 @@ public:
     int InfectiveBites;
     vector<worm*> wvec;
     int clock_inf;
-    double mda_f;
+    double mda_f; // the relative infectiousness of the host assuming they have an fertile male worm. 1 is default. However can be reduced if all female worms are partially sterilised. mda_f is the fertility of the most fertile female
     char epids;     //s - susceptible, e - prepatent, i - infectious, u - infected with 'U'nmated worm (not infectious but antigen positive)
+    int LastDayWithAdultWorm; // For people who are not infected with an adult worm, to keep track of the last day on which they were infected with an adult worm. Defaults to smallest integer. Is set to the current day whenever someone goes from the i or u states to the e or s states. It is not particuarly meaningful for people who are currently infected with an adult worm
+    bool ChangedEpiToday; //whether or not the epi status of the person changed today -- we keep track of this so that we don't update these people multiple times a day
     
     agent *spw;
     agent *dad;
@@ -77,9 +79,8 @@ public:
     ~agent();
     
     void add_child(agent *p);
-    void calc_risk(double prv, char time, double c);
-    void renew_epidemics();
-    void update();
+    void sim_bites(double prv, char time, double c);
+    void update(int year, int day);
     void get_drugs(drugs drug);
     void write_line_list(int SimNum, int y, int s);
 };

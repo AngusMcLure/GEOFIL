@@ -405,7 +405,7 @@ void cblok::calc_risk(int year, int day){
         int age = int(cur->age/365);
         double c = 1;
         if(age <= 15) c = exposure_by_age[age];
-        c = c * (1 - cur->mda_f);       //if all the person's adult mated worms were around during an mdf they will have their infectiousness discounted by proportion mda_f
+        c = c * (cur->mda_f);       //mda_f is the infectiousness of the host. 1 is default. However can be reduced if all female worms are partially sterilised. mda_f is the fertility of the most fertile female (if there are no fertile males then person is in the uninfectious category, so won't come up here)
         
 
         
@@ -509,8 +509,7 @@ void cblok::calc_risk(int year, int day){
             int age = int(p->age/365);
             if(age <= 15) c = exposure_by_age[age];
             
-            p->calc_risk(prv, 'd', c);
-            p->renew_epidemics();
+            p->sim_bites(prv, 'd', c);
             
             //Add new exposure to the list of prepatent agents
             if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -586,8 +585,7 @@ void cblok::calc_risk(int year, int day){
             if(age <= 15)
                 c = exposure_by_age[age];
             
-            p->calc_risk(prv, 'd', c);
-            p->renew_epidemics();
+            p->sim_bites(prv, 'd', c);
             
             if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
@@ -659,8 +657,7 @@ void cblok::calc_risk(int year, int day){
             if(age <= 15)
                 c = exposure_by_age[age];
             
-            p->calc_risk(prv, 'd', c);
-            p->renew_epidemics();
+            p->sim_bites(prv, 'd', c);
             
             if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
@@ -709,8 +706,7 @@ void cblok::calc_risk(int year, int day){
             if(age <= 15)
                 c = exposure_by_age[age];
             
-            p->calc_risk(prv, 'n', c);
-            p->renew_epidemics();
+            p->sim_bites(prv, 'n', c);
             
             if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
@@ -812,12 +808,14 @@ void cblok::risk_loc_night(int year, int day){
 }
 
 // update epidemic status in AS
-void cblok::renew_epidemics(int year, int day){
-    //update the worms in each person with worms and update their epidemic status accordingly. Unfortunately people who go from prepatent to uninfected or infected or from uninfected to to infected get updated twice, but given that each update only progresses worms by a single day this shouldn't matter too much... Could patch by making an 'updated' attribute for humans that resets every day and indicates whether they have been updated that day yet
+void cblok::update_epi_status(int year, int day){
+    //update the worms in each person with worms and update their epidemic status accordingly.
+    //To stop people who go from prepatent to uninfected or infected or from uninfected to infected from getting updated twice, we keep track of the 'ChangedEpiToday' attribute indicating whether they have been updated today yet
     for(map<int, agent*>::iterator j = pre_indiv.begin(); j != pre_indiv.end();){
         agent *p = j->second;
-        p->update();
+        p->update(year, day);
         if(p->epids != 'e'){
+            p->ChangedEpiToday = true;
             pre_indiv.erase(j++);
             if(p->epids == 'i'){
                 inf_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -833,10 +831,12 @@ void cblok::renew_epidemics(int year, int day){
     
     for(map<int, agent*>::iterator j = uninf_indiv.begin(); j != uninf_indiv.end();){
         agent *p = j->second;
-        p->update();
+        if(!p->ChangedEpiToday) p->update(year, day);
+        else p->ChangedEpiToday = false;
         if(p->epids != 'u'){
             uninf_indiv.erase(j++);
             if(p->epids == 'i'){
+                p->ChangedEpiToday = true;
                 inf_indiv.insert(pair<int, agent*>(p->aid, p));
                 // add infected person to village/meshblock running tally
                 p->h_d->rdg->mbk->sum_mf++;
@@ -850,9 +850,10 @@ void cblok::renew_epidemics(int year, int day){
     
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end();){
         agent *p = j->second;
-        p->update();
-        
+        if(!p->ChangedEpiToday) p->update(year, day);
+        else p->ChangedEpiToday = false;
         if(p->epids != 'i'){
+            //p->ChangedEpiToday = true; //since this is the last group to get updated each day we want everyone to end up with ChangedEpiToday = false to reset for the next day
             inf_indiv.erase(j++);
             if(p->epids == 'e'){
                 pre_indiv.insert(pair<int, agent*>(p->aid, p));

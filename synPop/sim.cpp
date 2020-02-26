@@ -40,63 +40,6 @@ void cblok::sim_pop(int year, mda_strat strategy){
              seed_epidemics(0.0476/2, 8, 14, "Fagalii");
              }
          }
-
-        //Scenario B
-        /*for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
-             if(j->second != "Fagalii" && j->second != "Iliili"){
-             seed_epidemics(0.0039, 15, 100, j->second);
-             seed_epidemics(0.0039/2, 8, 14, j->second);
-             }
-         
-             if(j->second == "Fagalii"){
-             seed_epidemics(0.0476, 15, 100, "Fagalii");
-             seed_epidemics(0.0476/2, 8, 14, "Fagalii");
-             }
-         
-             if(j->second == "Iliili"){
-             seed_epidemics(0.0269, 15, 100, "Iliili");
-             seed_epidemics(0.0269/2, 8, 14, "Iliili");
-             }
-         }*/
-
-        //Scenario C
-        /*seed_epidemics(0.0516, 15, 100, "Atuu");
-        seed_epidemics(0.0476, 15, 100, "Fagalii");
-        seed_epidemics(0.0310, 15, 100, "Amaua");
-        seed_epidemics(0.0269, 15, 100, "Iliili");
-        seed_epidemics(0.0221, 15, 100, "Vaitogi");
-        seed_epidemics(0.0221, 15, 100, "Alega");
-        seed_epidemics(0.0155, 15, 100, "Malaeloa/Aitulagi");
-        seed_epidemics(0.0155, 15, 100, "Malaeloa/Ituau");
-        seed_epidemics(0.0155, 15, 100, "Amanave");
-        seed_epidemics(0.0111, 15, 100, "Afao");
-        seed_epidemics(0.0111, 15, 100, "Vatia");
-        seed_epidemics(0.0097, 15, 100, "Pavaiai");
-        seed_epidemics(0.0086, 15, 100, "Amouli");
-        seed_epidemics(0.0074, 15, 100, "Aoloau");
-        seed_epidemics(0.0070, 15, 100, "Aua");
-        seed_epidemics(0.0055, 15, 100, "Malaeimi");
-        seed_epidemics(0.0043, 15, 100, "Asili");
-        seed_epidemics(0.0042, 15, 100, "Pago");
-        
-        seed_epidemics(0.0516/2, 8, 14, "Atuu");
-        seed_epidemics(0.0476/2, 8, 14, "Fagalii");
-        seed_epidemics(0.0310/2, 8, 14, "Amaua");
-        seed_epidemics(0.0269/2, 8, 14, "Iliili");
-        seed_epidemics(0.0221/2, 8, 14, "Vaitogi");
-        seed_epidemics(0.0221/2, 8, 14, "Alega");
-        seed_epidemics(0.0155/2, 8, 14, "Malaeloa/Aitulagi");
-        seed_epidemics(0.0155/2, 8, 14, "Malaeloa/Ituau");
-        seed_epidemics(0.0155/2, 8, 14, "Amanave");
-        seed_epidemics(0.0111/2, 8, 14, "Afao");
-        seed_epidemics(0.0111/2, 8, 14, "Vatia");
-        seed_epidemics(0.0097/2, 8, 14, "Pavaiai");
-        seed_epidemics(0.0086/2, 8, 14, "Amouli");
-        seed_epidemics(0.0074/2, 8, 14, "Aoloau");
-        seed_epidemics(0.0070/2, 8, 14, "Aua");
-        seed_epidemics(0.0055/2, 8, 14, "Malaeimi");
-        seed_epidemics(0.0043/2, 8, 14, "Asili");
-        seed_epidemics(0.0042/2, 8, 14, "Pago");*/
     }
     
     achieved_coverage[year] = 0;
@@ -107,13 +50,6 @@ void cblok::sim_pop(int year, mda_strat strategy){
         cout << endl << year+sim_bg << " is a MDA year" << endl;
     }
     
-    //if(year >= 8 && year <= 12) implement_MDA(coverage, 0.50, 0.33, 365);             //DA, 83% for 12 months
-    
-    //This is the one that was not commented out in the code that Sting gave me
-    //if(year == 8 || year == 10 || year == 12 || year == 14 || year == 16) implement_MDA(coverage, 0.50, 0.46, 3*365);                       //IDA, 96% for 36 months
-    
-    
-    //if(year == 8 || year == 9) implement_MDA(coverage, 0.55, 0, 0);
     
     
     get_epidemics(year,strategy); //write epidemic status summary to screen and linelist to csv
@@ -125,15 +61,10 @@ void cblok::sim_pop(int year, mda_strat strategy){
     get_works(year);
     
     for(int day = 0; day < 365; ++day){
-        //if((year*365+day) % 30 == 0) out_epidemics(year, day);
-        //if(year == 20 && day == 364) out_riskmap(year);
-        //if(year == 0 && day == 0) out_vg_prv(year);
-        //if(year == 10 && day == 364) out_vg_prv(year);
-        //if(year == 20 && day == 364) out_vg_prv(year);
         
-        calc_risk(year, day);
-        renew_epidemics(year, day);
-        renew_pop(year, day);
+        calc_risk(year, day); //Determine who gets infected with new worms today - doesn't update epi status
+        update_epi_status(year, day); //update everyone's LF epi status (including the status of each of their worms)
+        renew_pop(year, day); //update demographic aspects of population
         hndl_birth(year, day);
     }
     if(year == 6) get_mosquitoes(year);

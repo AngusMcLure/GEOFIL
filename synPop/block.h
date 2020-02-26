@@ -222,7 +222,7 @@ public:
     void calc_risk(int year, int day);
     void risk_loc_day(int year, int day);
     void risk_loc_night(int year, int day);        //time = 'd' or 'n', day/night
-    void renew_epidemics(int year, int day);
+    void update_epi_status(int year, int day);
     void seed_epidemics(double p, int age_dn, int age_up, string village = "all");
     
     void implement_MDA(int year, mda_strat strat);

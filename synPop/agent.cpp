@@ -8,7 +8,7 @@
 #include "agent.h"
 #include "hhold.h"
 #include "block.h"
-
+#include <limits>
 
 //extern int rb_working, rb_offwork;
 
@@ -31,10 +31,14 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, s
     births = 0;
     bth_wind = 0;
     
+    LastDayWithAdultWorm = std::numeric_limits<int>::min();
+
+    
     InfectiveBites = 0;
     epids = 's';
     //clock_inf = -1; // this seems to get changed and set a lot, but never actually used for anything of consequence
-    mda_f = 0;
+    mda_f = 1.0;
+    ChangedEpiToday = false;
 }
 
 // Destructor of Agent
@@ -60,16 +64,13 @@ void agent::add_child(agent *p){
 
 // calculate force of infection, considering mosquito exposure,
 // prevalence of infective mosquitoes, and probability of receiving mated worms
-void agent::calc_risk(double prv, char time, double c){
+void agent::sim_bites(double prv, char time, double c){
     
     double pos_inf_bites_rate = c * prv; // mean number of possibly infected bites per period = bites per period * prevalence in mosquitoes
     if(time == 'd') pos_inf_bites_rate *= rb_working; //biting rate day vs night
     else pos_inf_bites_rate *= rb_offwork;
     InfectiveBites += poisson(pos_inf_bites_rate * (p_both_sex + p_one_sex)); //actual random number of bites from infected mosquitoes
-}
-
-// update epidemic status based on new bites (from calc_risk) and life-stage progression of exiting worms
-void agent::renew_epidemics(){
+    
     
     for(int b = 0; b < InfectiveBites ; ++b){
         int clock_pre = min_pre_period + int(drand48()*(max_pre_period-min_pre_period)); //
@@ -87,32 +88,14 @@ void agent::renew_epidemics(){
         }
         
     }
+    //If they got at least one infective bite, and they weren't already infected update their epi-status accordingly
 
-    
-    char ch = 's';
-    //for individuals with worms, set their status to infected if at least one of mature worms of each gender,
-    //uninfected if they have mature worms of only one gender and set to exposed otherwise
-    bool HasMale = false;
-    bool HasFemale = false;
-    if(wvec.size() > 0){
-        ch = 'e';
-        for(int i = 0; i < wvec.size(); ++i){
-            if(wvec[i]->status == 'm'){
-                ch = 'u';
-                if(wvec[i]->gender == 'm') HasMale = true;
-                else HasFemale = true;
-                if(HasFemale && HasMale){
-                    ch = 'i';
-                    break;
-                }
-            }
-        }
+    if(InfectiveBites > 0 && epids == 's'){
+        epids = 'e';
     }
-    
-    epids = ch;
     InfectiveBites = 0;
+    
 }
-
 
 void worm::update(){
     if(status == 'p'){ // progress worm's prepatent count-down timer and move onto mature if time is up
@@ -127,12 +110,12 @@ void worm::update(){
     }
     
     if(clock_mda > 0) --clock_mda;
-    else mda_f = 0;
+    else mda_f = 1.0;
     
 }
 
 // update individual's state wrt worms
-void agent::update(){
+void agent::update(int year, int day){
     //update all worms in body
     if(wvec.size() > 0){ //if the person has worms update each worm
         for(int i = 0; i < wvec.size();){
@@ -147,35 +130,46 @@ void agent::update(){
         }
     }
     
-    bool HasMale = false;
-    bool HasFemale = false;
-    double min_mda_f = 1.0;
+    char PrevEpiStatus = epids;
+    
+    bool HasFertileMale = false;
+    bool HasAdult = false;
+    double max_mda_female = 0.0;
     
     //update individual's epi state
     if(wvec.size() == 0){ // if they don't have worms their status is susceptible
         epids = 's';
-        mda_f = 0;
+        mda_f = 1.0;
     }
     else{
-        // if the person has a mated pair of mature worms, set human status to infectious and set the person's mda_f to the minimum of their female worms' mda_f
-        // i.e. the infectiousness of the human is determined by the most fertile mature female worm (smallest mda_f)
+        // if the person has a mated pair of mature fertile worms, set human status to infectious and set the person's mda_f to the maximum of their female worms' mda_f
+        // i.e. the infectiousness of the human is determined by the most fertile mature female worm (largest mda_f)
         // the mda_f for people who aren't infectious doesn't matter and will not reflect their potential fertility of their worms
         for(int i = 0; i < wvec.size(); ++i){
             if(wvec[i]->status == 'm'){
-                if(wvec[i]->gender == 'm') HasMale = true;
+                HasAdult = true;
+                if(wvec[i]->gender == 'm'){
+                    if(wvec[i]->mda_f > 0.0) HasFertileMale = true;
+                }
                 else{
-                    HasFemale = true;
-                    min_mda_f = min(wvec[i]->mda_f, min_mda_f);
+                    max_mda_female = max(wvec[i]->mda_f, max_mda_female);
                 }
             }
-            if(min_mda_f == 0) break;
+            if(max_mda_female == 1.0 && HasFertileMale) break;
         }
-        if(HasMale && HasFemale) epids = 'i'; //if has both genders of mature worms
-        if(HasMale != HasFemale) epids = 'u'; //if only has one gender of mature worms
-        if(!HasMale && !HasFemale) epids = 'e'; // if has no mature worms -- i.e. only prepatent
-        mda_f = min_mda_f;
-        if(epids == 'i' && mda_f > 0) cout << mda_f << endl;
+        bool HasFertileFemale =  max_mda_female > 0.0;
+        if(HasFertileMale && HasFertileFemale) epids = 'i'; //if has both genders of mature and fertile worms
+        if(HasAdult & !(HasFertileMale && HasFertileFemale)) epids = 'u'; //has adult worm(s) but not a fertile male and a fertile female
+        if(!HasAdult) epids = 'e'; // if has no mature worms -- i.e. only prepatent
+        mda_f = max_mda_female;
+        //if(epids == 'i' && mda_f > 0) cout << mda_f << endl;
     }
+    
+    //If their last adult worm has just died record the day this happened
+    if((PrevEpiStatus == 'u' || PrevEpiStatus == 'i') && (epids == 's' || epids == 'e')){
+        LastDayWithAdultWorm = year * 365 + day;
+    }
+    
 }
 
 void agent::get_drugs(drugs drug){
@@ -189,12 +183,12 @@ void agent::get_drugs(drugs drug){
         }
         else if(rr <= drug.KillProb + drug.FullSterProb){ // sterilise worms with probability FullSterProb
             for(int i = 0; i < wvec.size(); ++i){
-                wvec[i]->mda_f = 1.0;
+                wvec[i]->mda_f = 0.0;
             }
         }
-        else if(rr <= drug.KillProb + drug.FullSterProb + drug.PartSterProb){//Partially sterilise worms with probability PartSterProb
+        else if(rr <= drug.KillProb + drug.FullSterProb + drug.PartSterProb){//Partially sterilise (reduce fertility to 1- PartSterMagnitude)  with probability PartSterProb
             for(int i = 0; i < wvec.size(); ++i){
-                wvec[i]->mda_f = max(wvec[i]->mda_f, drug.PartSterMagnitude);
+                wvec[i]->mda_f = min(wvec[i]->mda_f, 1-drug.PartSterMagnitude);
             }
         }
         
@@ -204,8 +198,8 @@ void agent::get_drugs(drugs drug){
                 wvec[i]->clock_mda = int(drug.SterDur * 365); // set count-down timer for the duration of mda effects (only relavant for sterility which is not permanent)
                 
                 if(rr <= drug.KillProb) wvec[i]->status = 'd'; // kill worm with probability KillProb
-                else if(rr <= drug.KillProb + drug.FullSterProb) wvec[i]->mda_f = 1.0; // sterilise worm with probability FullSterProb
-                else if(rr <= drug.KillProb + drug.FullSterProb + drug.PartSterProb) wvec[i]->mda_f = max(wvec[i]->mda_f, drug.PartSterMagnitude); //Partially sterilise worm with probability PartSterProb
+                else if(rr <= drug.KillProb + drug.FullSterProb) wvec[i]->mda_f = 0.0; // sterilise worm with probability FullSterProb
+                else if(rr <= drug.KillProb + drug.FullSterProb + drug.PartSterProb) wvec[i]->mda_f = min(wvec[i]->mda_f, 1-drug.PartSterMagnitude); //Partially sterilise worm with probability PartSterProb
             }
         }
 */
