@@ -59,6 +59,7 @@ int poisson(double rate){
     return distribution(generator);
 }
 
+/*
 int negbinomial(double rate){
     unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
@@ -75,3 +76,4 @@ int L3LarvaePerMos(){
     std::weibull_distribution<double> distribution(0.72666035,3.22927636);
     return int(distribution(generator)) + 1;
 }
+*/

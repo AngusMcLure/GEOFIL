@@ -11,6 +11,8 @@
 extern int SimulationNumber;
 extern unsigned seed;
 extern __iom_t10<char> SimulationDateStr;
+extern string prv_out_loc;
+
 // reset pop prevalence
 void cblok::reset_prv(){
     memset(adult_prv, 0, sizeof(double)*40);
@@ -20,7 +22,6 @@ void cblok::reset_prv(){
     memset(iliili, 0, sizeof(double)*40);
     memset(hhold_prv, 0, sizeof(double)*40);
 }
-extern string prv_out_loc;
 
 // get number of workers
 void cblok::get_works(int year){
@@ -242,62 +243,35 @@ void cblok::get_bbldgarea(int year){
 
 //get LF prevalence by age group
 void cblok::get_epidemics(int year, mda_strat strategy){
-    // initialise counts for number of adults, 6-7 yolds and residents of fagalii and iliili. Note that adult here includes all persons over 15.
-    double n_6_7 = 0;
-    double n_6_9 = 0;
-    double n_11_12 = 0;
-    double n_15_16 = 0;
-    double n_10_and_over = 0;
-    double n_15_and_over = 0;
-    double n_male = 0;
-    double n_female = 0;
-
-    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){ // for each meshblock
-        //Tally by gender
-        n_male += j->second->mblok_males.size();
-        n_female += j->second->mblok_fmals.size();
-        
-        for(map<int, agent*>::iterator k = j->second->mblok_males.begin(); k != j->second->mblok_males.end(); ++k){ // for each male
-            int age = int(k->second->age/365);
-            // add to appropriate tally by age
-            if(age >=15 && age <= 16) ++n_15_16;
-            
-            if(age >= 15) ++n_15_and_over;
-            else if(age >=11 && age <= 12) ++n_11_12;
-            else if(age >=6 && age <= 7) ++n_6_7;
-            
-            if(age >= 10) ++n_10_and_over;
-            if(age >=6 && age <= 9) ++n_6_9;
-        }
-        for(map<int, agent*>::iterator k = j->second->mblok_fmals.begin(); k != j->second->mblok_fmals.end(); ++k){ // for each female
-            int age = int(k->second->age/365);
-            // add to appropriate tally by age
-            if(age >=15 && age <= 16) ++n_15_16;
-            
-            if(age >= 15) ++n_15_and_over;
-            else if(age >=11 && age <= 12) ++n_11_12;
-            else if(age >=6 && age <= 7) ++n_6_7;
-            
-            if(age >= 10) ++n_10_and_over;
-            if(age >=6 && age <= 9) ++n_6_9;
-        }
-    }
     
     //Count residents of these four localities
-    int fagali_mid = mbloksIndexA["Fagalii"];
+    int fagalii_mid = mbloksIndexA["Fagalii"];
     int futiga_mid = mbloksIndexA["Futiga"];
     int iliili_mid = mbloksIndexA["Iliili"];
     int vaitogi_mid = mbloksIndexA["Vaitogi"];
     
     //The residents of iliili are the sum of the residents of Iliili proper, Vaitogi and Futiga
-    double fagalii_residents = 0;
-    double ilili_residents = 0;
-    fagalii_residents += mbloks[fagali_mid]->mblok_fmals.size() + mbloks[fagali_mid]->mblok_males.size();
-    ilili_residents += mbloks[futiga_mid]->mblok_fmals.size() + mbloks[futiga_mid]->mblok_males.size();
-    ilili_residents += mbloks[iliili_mid]->mblok_fmals.size() + mbloks[iliili_mid]->mblok_males.size();
-    ilili_residents += mbloks[vaitogi_mid]->mblok_fmals.size() + mbloks[vaitogi_mid]->mblok_males.size();
-
-
+    double n_fagalii = 0;
+    double n_ilili = 0;
+    n_fagalii += mbloks[fagalii_mid]->mblok_fmals.size() + mbloks[fagalii_mid]->mblok_males.size();
+    n_ilili += mbloks[futiga_mid]->mblok_fmals.size() + mbloks[futiga_mid]->mblok_males.size();
+    n_ilili += mbloks[iliili_mid]->mblok_fmals.size() + mbloks[iliili_mid]->mblok_males.size();
+    n_ilili += mbloks[vaitogi_mid]->mblok_fmals.size() + mbloks[vaitogi_mid]->mblok_males.size();
+    
+    // initialise counts for number of adults, 6-7 yolds and residents of fagalii and iliili. Note that adult here includes all persons over 15.
+    
+    double n_6_7 = 0;
+    double n_6_9 = 0;
+    double n_11_12 = 0;
+    double n_15_16 = 0;
+    double n_8_and_over = 0;
+    double n_8_13 = 0;
+    double n_10_and_over = 0;
+    double n_15_and_over = 0;
+    double n_16_and_over = 0;
+    double n_male = 0;
+    double n_female = 0;
+    
     double inf_6_7 = 0;
     double inf_6_9 = 0;
     double inf_11_12 = 0;
@@ -329,61 +303,134 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     double antigen_pos_fagalii = 0;
     vector<double> antigen_pos_villages;
     antigen_pos_villages.resize(mbloks.size());
-//  map<int, hhold*> vec;
-    
-    for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){ // for each infected individual
-        agent *a =  j->second;
-        int mid = a->h_d->rdg->mbk->mid;
-        
-        // if they live in the key areas, add them to the appropriate tallies
-        if(mid == fagali_mid)
-            ++inf_fagalii;
-        
-        if(mid == futiga_mid || mid == iliili_mid || mid == vaitogi_mid)
-            ++inf_iliili;
-        
-        //Tally by village (all villages)
-        ++inf_villages.at(mid-1);
-        
-        //Add them to the correct tally by age
-        int age = int(a->age/365);
-        if(age >=15 && age <= 16) ++inf_15_16;
-        
-        if(age >= 15) ++inf_15_and_over;
-        else if(age >=11 && age <= 12) ++inf_11_12;
-        else if(age >=6 && age <= 7) ++inf_6_7;
-        
-        if(age >= 10) ++inf_10_and_over;
-        if(age >=6 && age <= 9) ++inf_6_9;
-        
-        //Tally by gender
-        if(a->gendr  == 'm') ++inf_male;
-        if(a->gendr  == 'f') ++inf_female;
 
 
-        //write each infected person's info to line list along with Sim number sim year and seed for batch of sims
-        //a->write_line_list(SimulationNumber, year, seed);
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        mblok *mbk = j->second;
+        int mid = mbk->mid;
+        n_male += j->second->mblok_males.size();
+        n_female += j->second->mblok_fmals.size();
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
+            agent *a = k-> second;
+            int age = int(a->age/365);
+
+            // add to appropriate tally of total population by age
+            if(age >= 6 && age <= 7)++n_6_7;
+            if(age >= 6 && age <= 9)++n_6_9;
+            if(age >= 11 && age <= 12)++n_11_12;
+            if(age >= 15 && age <= 16)++n_15_16;
+            if(age >= 8)++n_8_and_over;
+            if(age >= 8 && age <= 13)++n_8_13;
+            if(age >= 10)++n_10_and_over;
+            if(age >= 15)++n_15_and_over;
+            if(age >= 16)++n_16_and_over;
+            
+            if(a->epids == 'i'){
+                ++inf_villages[j->first - 1];
+                ++inf_male;
+                if(mid == fagalii_mid) ++inf_fagalii;
+                if(mid == futiga_mid || mid == iliili_mid || mid == vaitogi_mid) ++inf_iliili;
+                if(age >= 6 && age <= 7) ++inf_6_7;
+                if(age >= 6 && age <= 9) ++inf_6_9;
+                if(age >= 11 && age <= 12) ++inf_11_12;
+                if(age >= 15 && age <= 16) ++inf_15_16;
+                if(age >= 8) ++inf_8_and_over;
+                if(age >= 8 && age <= 13) ++inf_8_13;
+                if(age >= 10) ++inf_10_and_over;
+                if(age >= 15) ++inf_15_and_over;
+                if(age >= 16) ++inf_16_and_over;
+            }
+            if(a->epids == 'i' || a->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - a->LastDayWithAdultWorm) ){ //all people infected with any number of mature worms or who still have lingering antibodies are counted
+                ++antigen_pos_villages[j->first - 1];
+                ++antigen_pos_male;
+                
+                if(mid == fagalii_mid) ++antigen_pos_fagalii;
+                if(mid == futiga_mid || mid == iliili_mid || mid == vaitogi_mid) ++antigen_pos_iliili;
+                if(age >= 6 && age <= 7) ++antigen_pos_6_7;
+                if(age >= 6 && age <= 9) ++antigen_pos_6_9;
+                if(age >= 11 && age <= 12) ++antigen_pos_11_12;
+                if(age >= 15 && age <= 16) ++antigen_pos_15_16;
+                if(age >= 8) ++antigen_pos_8_and_over;
+                if(age >= 8 && age <= 13) ++antigen_pos_8_13;
+                if(age >= 10) ++antigen_pos_10_and_over;
+                if(age >= 15) ++antigen_pos_15_and_over;
+                if(age >= 16) ++antigen_pos_16_and_over;
+            }
+        }
+        
+        for(map<int, agent*>::iterator k = mbk->mblok_fmals.begin(); k != mbk->mblok_fmals.end(); ++k){
+            agent *a = k-> second;
+            int age = int(a->age/365);
+            
+            // add to appropriate tally of total population by age
+            if(age >= 6 && age <= 7) ++n_6_7;
+            if(age >= 6 && age <= 9) ++n_6_9;
+            if(age >= 11 && age <= 12) ++n_11_12;
+            if(age >= 15 && age <= 16) ++n_15_16;
+            if(age >= 8) ++n_8_and_over;
+            if(age >= 8 && age <= 13) ++n_8_13;
+            if(age >= 10) ++n_10_and_over;
+            if(age >= 15) ++n_15_and_over;
+            if(age >= 16) ++n_16_and_over;
+            
+            if(a->epids == 'i'){
+                ++inf_villages[j->first - 1];
+                ++inf_female;
+                
+                if(mid == fagalii_mid) ++inf_fagalii;
+                if(mid == futiga_mid || mid == iliili_mid || mid == vaitogi_mid) ++inf_iliili;
+                if(age >= 6 && age <= 7) ++inf_6_7;
+                if(age >= 6 && age <= 9) ++inf_6_9;
+                if(age >= 11 && age <= 12) ++inf_11_12;
+                if(age >= 15 && age <= 16) ++inf_15_16;
+                if(age >= 8) ++inf_8_and_over;
+                if(age >= 8 && age <= 13) ++inf_8_13;
+                if(age >= 10) ++inf_10_and_over;
+                if(age >= 15) ++inf_15_and_over;
+                if(age >= 16) ++inf_16_and_over;
+            }
+
+            if(a->epids == 'i' || a->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - a->LastDayWithAdultWorm) ){ //all people infected with any number of mature worms or who still have lingering antibodies are counted
+                ++antigen_pos_villages[j->first - 1];
+                ++antigen_pos_female;
+                
+                if(mid == fagalii_mid) ++antigen_pos_fagalii;
+                if(mid == futiga_mid || mid == iliili_mid || mid == vaitogi_mid) ++antigen_pos_iliili;
+                if(age >= 6 && age <= 7) ++antigen_pos_6_7;
+                if(age >= 6 && age <= 9) ++antigen_pos_6_9;
+                if(age >= 11 && age <= 12) ++antigen_pos_11_12;
+                if(age >= 15 && age <= 16) ++antigen_pos_15_16;
+                if(age >= 8) ++antigen_pos_8_and_over;
+                if(age >= 8 && age <= 13) ++antigen_pos_8_13;
+                if(age >= 10) ++antigen_pos_10_and_over;
+                if(age >= 15) ++antigen_pos_15_and_over;
+                if(age >= 16) ++antigen_pos_16_and_over;
+            }
+        }
     }
-
-
-    for(map<int, agent*>::iterator j = pre_indiv.begin(); j != pre_indiv.end(); ++j){ // for each infected individual
-        agent *a =  j->second;
-        
-        //write each prepatent person's info to line list along with Sim number sim year and seed for batch of sims
-        a->write_line_list(SimulationNumber, year, seed);
-    }
- 
+    /*
+     //write each infected person's info to line list along with Sim number sim year and seed for batch of sims
+     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){ // for each infected individual
+         j->second->write_line_list(SimulationNumber, year, seed);
+     }
+     //write each prepatent person's info to line list along with Sim number sim year and seed for batch of sims
+     for(map<int, agent*>::iterator j = pre_indiv.begin(); j != pre_indiv.end(); ++j){ // for each infected individual
+         j->second->write_line_list(SimulationNumber, year, seed);
+     }
+     */
+     
     
     //Write some summaries to screen to monitor progress of simulations
     cout << endl;
-    cout << year+sim_bg << ": " << "prepatent = " << pre_indiv.size() << " uninfectious = " << uninf_indiv.size() << " infectious = " << inf_indiv.size() << endl;
+    cout << year+sim_bg << ": " << "prepatent = " << pre_indiv.size() << " uninfectious = " << uninf_indiv.size() << " infectious = " << inf_indiv.size() << " antigen positive = " << antigen_pos_female + antigen_pos_male << endl;
     cout << ">=15 years' prevalence = " << fixed << setprecision(2) << inf_15_and_over/(double)n_15_and_over*100 << "%" << endl;
     cout << "6-7 years' prevalence = " << fixed << setprecision(2) << inf_6_7/(double)n_6_7*100 << "%" << endl;
-    cout << "fagalii prevalence = " << fixed << setprecision(2) << inf_fagalii/(double)fagalii_residents*100 << "%" << endl;
-    cout << "iliili prevalence = " << fixed << setprecision(2) << inf_iliili/(double)ilili_residents*100 << "%" << endl;
+    cout << "fagalii prevalence = " << fixed << setprecision(2) << inf_fagalii/(double)n_fagalii*100 << "%" << endl;
+    cout << "iliili prevalence = " << fixed << setprecision(2) << inf_iliili/(double)n_ilili*100 << "%" << endl;
     cout << "overall mf prevalence = " << fixed << setprecision(2) << inf_indiv.size()/(double)cpop*100 << "%" << endl;
-
-
+    
+    
     // write prevalence for the year to file
     // location where prevalence by year will be outputted
     string prv_dat = outdir;    prv_dat = prv_dat + prv_out_loc;
@@ -413,20 +460,40 @@ void cblok::get_epidemics(int year, mda_strat strategy){
         out << "MDAYearsBetweenRounds,";
         out << "Prevalence6_7,";
         out << "Prevalence6_9,";
+        out << "Prevalence8_13,";
         out << "Prevalence11_12,";
         out << "Prevalence15_16,";
+        out << "Prevalence8AndOver,";
         out << "Prevalence10AndOver,";
         out << "Prevalence15AndOver,";
+        out << "Prevalence16AndOver,";
         out << "PrevalenceAll,";
         out << "PrevalenceMale,";
         out << "PrevalenceFemale,";
         for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
             out << "Prevalence" << mbloksIndexB[j -> second -> mid] << ","; //For each village prints "Prevalence<Village Name>,"
         }
+        out << "Prev_Antigen6_7,";
+        out << "Prev_Antigen6_9,";
+        out << "Prev_Antigen8_13,";
+        out << "Prev_Antigen11_12,";
+        out << "Prev_Antigen15_16,";
+        out << "Prev_Antigen8AndOver,";
+        out << "Prev_Antigen10AndOver,";
+        out << "Prev_Antigen15AndOver,";
+        out << "Prev_Antigen16AndOver,";
+        out << "Prev_AntigenAll,";
+        out << "Prev_AntigenMale,";
+        out << "Prev_AntigenFemale,";
+        for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+            out << "Prev_Antigen" << mbloksIndexB[j -> second -> mid] << ","; //For each village prints "Prev_Antigen<Village Name>,"
+        }
         out << "SimulationStartDateTime,";
         out << "AchievedMDACoverage,";
         out << "AchievedMDACoverageMales,";
-        out << "AchievedMDACoverageFemales";
+        out << "AchievedMDACoverageFemales,";
+        out << "ProbOneGender,";
+        out << "ProbBothGender";
         out << endl;
         out.close();
     }
@@ -457,28 +524,49 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     out << strategy.YearsBetweenRounds << ",";
     out << inf_6_7/(double)n_6_7 << ",";
     out << inf_6_9/(double)n_6_9 << ",";
+    out << inf_8_13/(double)n_8_13 << ",";
     out << inf_11_12/(double)n_11_12 << ",";
     out << inf_15_16/(double)n_15_16 << ",";
+    out << inf_8_and_over/(double)n_8_and_over << ",";
     out << inf_10_and_over/(double)n_10_and_over << ",";
     out << inf_15_and_over/(double)n_15_and_over << ",";
+    out << inf_16_and_over/(double)n_16_and_over << ",";
     out << inf_indiv.size()/(double)cpop << ",";
     out << inf_male/(double)n_male << ",";
     out << inf_female/(double)n_female << ",";
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         double n_village = (j -> second -> mblok_fmals).size() + (j -> second -> mblok_males).size();
+        if(n_village==0) out << "NA,"; // there's a chance that populations in small villages might drop to zero - this is to avoid crashes in that situation
+        else out <<  inf_villages[j -> first - 1]/(double)n_village << ",";
+        /*
+         cout << endl << mbloksIndexB[j -> second -> mid] << ":" << endl;
+         cout << "Population: " << n_village << endl;
+         cout << "Infected: " << inf_villages.at((j->second->mid)-1) << endl;
+         */
+    }
+    out << antigen_pos_6_7/(double)n_6_7 << ",";
+    out << antigen_pos_6_9/(double)n_6_9 << ",";
+    out << antigen_pos_8_13/(double)n_8_13 << ",";
+    out << antigen_pos_11_12/(double)n_11_12 << ",";
+    out << antigen_pos_15_16/(double)n_15_16 << ",";
+    out << antigen_pos_8_and_over/(double)n_8_and_over << ",";
+    out << antigen_pos_10_and_over/(double)n_10_and_over << ",";
+    out << antigen_pos_15_and_over/(double)n_15_and_over << ",";
+    out << antigen_pos_16_and_over/(double)n_16_and_over << ",";
+    out << (antigen_pos_male + antigen_pos_female)/(double)cpop << ",";
+    out << antigen_pos_male/(double)n_male << ",";
+    out << antigen_pos_female/(double)n_female << ",";
+    for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
+        double n_village = (j -> second -> mblok_fmals).size() + (j -> second -> mblok_males).size();
         if(n_village==0) out << "NA,"; // there's a chance that populations in small villages might drop to zero - this it to avoid crashes in that situation
-        else out <<  inf_villages.at((j->second->mid)-1)/(double)n_village << ",";
-
-/*
-        cout << endl << mbloksIndexB[j -> second -> mid] << ":" << endl;
-        cout << "Population: " << n_village << endl;
-        cout << "Infected: " << inf_villages.at((j->second->mid)-1) << endl;
-*/
+        else out <<  antigen_pos_villages[j -> first - 1]/(double)n_village << ",";
     }
     out << SimulationDateStr << ",";
     out << achieved_coverage[year] << ",";
     out << achieved_coverage_m[year] << ",";
-    out << achieved_coverage_f[year];
+    out << achieved_coverage_f[year] << ",";
+    out << p_one_sex << ",";
+    out << p_both_sex;
     out << endl;
     out.close();
 }
@@ -598,7 +686,7 @@ void cblok::get_mosquitoes(int year){
             }
         }
     }
-
+    
     map<int, vector<double>> mp;
     for(int i = 0; i < rbldg_ids.size(); ++i){
         rbldg *rg = rbldg_ids[i];
@@ -672,7 +760,7 @@ void cblok::get_mosquitoes(int year){
     data = data + syn_mosquitoes;
     
     ofstream out(data.c_str(), ios::app);
-
+    
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         map<int, vector<double>>::iterator it = mp.find(j->first);
         

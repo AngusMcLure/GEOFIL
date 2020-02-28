@@ -76,7 +76,7 @@
 #define prob_worm_male      0.5            //proportion of worms that are male
 
 #define p_both_sex          0.000440       //0.0000106  //probability that a single bite from an infected mosquito will pass on exactly one worm of each gender that makes it to maturity
-#define p_one_sex           0.00440        //probability that a single bite from an infected mosquito will pass on exactly one worm that makes it to maturity
+#define p_one_sex           0.000000000003        //probability that a single bite from an infected mosquito will pass on exactly one worm that makes it to maturity
 //#define prop_L3_leave_mosquito 0.414
 //#define prop_L3_enter_blood 0.32
 //#define prob_survive_prepatent 0.1          //alternative to the exponential decay model based on the cat model data
@@ -86,6 +86,9 @@
 
 #define min_inf_period      4*365          //minimum time that worms spend infectious (days)
 #define max_inf_period      6*365          //maximum time that worms spend infectious (day)
+
+//how long does antigen linger in people who no longer have adult worms?
+#define DailyProbLoseAntigen 0.992327946   //set so the half-life is 90 days i.e. pow(0.5,1/90)
 
 //initialisation of infections
 #define Init_uninfect_infect_ratio 5.5

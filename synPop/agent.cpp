@@ -31,10 +31,8 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, s
     births = 0;
     bth_wind = 0;
     
-    LastDayWithAdultWorm = std::numeric_limits<int>::min();
+    LastDayWithAdultWorm = - std::numeric_limits<double>::infinity();
 
-    
-    InfectiveBites = 0;
     epids = 's';
     //clock_inf = -1; // this seems to get changed and set a lot, but never actually used for anything of consequence
     mda_f = 1.0;
@@ -65,12 +63,10 @@ void agent::add_child(agent *p){
 // calculate force of infection, considering mosquito exposure,
 // prevalence of infective mosquitoes, and probability of receiving mated worms
 void agent::sim_bites(double prv, char time, double c){
-    
     double pos_inf_bites_rate = c * prv; // mean number of possibly infected bites per period = bites per period * prevalence in mosquitoes
     if(time == 'd') pos_inf_bites_rate *= rb_working; //biting rate day vs night
     else pos_inf_bites_rate *= rb_offwork;
-    InfectiveBites += poisson(pos_inf_bites_rate * (p_both_sex + p_one_sex)); //actual random number of bites from infected mosquitoes
-    
+    int InfectiveBites = poisson(pos_inf_bites_rate * (p_both_sex + p_one_sex)); //actual random number of bites from infected mosquitoes
     
     for(int b = 0; b < InfectiveBites ; ++b){
         int clock_pre = min_pre_period + int(drand48()*(max_pre_period-min_pre_period)); //
@@ -92,9 +88,7 @@ void agent::sim_bites(double prv, char time, double c){
 
     if(InfectiveBites > 0 && epids == 's'){
         epids = 'e';
-    }
-    InfectiveBites = 0;
-    
+    }    
 }
 
 void worm::update(){
