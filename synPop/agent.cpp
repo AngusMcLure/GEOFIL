@@ -77,10 +77,9 @@ void agent::sim_bites(double prv, char time, double c){
             wvec.push_back(new worm('p', clock_pre, active, 'f'));
         }else{
             char gender = 'f';
-            if(drand48() < prob_worm_male){
-                gender = 'm';
-                wvec.push_back(new worm('p', clock_pre, active, gender)); // make a new prepatent worm with prepatent lifetime 'clock_pre' and infectious lifetime 'active' and gender 'gender'
-            }
+            if(drand48() < prob_worm_male) gender = 'm';
+            
+            wvec.push_back(new worm('p', clock_pre, active, gender)); // make a new prepatent worm with prepatent lifetime 'clock_pre' and infectious lifetime 'active' and gender 'gender'
         }
         
     }
