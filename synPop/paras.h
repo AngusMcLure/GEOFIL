@@ -60,27 +60,20 @@
 #define r_r                 100            //risk range, 100m average, Aedes polynesiensis
 #define rb_working          70             //bitten rate per half day
 #define rb_offwork          70
-//#define r_w                 0.1412         //probability of presence of mated worms due to one bite
 
 #define c0_4                0.25           //relative exposure to mosquitos, age 0-4
 #define c5_15               0.75           //relative exposure to mosquitos, age 5-15
 #define s_l3                0.1093         //survive to more than 13 days (L3 larave)
 #define r_i                 0.3881         //infected of mosquitos survive to L3
-//define s_w                0.0005833      //survive to adult worms
 
 //these parameters define how long prepatent worms survive, the percent that die before maturity, the length of prepatency
-//#define survive_dur         75
-//#define survive_prop        0.13
 #define min_pre_period      182            //minimum time that worms spend prepatent (days)
 #define max_pre_period      365            //maximum time that worms spend prepatent (day)
 #define prob_worm_male      0.5            //proportion of worms that are male
 
-#define p_both_sex          0.000440       //0.0000106  //probability that a single bite from an infected mosquito will pass on exactly one worm of each gender that makes it to maturity
-#define p_one_sex           0.000000000003        //probability that a single bite from an infected mosquito will pass on exactly one worm that makes it to maturity
-//#define prop_L3_leave_mosquito 0.414
-//#define prop_L3_enter_blood 0.32
-//#define prob_survive_prepatent 0.1          //alternative to the exponential decay model based on the cat model data
-//#define ztnb_mult           6.003           //multiplicative factor to adjust for the fact that number of larvae from bites from *infected* follows a *zero-truncated* negative binomial distribution but we are assuming it follows a negative binomial distribution
+//#define p_both_sex          0.00035      //0.0000106  //probability that a single bite from an infected mosquito will pass on exactly one worm of each gender that makes it to maturity
+//#define p_one_sex           0.0016      //probability that a single bite from an infected mosquito will pass on exactly one worm that makes it to maturity
+
 
 //how long adult worms survive and produce mf
 
@@ -96,7 +89,7 @@
 
 //epidemic seeds
 //define iter                1
-#define sim_years           11  // duration of simulaiton in years. Note that 2010 to 2035 is 26 years
+#define sim_years           26  // duration of simulaiton in years. Note that 2010 to 2035 is 26 years
 //define coverage            0.8
 //define c_female            0.93
 

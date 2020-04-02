@@ -50,6 +50,8 @@ mda_strat get_nth_mda_strat(string filename, int N)
     p = strtok(NULL, ",");      int MDANumRound = atoi(p);
     p = strtok(NULL, ",");      int MDAYearsBetweenRound = atoi(p);
     p = strtok(NULL, ",");      int NumSims = atoi(p);
+    p = strtok(NULL, ",");      double ProbOneSex = atof(p);
+    p = strtok(NULL, ",");      double ProbBothSex = atof(p);
     delete []str;
     
     drugs drug1 {MDAKillProb1, MDAFullSterProb1, MDAPartSterProb1, MDASterDur1, MDAPartSterMagnitude1};
@@ -60,7 +62,8 @@ mda_strat get_nth_mda_strat(string filename, int N)
     mda_strat strat {MDACoverage,
         drug1, MinAge1,
         drug2, MinAge2,
-        MDAStartYear, MDANumRound, MDAYearsBetweenRound, NumSims};
+        MDAStartYear, MDANumRound, MDAYearsBetweenRound, NumSims,
+        ProbOneSex, ProbBothSex};
     
     
     

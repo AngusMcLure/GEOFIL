@@ -219,7 +219,7 @@ public:
     void hndl_birth(int year, int day);
     void validate_pop(int year, int day);
     void select_schol(agent *p, char level);
-    void calc_risk(int year, int day);
+    void calc_risk(int year, int day, mda_strat strat);
     void risk_loc_day(int year, int day);
     void risk_loc_night(int year, int day);        //time = 'd' or 'n', day/night
     void update_epi_status(int year, int day);

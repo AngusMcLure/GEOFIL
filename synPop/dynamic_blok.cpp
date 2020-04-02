@@ -367,7 +367,7 @@ void cblok::select_schol(agent *p, char level){
 // for each building with infective mosquitoes, buildings in a range centred at the building will be at risk
 // for example, if a school is of infective mosquitoes, it will affect all buildings centred at the school during day
 // and only residential buildings during night (people stay at home during night)
-void cblok::calc_risk(int year, int day){
+void cblok::calc_risk(int year, int day, mda_strat strategy){
     //reset
     for(map<int, rbldg*>::iterator j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j){
         rbldg *rb = j->second;
@@ -394,6 +394,9 @@ void cblok::calc_risk(int year, int day){
     inf_rbldg_night.clear();
     inf_schol.clear();
     inf_workp.clear();
+    
+    double ProbOneSex = strategy.ProbOneSex;
+    double ProbBothSex = strategy.ProbBothSex;
     
     for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){ //for each infected  agent add their contributon to the FOI (via mosquito infection prevalence) to the appropriate buildings day and night
         agent *cur = j->second;
@@ -509,7 +512,7 @@ void cblok::calc_risk(int year, int day){
             int age = int(p->age/365);
             if(age <= 15) c = exposure_by_age[age];
             
-            p->sim_bites(prv, 'd', c);
+            p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex);
             
             //Add new exposure to the list of prepatent agents
             if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
@@ -585,7 +588,7 @@ void cblok::calc_risk(int year, int day){
             if(age <= 15)
                 c = exposure_by_age[age];
             
-            p->sim_bites(prv, 'd', c);
+            p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex);
             
             if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
@@ -657,7 +660,7 @@ void cblok::calc_risk(int year, int day){
             if(age <= 15)
                 c = exposure_by_age[age];
             
-            p->sim_bites(prv, 'd', c);
+            p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex);
             
             if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
@@ -706,7 +709,7 @@ void cblok::calc_risk(int year, int day){
             if(age <= 15)
                 c = exposure_by_age[age];
             
-            p->sim_bites(prv, 'n', c);
+            p->sim_bites(prv, 'n', c, ProbOneSex, ProbBothSex);
             
             if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }

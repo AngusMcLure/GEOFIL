@@ -565,8 +565,8 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     out << achieved_coverage[year] << ",";
     out << achieved_coverage_m[year] << ",";
     out << achieved_coverage_f[year] << ",";
-    out << p_one_sex << ",";
-    out << p_both_sex;
+    out << strategy.ProbOneSex << ",";
+    out << strategy.ProbBothSex;
     out << endl;
     out.close();
 }

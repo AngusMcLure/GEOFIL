@@ -58,12 +58,15 @@ public:
     int YearsBetweenRounds;
     vector<int> MDAYears;
     int NumSims;
+    double ProbOneSex;
+    double ProbBothSex;
 
     
     mda_strat(double C,
               drugs D1, int MA1,
               drugs D2, int MA2,
-              int S, int N, int Y, int NS){
+              int S, int N, int Y, int NS,
+              double POS, double PBS){
         Coverage = C;
         drug1 = D1;
         MinAge1 = MA1;
@@ -78,6 +81,8 @@ public:
             cout << MDAYears[count] << " is a MDA year" << endl;
         }
         NumSims = NS;
+        ProbOneSex = POS;
+        ProbBothSex = PBS;
     }
     
    
@@ -92,6 +97,8 @@ public:
         cout << "NumRounds: " << NumRounds << endl;
         cout << "YearsBetweenRounds: " << YearsBetweenRounds << endl;
         cout << "NumSims: " << NumSims << endl;
+        cout << "ProbOneSex: " << ProbOneSex << endl;
+        cout << "ProbBothSex: " << ProbBothSex << endl;
         cout << endl;
     }
     

@@ -19,7 +19,7 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, s
     this->age = age;
     this->gendr = gendr;
     this->margs = margs;
-   
+    
     this->h_d = h_d;
     this->w_p = w_p;
     this->s_h = s_h;
@@ -32,7 +32,7 @@ agent::agent(int aid, int age, char gendr, char margs, hhold *h_d, workp *w_p, s
     bth_wind = 0;
     
     LastDayWithAdultWorm = - std::numeric_limits<double>::infinity();
-
+    
     epids = 's';
     //clock_inf = -1; // this seems to get changed and set a lot, but never actually used for anything of consequence
     mda_f = 1.0;
@@ -62,16 +62,16 @@ void agent::add_child(agent *p){
 
 // calculate force of infection, considering mosquito exposure,
 // prevalence of infective mosquitoes, and probability of receiving mated worms
-void agent::sim_bites(double prv, char time, double c){
-    double pos_inf_bites_rate = c * prv; // mean number of possibly infected bites per period = bites per period * prevalence in mosquitoes
+void agent::sim_bites(double prv, char time, double c, double ProbOneSex, double ProbBothSex){
+    double pos_inf_bites_rate = c * prv * (ProbBothSex + ProbOneSex); // mean number of possibly infected bites per period = bites per period * prevalence in mosquitoes
     if(time == 'd') pos_inf_bites_rate *= rb_working; //biting rate day vs night
     else pos_inf_bites_rate *= rb_offwork;
-    int InfectiveBites = poisson(pos_inf_bites_rate * (p_both_sex + p_one_sex)); //actual random number of bites from infected mosquitoes
+    int InfectiveBites = poisson(pos_inf_bites_rate); //actual random number of bites from infected mosquitoes
     
     for(int b = 0; b < InfectiveBites ; ++b){
         int clock_pre = min_pre_period + int(drand48()*(max_pre_period-min_pre_period)); //
         int active = min_inf_period + int(drand48()*(max_inf_period-min_inf_period)); //the active period (infectious lifetime) of the worm to be a random uniform between min and max duration
-        if(drand48() < p_both_sex/(p_both_sex + p_one_sex)){
+        if(drand48() < ProbBothSex/(ProbBothSex + ProbOneSex)){
             // make two new prepatent worms, one of each gender, with prepatent lifetimes 'clock_pre' and infectious lifetimes 'active'
             wvec.push_back(new worm('p', clock_pre, active, 'm'));
             wvec.push_back(new worm('p', clock_pre, active, 'f'));
@@ -84,10 +84,10 @@ void agent::sim_bites(double prv, char time, double c){
         
     }
     //If they got at least one infective bite, and they weren't already infected update their epi-status accordingly
-
+    
     if(InfectiveBites > 0 && epids == 's'){
         epids = 'e';
-    }    
+    }
 }
 
 void worm::update(){
@@ -167,35 +167,21 @@ void agent::update(int year, int day){
 
 void agent::get_drugs(drugs drug){
     if(wvec.size() > 0){ // if the person has worms
-        double rr = drand48();
-        
-        if(rr <= drug.KillProb){ // kill worms with probability KillProb
-            for(int i = 0; i < wvec.size(); ++i){
+        double rr = drand48(); //the same thing happens to all a person's worms...
+        for(int i = 0; i < wvec.size(); ++i){
+            wvec[i]->clock_mda = max(wvec[i]->clock_mda,
+                                     int(drug.SterDur * 365)); // set count-down timer for the duration of mda effects. If already sterilised it resets the count-down but makes sure that taking another round of drugs always makes sterilization last longer ('permanent' sterilization is achieved by setting the duration of sterilization for the drug to be greater than the maximum lifetime of a worm in the MDA drug parameters input)
+            if(rr <= drug.KillProb){ // kill worms with probability KillProb
                 wvec[i]->status = 'd';
             }
-        }
-        else if(rr <= drug.KillProb + drug.FullSterProb){ // sterilise worms with probability FullSterProb
-            for(int i = 0; i < wvec.size(); ++i){
+            else if(rr <= drug.KillProb + drug.FullSterProb){ // sterilise worms with probability FullSterProb
                 wvec[i]->mda_f = 0.0;
             }
-        }
-        else if(rr <= drug.KillProb + drug.FullSterProb + drug.PartSterProb){//Partially sterilise (reduce fertility to 1- PartSterMagnitude)  with probability PartSterProb
-            for(int i = 0; i < wvec.size(); ++i){
-                wvec[i]->mda_f = min(wvec[i]->mda_f, 1-drug.PartSterMagnitude);
+            else if(rr <= drug.KillProb + drug.FullSterProb + drug.PartSterProb){//Partially sterilise (reduce fertility to 1- PartSterMagnitude)  with probability PartSterProb
+                wvec[i]->mda_f = min(wvec[i]->mda_f,
+                                     1 - drug.PartSterMagnitude); // makes sure that taking a drug cannot increase the fertility of a worm! A worm that is already partially sterilised by amount X, if they receive the same drug again will still only be sterilised by amount X (but it does extend the duration of sterility -- see above)
             }
         }
-        
-/* Version where each worm has their own independent probability of being killed or sterilised -- here females only, in older versions which only modelled pairs of worms this happenned at the level of pairs of worms
-        for(int i = 0; i < wvec.size(); ++i){
-            if(wvec[i]->gender == 'f'){ // for every female worm
-                wvec[i]->clock_mda = int(drug.SterDur * 365); // set count-down timer for the duration of mda effects (only relavant for sterility which is not permanent)
-                
-                if(rr <= drug.KillProb) wvec[i]->status = 'd'; // kill worm with probability KillProb
-                else if(rr <= drug.KillProb + drug.FullSterProb) wvec[i]->mda_f = 0.0; // sterilise worm with probability FullSterProb
-                else if(rr <= drug.KillProb + drug.FullSterProb + drug.PartSterProb) wvec[i]->mda_f = min(wvec[i]->mda_f, 1-drug.PartSterMagnitude); //Partially sterilise worm with probability PartSterProb
-            }
-        }
-*/
     }
 }
 

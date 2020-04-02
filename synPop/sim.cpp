@@ -62,7 +62,7 @@ void cblok::sim_pop(int year, mda_strat strategy){
     
     for(int day = 0; day < 365; ++day){
         
-        calc_risk(year, day); //Determine who gets infected with new worms today - doesn't update epi status
+        calc_risk(year, day, strategy); //Determine who gets infected with new worms today - doesn't update epi status
         update_epi_status(year, day); //update everyone's LF epi status (including the status of each of their worms)
         renew_pop(year, day); //update demographic aspects of population
         hndl_birth(year, day);
