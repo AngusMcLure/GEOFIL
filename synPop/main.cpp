@@ -21,14 +21,14 @@ unsigned seed;
 auto t = time(nullptr);
 auto tm = *localtime(&t);
 __iom_t10<char> SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
-//string prv_out_loc;
+string prv_out_loc;
 
 
 int main(int argc, const char * argv[]) {
     
     //get location for outputting prevalence data
-    //cout << "Please enter a file name for the output file with annual prevalence reports:";
-    //getline(cin, prv_out_loc);
+    cout << "Please enter a file name for the output file with annual prevalence reports:";
+    getline(cin, prv_out_loc);
     
     char * dir = getcwd(NULL, 0);
     printf("Current dir: %s", dir);

@@ -113,8 +113,6 @@ int L3LarvaePerMos();
 #define parameters              "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/parameters/"
 #define outdir                  "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/output/"
 
-#define prv_out_loc "test.csv"
-
 //define datadir                 "../data/"
 //define config                  "../$config/"
 //define config_pop              "../$config/pop/"

@@ -11,7 +11,7 @@
 extern int SimulationNumber;
 extern unsigned seed;
 extern __iom_t10<char> SimulationDateStr;
-//extern string prv_out_loc;
+extern string prv_out_loc;
 
 // reset pop prevalence
 void cblok::reset_prv(){
