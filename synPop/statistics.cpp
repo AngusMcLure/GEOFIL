@@ -11,7 +11,7 @@
 extern int SimulationNumber;
 extern unsigned seed;
 extern __iom_t10<char> SimulationDateStr;
-extern string prv_out_loc;
+//extern string prv_out_loc;
 
 // reset pop prevalence
 void cblok::reset_prv(){
@@ -493,7 +493,10 @@ void cblok::get_epidemics(int year, mda_strat strategy){
         out << "AchievedMDACoverageMales,";
         out << "AchievedMDACoverageFemales,";
         out << "ProbOneGender,";
-        out << "ProbBothGender";
+        out << "ProbBothGender,";
+        out << "InitType,";
+        out << "InitPrev,";
+        out << "SimYears";
         out << endl;
         out.close();
     }
@@ -566,7 +569,10 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     out << achieved_coverage_m[year] << ",";
     out << achieved_coverage_f[year] << ",";
     out << strategy.ProbOneSex << ",";
-    out << strategy.ProbBothSex;
+    out << strategy.ProbBothSex << ",";
+    out << strategy.InitType << ",";
+    out << strategy.InitPrev << ",";
+    out << strategy.SimYears;
     out << endl;
     out.close();
 }

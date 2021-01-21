@@ -18,28 +18,31 @@ void cblok::sim_pop(int year, mda_strat strategy){
     hndl_jobs(year);
     hndl_schol(year);
     
+    // initialise pop
     if(year == 0){
-/*
-        //Scenario 0
-        for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
-
-                seed_epidemics(0.0005, 15, 100, j->second);
-                seed_epidemics(0.0005/2, 8, 14, j->second);
+        //custom
+        if(strategy.InitType == 'C'){
+            //Scenario 0
+            for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
+                
+                seed_epidemics(strategy.InitPrev, 15, 100, j->second);
+                seed_epidemics(strategy.InitPrev/2, 8, 14, j->second);
+            }
+            //default - based on survey data
+        }else if(strategy.InitType == 'A'){
+            //Scenario A
+            for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
+                if(j->second != "Fagalii"){
+                    seed_epidemics(0.0047, 15, 100, j->second);
+                    seed_epidemics(0.0047/2, 8, 14, j->second);
+                }
+                
+                if(j->second == "Fagalii"){
+                    seed_epidemics(0.0476, 15, 100, "Fagalii");
+                    seed_epidemics(0.0476/2, 8, 14, "Fagalii");
+                }
+            }
         }
-*/
-
-        //Scenario A
-        for(map<int, string>::iterator j = mbloksIndexB.begin(); j != mbloksIndexB.end(); ++j){
-             if(j->second != "Fagalii"){
-             seed_epidemics(0.0047, 15, 100, j->second);
-             seed_epidemics(0.0047/2, 8, 14, j->second);
-             }
-
-             if(j->second == "Fagalii"){
-             seed_epidemics(0.0476, 15, 100, "Fagalii");
-             seed_epidemics(0.0476/2, 8, 14, "Fagalii");
-             }
-         }
     }
     
     achieved_coverage[year] = 0;
@@ -61,9 +64,10 @@ void cblok::sim_pop(int year, mda_strat strategy){
     get_works(year);
     
     for(int day = 0; day < 365; ++day){
-        
-        calc_risk(year, day, strategy); //Determine who gets infected with new worms today - doesn't update epi status
-        update_epi_status(year, day); //update everyone's LF epi status (including the status of each of their worms)
+        if(!(inf_indiv.size() == 0 & pre_indiv.size() == 0 & uninf_indiv.size() == 0)){ //If disease has not been eliminated
+            calc_risk(year, day, strategy); //Determine who gets infected with new worms today - doesn't update epi status
+            update_epi_status(year, day); //update everyone's LF epi status (including the status of each of their worms)
+        }
         renew_pop(year, day); //update demographic aspects of population
         hndl_birth(year, day);
     }
@@ -96,7 +100,8 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                 if(age < 15) ++cchild;
                 
                 if(age >= age_dn && age <= age_up){
-                    if(drand48() <= p){
+                    double r = drand48();
+                    if(r <= p){
                         cur->epids = 'i';
                         //add one mature worms of each gender
                         double worm_life = drand48()*max_inf_period;
@@ -105,7 +110,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                         inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                         cur->h_d->rdg->mbk->sum_mf++;
                     }
-                    else if(drand48() < p * Init_prepatent_infect_ratio){
+                    else if(r < p * (1 + Init_prepatent_infect_ratio)){
                         cur->epids = 'e';
                         //add one prepatent worm of each gender
                         double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
@@ -115,7 +120,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
 
                         pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
                     }
-                    else if(drand48() < p * Init_uninfect_infect_ratio){
+                    else if(r < p * (1 + Init_uninfect_infect_ratio + Init_prepatent_infect_ratio)){
                         cur->epids = 'u';
                         //add one mature worm of one gender
                         double worm_life = drand48() * max_inf_period;
@@ -133,7 +138,8 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                 if(age < 15) ++cchild;
                 
                 if(age >= age_dn && age <= age_up){
-                    if(drand48() <= p){
+                    double r = drand48();
+                    if(r < p){
                         cur->epids = 'i';
                         //add one mature worms of each gender
                         double worm_life = drand48()*max_inf_period;
@@ -142,7 +148,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                         inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                         cur->h_d->rdg->mbk->sum_mf++;
                     }
-                    else if(drand48() < p * Init_prepatent_infect_ratio){
+                    else if(r < p * (1 + Init_prepatent_infect_ratio)){
                         cur->epids = 'e';
                         //add one prepatent worm of each gender
                         double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
@@ -152,7 +158,7 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                         
                         pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
                     }
-                    else if(drand48() < p * Init_uninfect_infect_ratio){
+                    else if(r < p * (1 + Init_uninfect_infect_ratio + Init_prepatent_infect_ratio)){
                         cur->epids = 'u';
                         //add one mature worm of one gender
                         double worm_life = drand48() * max_inf_period;

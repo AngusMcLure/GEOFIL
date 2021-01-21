@@ -7,6 +7,7 @@
 //
 
 #ifndef mda_h
+#include "paras.h"
 #define mda_h
 #include <vector>
 #include <algorithm>
@@ -60,13 +61,17 @@ public:
     int NumSims;
     double ProbOneSex;
     double ProbBothSex;
-
+    char InitType; // C = custom, A = Scenario A
+    double InitPrev; //The initialisation prevalence of Mf-positive people. Only used if InitType == 'C'
+    int SimYears; //Number of Simulation Years
     
     mda_strat(double C,
               drugs D1, int MA1,
               drugs D2, int MA2,
               int S, int N, int Y, int NS,
-              double POS, double PBS){
+              double POS, double PBS,
+              char IT, double IP,
+              int SY){
         Coverage = C;
         drug1 = D1;
         MinAge1 = MA1;
@@ -83,22 +88,28 @@ public:
         NumSims = NS;
         ProbOneSex = POS;
         ProbBothSex = PBS;
+        InitType = IT;
+        InitPrev = IP;
+        SimYears = SY;
     }
     
    
     void print_mda_strat(){
         cout << endl;
-        cout << "Coverage: " << Coverage << endl;
+        cout << "Coverage: " << Coverage * 100 << "%" << endl;
         drug1.print_drugs();
-        cout << "MinAge1: " << MinAge1 << endl;
+        cout << "Min Age 1: " << MinAge1 << endl;
         drug2.print_drugs();
-        cout << "MinAge2: " << MinAge2 << endl;
-        cout << "StartYear: " << StartYear << endl;
-        cout << "NumRounds: " << NumRounds << endl;
-        cout << "YearsBetweenRounds: " << YearsBetweenRounds << endl;
-        cout << "NumSims: " << NumSims << endl;
-        cout << "ProbOneSex: " << ProbOneSex << endl;
-        cout << "ProbBothSex: " << ProbBothSex << endl;
+        cout << "Min Age 2: " << MinAge2 << endl;
+        cout << "MDA Start Year: " << StartYear << endl;
+        cout << "Number of Rounds: " << NumRounds << endl;
+        cout << "Years Between Rounds: " << YearsBetweenRounds << endl;
+        cout << "Number of Simulations: " << NumSims << endl;
+        cout << "Prob One Sex: " << ProbOneSex << endl;
+        cout << "Prob Both Sex: " << ProbBothSex << endl;
+        cout << "Init Type: " << InitType << endl;
+        cout << "Init Prevalence: " << InitPrev * 100 << "%" << endl;
+        cout << "Final Sim Year: " << SimYears + sim_bg - 1 << endl;
         cout << endl;
     }
     
