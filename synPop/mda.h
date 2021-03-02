@@ -58,15 +58,6 @@ public:
     int NumRounds;
     int YearsBetweenRounds;
     vector<int> MDAYears;
-    vector<int> MDAYearstarg;
-    char Ad_MDA;
-    char Ad_Scheme;
-    int Ad_Start;
-    int Ad_Rounds;
-    int Ad_Years;
-    int Ad_N_Buildings;
-    double Ad_C_School;
-    double Ad_C_Workplace;
     int NumSims;
     double ProbOneSex;
     double ProbBothSex;
@@ -77,13 +68,10 @@ public:
     mda_strat(double C,
               drugs D1, int MA1,
               drugs D2, int MA2,
-              int S, int N, int Y,
-              char ADM, char ADS,
-              int AD_S, int AD_N, int AD_Y,
-              int ADNB, double ADCS, double ADCW,
-              int NS, double POS,
-              double PBS,char IT,
-              double IP, int SY){
+              int S, int N, int Y, int NS,
+              double POS, double PBS,
+              char IT, double IP,
+              int SY){
         Coverage = C;
         drug1 = D1;
         MinAge1 = MA1;
@@ -97,19 +85,6 @@ public:
             MDAYears[count] = StartYear + count * YearsBetweenRounds;
             cout << MDAYears[count] << " is a MDA year" << endl;
         }
-        Ad_MDA = ADM;
-        Ad_Scheme = ADS;// What scheme to run
-        Ad_Start = AD_S;//Start year of additional
-        Ad_Rounds = AD_N; //Number of additional
-        Ad_Years = AD_Y; //years between ad rounds
-        MDAYearstarg.resize(Ad_Rounds);
-        for (int i = 0; i<Ad_Rounds; ++i){
-            MDAYearstarg[i] = Ad_Start + i * Ad_Years;
-            cout << MDAYearstarg[i] << " is an targeted MDA year" << endl;
-        }
-        Ad_N_Buildings = ADNB;
-        Ad_C_School = ADCS; //School coverage
-        Ad_C_Workplace = ADCW; //Workplace Coverage
         NumSims = NS;
         ProbOneSex = POS;
         ProbBothSex = PBS;
@@ -141,11 +116,8 @@ public:
     bool is_mda_year(int Year){ // Returns true if given year is an MDA year for the strategy
         return find(MDAYears.begin(), MDAYears.end(), Year) != MDAYears.end();
     }
-
-    bool is_additonal_mda_year(int Year){
-        return find(MDAYearstarg.begin(), MDAYearstarg.end(), Year) != MDAYearstarg.end();
-    }
 };
+
 
 
 

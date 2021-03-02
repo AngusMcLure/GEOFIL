@@ -245,9 +245,7 @@ void cblok::hndl_birth(int year, int day){
         for(int i = 0; i < 7; ++i){
             if(v[i].size() > 0) v_p[i] = live_birth_age_pro[index][i];
             else v_p[i] = 0;
-            //cout << "i: " << i << endl;
-            //cout << "index: " << index << endl;
-            //cout << "livebirthpro: " << live_birth_age_pro[index][i] << endl;
+            
             t_1 += v_p[i];
         }
         
@@ -256,15 +254,9 @@ void cblok::hndl_birth(int year, int day){
         for(int i = 0; i < 7; ++i) v_p[i] /= t_1;
         
         double d_rnd = drand48();
-        //cout << "D_rand ini:" << d_rnd << endl;
         int ii = 0;
         for(ii = 0; ii < 7; ++ii){
-            //cout << "D_rand:" << d_rnd << endl;
-            //cout << "ii " << ii << endl;
-            //cout << v_p[ii] << endl;
-
             d_rnd -= v_p[ii];
-
             if(d_rnd <= 0 && v_p[ii] != 0) break;
         }
         

@@ -7,11 +7,7 @@
 //
 
 #include "block.h"
-#include <omp.h>
-#include <stdio.h>
-#include <cstdlib>
 
-extern unsigned seed;
 extern double max_prv;      // get the max prevalence of infective mosquitoes
 
 // add household p to village
@@ -371,377 +367,353 @@ void cblok::select_schol(agent *p, char level){
 // for each building with infective mosquitoes, buildings in a range centred at the building will be at risk
 // for example, if a school is of infective mosquitoes, it will affect all buildings centred at the school during day
 // and only residential buildings during night (people stay at home during night)
-void cblok::calc_risk(int year, int day, mda_strat strategy) {
-    //resetting building lists back to zero- maybe set this to only occur every 30 days??
-    //only want to run this function if date is one that we want, or else just use old values
-
-    // This section of code creates pointers for each location from the infected buidling map and sets prevlance to zero for night and day
-
-        for (auto const& j : inf_rbldg_night){
-            rbldg *rb = j.second;
-            rb->day_p = 0;
-            rb->night_p = 0;
-        }
-
-        //for(map<int, rbldg*>::iterator j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j){
-        //for (map<int, rbldg*>::iterator j = std::begin(inf_rbldg_night); j != std::end(inf_rbldg_night); j++){
-
-
-
-    for (auto const& j : inf_rbldg_day){
-        rbldg *rb = j.second;
+void cblok::calc_risk(int year, int day, mda_strat strategy){
+    //reset
+    for(map<int, rbldg*>::iterator j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j){
+        rbldg *rb = j->second;
         rb->day_p = 0;
         rb->night_p = 0;
     }
-
-    for (auto const& j : inf_schol){
-        schol *sh = j.second;
+    
+    for(map<int, rbldg*>::iterator j = inf_rbldg_day.begin(); j != inf_rbldg_day.end(); ++j){
+        rbldg *rb = j->second;
+        rb->day_p = 0;
+        rb->night_p = 0;
+    }
+    
+    for(map<int, schol*>::iterator j = inf_schol.begin(); j != inf_schol.end(); ++j){
+        schol *sh = j->second;
         sh->day_p = 0;
     }
-
-    for (auto const& j : inf_workp){
-        workp *wp = j.second;
+    
+    for(map<int, workp*>::iterator j = inf_workp.begin(); j != inf_workp.end(); ++j){
+        workp *wp = j->second;
         wp->day_p = 0;
     }
-
-
     inf_rbldg_day.clear();
     inf_rbldg_night.clear();
     inf_schol.clear();
     inf_workp.clear();
-
-
+    
     double ProbOneSex = strategy.ProbOneSex;
     double ProbBothSex = strategy.ProbBothSex;
-
-    // looping through infected people to find force of infection, for all three locations (home, school and work)
-    for (auto const& j : inf_indiv){//for each infected  agent add their contributon to the FOI (via mosquito infection prevalence) to the appropriate buildings day and night
-        agent *cur = j.second;
+    
+    for(map<int, agent*>::iterator j = inf_indiv.begin(); j != inf_indiv.end(); ++j){ //for each infected  agent add their contributon to the FOI (via mosquito infection prevalence) to the appropriate buildings day and night
+        agent *cur = j->second;
         hhold *hd = cur->h_d;
         rbldg *rb = cur->h_d->rdg;
         schol *sh = cur->s_h;
         workp *wp = cur->w_p;
-
-        int age = int(cur->age / 365); // Age in years
+        
+        int age = int(cur->age/365);
         double c = 1;
+        if(age <= 15) c = exposure_by_age[age];
+        c = c * (cur->mda_f);       //mda_f is the infectiousness of the host. 1 is default. However can be reduced if all female worms are partially sterilised. mda_f is the fertility of the most fertile female (if there are no fertile males then person is in the uninfectious category, so won't come up here)
+        
 
-        if (age <= 15) c = exposure_by_age[age]; //Below 15 exposure read from (exposure_age.csv)
-        c = c * (cur->mda_f);  //mda_f is the infectiousness of the host. 1 is default. However can be reduced if all female worms are partially sterilised. mda_f is the fertility of the most fertile female (if there are no fertile males then person is in the uninfectious category, so won't come up here)
-
-        inf_rbldg_night.insert(pair<int, rbldg *>(rb->bid, rb)); // adding building an
-        //cout << rb->night_p ;
-
-        rb->night_p += c / (double) hd->mmbrs.size(); //Infectivity of household at night and  household size
-
-        if (sh != NULL) {
-            sh->day_p += c / (double) sh->student.size();
-            inf_schol.insert(pair<int, schol *>(sh->sid, sh));
+        
+        inf_rbldg_night.insert(pair<int, rbldg*>(rb->bid, rb));
+        rb->night_p += c/(double)hd->mmbrs.size();
+        if(sh != NULL){
+            sh->day_p += c/(double)sh->student.size();
+            inf_schol.insert(pair<int, schol*>(sh->sid, sh));
         }
-        if (wp != NULL) {
-            wp->day_p += c / (double) wp->workers.size();
-            inf_workp.insert(pair<int, workp *>(wp->wid, wp));
+        if(wp != NULL){
+            wp->day_p += c/(double)wp->workers.size();
+            inf_workp.insert(pair<int, workp*>(wp->wid, wp));
         }
-        if (sh == NULL && wp == NULL) {
+        if(sh == NULL && wp == NULL){
             // count all the people who live their house who don't work or go to school
             int FamAtHome = 0;
-            for (map<int, agent *>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k) {
-                if (k->second->s_h == NULL && k->second->w_p == NULL) ++FamAtHome;
+            for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
+                if(k->second->s_h == NULL && k->second->w_p == NULL) ++FamAtHome;
             }
-            rb->day_p += c / (double) FamAtHome;
-            inf_rbldg_day.insert(pair<int, rbldg *>(rb->bid, rb));
+            rb->day_p += c/(double)FamAtHome;
+            inf_rbldg_day.insert(pair<int, rbldg*>(rb->bid, rb));
         }
     }
-
+    
     //risk at day-time
-
     risk_loc_day(year, day);
-
-
-
+    
     //calculate risk for individuals at risk rbldg
-    for (auto const& j : risk_rbldg){
-        rbldg *r_1 = j.second;
+    for(map<int, rbldg*>::iterator j = risk_rbldg.begin(); j != risk_rbldg.end(); ++j){
+        rbldg *r_1 = j->second;
         hhold *hd = r_1->h_d;
-
-        vector<agent *> r_indiv; //A list of all the retired/unemployed members of the household (who will therefore be home during the day)
+        
+        vector<agent*> r_indiv; //A list of all the retired/unemployed members of the household (who will therefore be home during the day)
         r_indiv.shrink_to_fit();
-        for (auto const& k : hd->mmbrs){
-            agent *p = k.second;
-            if (p->s_h == NULL &&
-                p->w_p == NULL) //if they don't have a school or a workplace then they will be at home
+        for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
+            agent *p = k->second;
+            if(p->s_h == NULL && p->w_p == NULL) //if they don't have a school or a workplace then they will be at home
                 r_indiv.push_back(p);
         }
-        if (r_indiv.size() == 0) continue;
-
+        if(r_indiv.size() == 0) continue;
+        
         //itself
         r_1->t_f = 0;
         r_1->t_f += 1.0;
-
+        
         //r_neigbors
-        for (int i = 0; i < r_1->r_neigh.size(); ++i) {
+        for(int i = 0; i < r_1->r_neigh.size(); ++i){
             rbldg *r_2 = r_1->r_neigh[i];
-            if (r_2->h_d == NULL) continue;
-            r_1->t_f += 1 - r_1->r_neigh_d[i] / r_r;
+            if(r_2->h_d == NULL) continue;
+            r_1->t_f += 1 - r_1->r_neigh_d[i]/r_r;
         }
-
+        
         //s_neigbors
-        for (int i = 0; i < r_1->s_neigh.size(); ++i) {
+        for(int i = 0; i < r_1->s_neigh.size(); ++i){
             schol *sh = r_1->s_neigh[i];
-            if (sh->student.size() == 0) continue;
-            r_1->t_f += 1 - r_1->s_neigh_d[i] / r_r;
+            if(sh->student.size() == 0) continue;
+            r_1->t_f += 1 - r_1->s_neigh_d[i]/r_r;
         }
-
+        
         //w_neigbors
-        for (int i = 0; i < r_1->w_neigh.size(); ++i) {
+        for(int i = 0; i < r_1->w_neigh.size(); ++i){
             workp *wp = r_1->w_neigh[i];
-            if (wp->workers.size() == 0) continue;
-            r_1->t_f += 1 - r_1->w_neigh_d[i] / r_r;
+            if(wp->workers.size() == 0) continue;
+            r_1->t_f += 1 - r_1->w_neigh_d[i]/r_r;
         }
-
+        
         //calculate prevalence
         double prv = 0;
         double f = 1.0 / r_1->t_f;
         prv += f * r_1->day_p;
-        for (int i = 0; i < r_1->r_neigh.size(); ++i) {
+        for(int i = 0; i < r_1->r_neigh.size(); ++i){
             rbldg *r_2 = r_1->r_neigh[i];
-            if (r_2->h_d == NULL) continue;
-
-            f = (1 - r_1->r_neigh_d[i] / r_r) / r_1->t_f;
+            if(r_2->h_d == NULL) continue;
+            
+            f = (1 - r_1->r_neigh_d[i]/r_r) / r_1->t_f;
             prv += f * r_2->day_p;
         }
-
-        for (int i = 0; i < r_1->s_neigh.size(); ++i) {
+        
+        for(int i = 0; i < r_1->s_neigh.size(); ++i){
             schol *sh = r_1->s_neigh[i];
-            if (sh->student.size() == 0) continue;
-            f = (1 - r_1->s_neigh_d[i] / r_r) / r_1->t_f;
+            if(sh->student.size() == 0) continue;
+            f = (1 - r_1->s_neigh_d[i]/r_r) / r_1->t_f;
             prv += f * sh->day_p;
         }
-
-        for (int i = 0; i < r_1->w_neigh.size(); ++i) {
+        
+        for(int i = 0; i < r_1->w_neigh.size(); ++i){
             workp *wp = r_1->w_neigh[i];
-            if (wp->workers.size() == 0) continue;
-            f = (1 - r_1->w_neigh_d[i] / r_r) / r_1->t_f;
+            if(wp->workers.size() == 0) continue;
+            f = (1 - r_1->w_neigh_d[i]/r_r) / r_1->t_f;
             prv += f * wp->day_p;
         }
-
+        
         prv *= (r_i * s_l3); //account for probability that exposed mosquitos survive to become infectious
-        if (max_prv < prv) max_prv = prv; //keep track of which building has the maximum prevalence
-
-        for (int i = 0; i < r_indiv.size(); ++i) {
+        if(max_prv < prv) max_prv = prv; //keep track of which building has the maximum prevalence
+        
+        for(int i = 0; i < r_indiv.size(); ++i){
             agent *p = r_indiv[i];
             char ps = p->epids;
-
+            
             double c = 1;
-            int age = int(p->age / 365);
-            if (age <= 15) c = exposure_by_age[age];
-
+            int age = int(p->age/365);
+            if(age <= 15) c = exposure_by_age[age];
+            
             p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex);
-
+            
             //Add new exposure to the list of prepatent agents
-            if (ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent *>(p->aid, p));
+            if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
-
+        
         r_indiv.clear();
         r_indiv.shrink_to_fit();
     }
-
-    for (auto const& j : risk_schol){
-        schol *sh = j.second;
-
+    
+    for(map<int, schol*>::iterator j = risk_schol.begin(); j != risk_schol.end(); ++j){
+        schol *sh = j->second;
+        
         //itself
         sh->t_f = 0;
         sh->t_f += 1.0;
-
+        
         //r_neigbors
-        for (int i = 0; i < sh->r_neigh.size(); ++i) {
+        for(int i = 0; i < sh->r_neigh.size(); ++i){
             rbldg *r_2 = sh->r_neigh[i];
-            if (r_2->h_d == NULL) continue;
-            sh->t_f += 1 - sh->r_neigh_d[i] / r_r;
+            if(r_2->h_d == NULL) continue;
+            sh->t_f += 1 - sh->r_neigh_d[i]/r_r;
         }
-
+        
         //s_neigbors
-        for (int i = 0; i < sh->s_neigh.size(); ++i) {
+        for(int i = 0; i < sh->s_neigh.size(); ++i){
             schol *s_2 = sh->s_neigh[i];
-            if (s_2->student.size() == 0) continue;
-            sh->t_f += 1 - sh->s_neigh_d[i] / r_r;
+            if(s_2->student.size() == 0) continue;
+            sh->t_f += 1 - sh->s_neigh_d[i]/r_r;
         }
-
+        
         //w_neigbors
-        for (int i = 0; i < sh->w_neigh.size(); ++i) {
+        for(int i = 0; i < sh->w_neigh.size(); ++i){
             workp *wp = sh->w_neigh[i];
-            if (wp->workers.size() == 0) continue;
-            sh->t_f += 1 - sh->w_neigh_d[i] / r_r;
+            if(wp->workers.size() == 0) continue;
+            sh->t_f += 1 - sh->w_neigh_d[i]/r_r;
         }
-
+        
         //calculate prevalence
         double prv = 0;
         double f = 1.0 / sh->t_f;
         prv += f * sh->day_p;
-        for (int i = 0; i < sh->r_neigh.size(); ++i) {
+        for(int i = 0; i < sh->r_neigh.size(); ++i){
             rbldg *r_2 = sh->r_neigh[i];
-            if (r_2->h_d == NULL) continue;
-
-            f = (1 - sh->r_neigh_d[i] / r_r) / sh->t_f;
+            if(r_2->h_d == NULL) continue;
+            
+            f = (1 - sh->r_neigh_d[i]/r_r) / sh->t_f;
             prv += f * r_2->day_p;
         }
-
-        for (int i = 0; i < sh->s_neigh.size(); ++i) {
+        
+        for(int i = 0; i < sh->s_neigh.size(); ++i){
             schol *s_2 = sh->s_neigh[i];
-            if (s_2->student.size() == 0) continue;
-            f = (1 - sh->s_neigh_d[i] / r_r) / sh->t_f;
+            if(s_2->student.size() == 0) continue;
+            f = (1 - sh->s_neigh_d[i]/r_r) / sh->t_f;
             prv += f * s_2->day_p;
         }
-
-        for (int i = 0; i < sh->w_neigh.size(); ++i) {
+        
+        for(int i = 0; i < sh->w_neigh.size(); ++i){
             workp *wp = sh->w_neigh[i];
-            if (wp->workers.size() == 0) continue;
-            f = (1 - sh->w_neigh_d[i] / r_r) / sh->t_f;
+            if(wp->workers.size() == 0) continue;
+            f = (1 - sh->w_neigh_d[i]/r_r) / sh->t_f;
             prv += f * wp->day_p;
         }
-
+        
         prv *= (r_i * s_l3);
-        if (max_prv < prv) max_prv = prv;
-
-        for (auto const& k : sh->student){
-            agent *p = k.second;
+        if(max_prv < prv) max_prv = prv;
+        
+        for(map<int, agent*>::iterator k = sh->student.begin(); k != sh->student.end(); ++k){
+            agent *p = k->second;
             char ps = p->epids;
-
+            
             double c = 1;
-            int age = int(p->age / 365);
-            if (age <= 15)
+            int age = int(p->age/365);
+            if(age <= 15)
                 c = exposure_by_age[age];
-
+            
             p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex);
-
-            if (ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent *>(p->aid, p));
+            
+            if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
     }
-
-    for (auto const& j : risk_workp){
-        workp *wp = j.second;
-
+    
+    for(map<int, workp*>::iterator j = risk_workp.begin(); j != risk_workp.end(); ++j){
+        workp *wp = j->second;
+        
         //itself
         wp->t_f = 0;
         wp->t_f += 1.0;
-
+        
         //r_neigbors
-        for (int i = 0; i < wp->r_neigh.size(); ++i) {
+        for(int i = 0; i < wp->r_neigh.size(); ++i){
             rbldg *r_2 = wp->r_neigh[i];
-            if (r_2->h_d == NULL) continue;
-            wp->t_f += 1 - wp->r_neigh_d[i] / r_r;
+            if(r_2->h_d == NULL) continue;
+            wp->t_f += 1 - wp->r_neigh_d[i]/r_r;
         }
-
+        
         //s_neigbors
-        for (int i = 0; i < wp->s_neigh.size(); ++i) {
+        for(int i = 0; i < wp->s_neigh.size(); ++i){
             schol *s_2 = wp->s_neigh[i];
-            if (s_2->student.size() == 0) continue;
-            wp->t_f += 1 - wp->s_neigh_d[i] / r_r;
+            if(s_2->student.size() == 0) continue;
+            wp->t_f += 1 - wp->s_neigh_d[i]/r_r;
         }
-
+        
         //w_neigbors
-        for (int i = 0; i < wp->w_neigh.size(); ++i) {
+        for(int i = 0; i < wp->w_neigh.size(); ++i){
             workp *w_2 = wp->w_neigh[i];
-            if (w_2->workers.size() == 0) continue;
-            wp->t_f += 1 - wp->w_neigh_d[i] / r_r;
+            if(w_2->workers.size() == 0) continue;
+            wp->t_f += 1 - wp->w_neigh_d[i]/r_r;
         }
-
+        
         //calculate prevalence
         double prv = 0;
         double f = 1.0 / wp->t_f;
         prv += f * wp->day_p;
-        for (int i = 0; i < wp->r_neigh.size(); ++i) {
+        for(int i = 0; i < wp->r_neigh.size(); ++i){
             rbldg *r_2 = wp->r_neigh[i];
-            if (r_2->h_d == NULL) continue;
-
-            f = (1 - wp->r_neigh_d[i] / r_r) / wp->t_f;
+            if(r_2->h_d == NULL) continue;
+            
+            f = (1 - wp->r_neigh_d[i]/r_r) / wp->t_f;
             prv += f * r_2->day_p;
         }
-
-        for (int i = 0; i < wp->s_neigh.size(); ++i) {
+        
+        for(int i = 0; i < wp->s_neigh.size(); ++i){
             schol *s_2 = wp->s_neigh[i];
-            if (s_2->student.size() == 0) continue;
-            f = (1 - wp->s_neigh_d[i] / r_r) / wp->t_f;
+            if(s_2->student.size() == 0) continue;
+            f = (1 - wp->s_neigh_d[i]/r_r) / wp->t_f;
             prv += f * s_2->day_p;
         }
-
-        for (int i = 0; i < wp->w_neigh.size(); ++i) {
+        
+        for(int i = 0; i < wp->w_neigh.size(); ++i){
             workp *w_2 = wp->w_neigh[i];
-            if (w_2->workers.size() == 0) continue;
-            f = (1 - wp->w_neigh_d[i] / r_r) / wp->t_f;
+            if(w_2->workers.size() == 0) continue;
+            f = (1 - wp->w_neigh_d[i]/r_r) / wp->t_f;
             prv += f * w_2->day_p;
         }
-
+        
         prv *= (r_i * s_l3);
-        if (max_prv < prv) max_prv = prv;
-
-        for (auto const& k : wp->workers){
-            agent *p = k.second;
+        if(max_prv < prv) max_prv = prv;
+        
+        for(map<int, agent*>::iterator k = wp->workers.begin(); k != wp->workers.end(); ++k){
+            agent *p = k->second;
             char ps = p->epids;
-
+            
             double c = 1;
-            int age = int(p->age / 365);
-            if (age <= 15)
+            int age = int(p->age/365);
+            if(age <= 15)
                 c = exposure_by_age[age];
-
+            
             p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex);
-
-            if (ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent *>(p->aid, p));
+            
+            if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
     }
-
+    
     //risk at night-time
     risk_loc_night(year, day);
-
+    
     //calculate risk for individuals at risk rbldg
-
-    for (auto const& j : risk_rbldg){
-        rbldg *r_1 = j.second;
+    for(map<int, rbldg*>::iterator j = risk_rbldg.begin(); j != risk_rbldg.end(); ++j){
+        rbldg *r_1 = j->second;
         hhold *hd = r_1->h_d;
-
+        
         //itself
         r_1->t_f = 0;
         r_1->t_f += 1.0;
-
+        
         //r_neigbors
-        for (int i = 0; i < r_1->r_neigh.size(); ++i) {
+        for(int i = 0; i < r_1->r_neigh.size(); ++i){
             rbldg *r_2 = r_1->r_neigh[i];
-            if (r_2->h_d == NULL) continue;
-            r_1->t_f += 1 - r_1->r_neigh_d[i] / r_r;
+            if(r_2->h_d == NULL) continue;
+            r_1->t_f += 1 - r_1->r_neigh_d[i]/r_r;
         }
-
+        
         //calculate prevalence
         double prv = 0;
         double f = 1.0 / r_1->t_f;
         prv += f * r_1->night_p;
-        for (int i = 0; i < r_1->r_neigh.size(); ++i) {
+        for(int i = 0; i < r_1->r_neigh.size(); ++i){
             rbldg *r_2 = r_1->r_neigh[i];
-            if (r_2->h_d == NULL) continue;
-
-            f = (1 - r_1->r_neigh_d[i] / r_r) / r_1->t_f;
+            if(r_2->h_d == NULL) continue;
+            
+            f = (1 - r_1->r_neigh_d[i]/r_r) / r_1->t_f;
             prv += f * r_2->night_p;
         }
-
+        
         prv *= (r_i * s_l3);
-        if (max_prv < prv) max_prv = prv;
-
-        for (auto const& k : hd->mmbrs){
-            agent *p = k.second;
+        if(max_prv < prv) max_prv = prv;
+        
+        for(map<int, agent*>::iterator k = hd->mmbrs.begin(); k != hd->mmbrs.end(); ++k){
+            agent *p = k->second;
             char ps = p->epids;
-
+            
             double c = 1;
-            int age = int(p->age / 365);
-            if (age <= 15)
+            int age = int(p->age/365);
+            if(age <= 15)
                 c = exposure_by_age[age];
-
+            
             p->sim_bites(prv, 'n', c, ProbOneSex, ProbBothSex);
-
-            if (ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent *>(p->aid, p));
-
+            
+            if(ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent*>(p->aid, p));
         }
     }
-
-
-
 }
 
 // calculate the buildings at risk during day
@@ -749,73 +721,69 @@ void cblok::risk_loc_day(int year, int day){
     risk_rbldg.clear();
     risk_schol.clear();
     risk_workp.clear();
-    //#pragma omp parallel for
-
-    for (auto const& j : inf_rbldg_day){
-        rbldg *r_1 = j.second;
+    
+    for(map<int, rbldg*>::iterator j = inf_rbldg_day.begin(); j != inf_rbldg_day.end(); ++j){
+        rbldg *r_1 = j->second;
         risk_rbldg.insert(pair<int, rbldg*>(r_1->bid, r_1));
-
-
-            for(int i = 0; i < r_1->r_neigh.size(); ++i){       //add household
-                rbldg *r_2 = r_1->r_neigh[i];
-                if(r_2->h_d == NULL) continue;
-                risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
-            }
-
-            for(int i = 0; i < r_1->s_neigh.size(); ++i){       //add school
-                schol *sh = r_1->s_neigh[i];
-                if(sh->student.size() == 0) continue;
-                risk_schol.insert(pair<int, schol*>(sh->sid, sh));
-            }
-
-            for(int i = 0; i < r_1->w_neigh.size(); ++i){       //add workplace
-                workp *wp = r_1->w_neigh[i];
-                if(wp->workers.size() == 0) continue;
-                risk_workp.insert(pair<int, workp*>(wp->wid, wp));
-            }
+        
+        for(int i = 0; i < r_1->r_neigh.size(); ++i){       //add household
+            rbldg *r_2 = r_1->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
+        }
+        
+        for(int i = 0; i < r_1->s_neigh.size(); ++i){       //add school
+            schol *sh = r_1->s_neigh[i];
+            if(sh->student.size() == 0) continue;
+            risk_schol.insert(pair<int, schol*>(sh->sid, sh));
+        }
+        
+        for(int i = 0; i < r_1->w_neigh.size(); ++i){       //add workplace
+            workp *wp = r_1->w_neigh[i];
+            if(wp->workers.size() == 0) continue;
+            risk_workp.insert(pair<int, workp*>(wp->wid, wp));
+        }
     }
-    //#pragma omp parallel for
-
-    for (auto const& j : inf_schol){
-    schol *s_1 = j.second;
-    risk_schol.insert(pair<int, schol*>(s_1->sid, s_1));
-
-    for(int i = 0; i < s_1->r_neigh.size(); ++i){       //add household
-        rbldg *r_2 = s_1->r_neigh[i];
-        if(r_2->h_d == NULL) continue;
-        risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
+    
+    for(map<int, schol*>::iterator j = inf_schol.begin(); j != inf_schol.end(); ++j){
+        schol *s_1 = j->second;
+        risk_schol.insert(pair<int, schol*>(s_1->sid, s_1));
+        
+        for(int i = 0; i < s_1->r_neigh.size(); ++i){       //add household
+            rbldg *r_2 = s_1->r_neigh[i];
+            if(r_2->h_d == NULL) continue;
+            risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
+        }
+        
+        for(int i = 0; i < s_1->s_neigh.size(); ++i){       //add school
+            schol *s_2 = s_1->s_neigh[i];
+            if(s_2->student.size() == 0) continue;
+            risk_schol.insert(pair<int, schol*>(s_2->sid, s_2));
+        }
+        
+        for(int i = 0; i < s_1->w_neigh.size(); ++i){       //add workplace
+            workp *wp = s_1->w_neigh[i];
+            if(wp->workers.size() == 0) continue;
+            risk_workp.insert(pair<int, workp*>(wp->wid, wp));
+        }
     }
-
-    for(int i = 0; i < s_1->s_neigh.size(); ++i){       //add school
-        schol *s_2 = s_1->s_neigh[i];
-        if(s_2->student.size() == 0) continue;
-        risk_schol.insert(pair<int, schol*>(s_2->sid, s_2));
-    }
-
-    for(int i = 0; i < s_1->w_neigh.size(); ++i){       //add workplace
-        workp *wp = s_1->w_neigh[i];
-        if(wp->workers.size() == 0) continue;
-        risk_workp.insert(pair<int, workp*>(wp->wid, wp));
-    }
-    }
-    //#pragma omp parallel for
-
-    for (auto const& j : inf_workp){
-        workp *w_1 = j.second;
+    
+    for(map<int, workp*>::iterator j = inf_workp.begin(); j != inf_workp.end(); ++j){
+        workp *w_1 = j->second;
         risk_workp.insert(pair<int, workp*>(w_1->wid, w_1));
-
+        
         for(int i = 0; i < w_1->r_neigh.size(); ++i){       //add household
             rbldg *r_2 = w_1->r_neigh[i];
             if(r_2->h_d == NULL) continue;
             risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
         }
-
+        
         for(int i = 0; i < w_1->s_neigh.size(); ++i){       //add school
             schol *sh = w_1->s_neigh[i];
             if(sh->student.size() == 0) continue;
             risk_schol.insert(pair<int, schol*>(sh->sid, sh));
         }
-
+        
         for(int i = 0; i < w_1->w_neigh.size(); ++i){       //add workplace
             workp *wp = w_1->w_neigh[i];
             if(wp->workers.size() == 0) continue;
@@ -825,41 +793,15 @@ void cblok::risk_loc_day(int year, int day){
 }
 
 // calculate the buildings at risk during night
-/*void cblok::risk_loc_night(int year, int day){
-    risk_rbldg.clear();
-    risk_schol.clear();
-    risk_workp.clear();
-    //#pragma omp parallel for
-
-    #pragma omp parallel
-    {
-        size_t cnt = 0;
-        int ithread = omp_get_thread_num();
-        int nthreads = omp_get_num_threads();
-
-        for (auto j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j, cnt++) {
-            if (cnt % nthreads != ithread) continue;
-            rbldg *r_1 = j->second;
-            risk_rbldg.insert(pair<int, rbldg*>(r_1->bid, r_1));
-
-            for(int i = 0; i < r_1->r_neigh.size(); ++i){       //add household
-                rbldg *r_2 = r_1->r_neigh[i];
-                if(r_2->h_d == NULL) continue;
-                risk_rbldg.insert(pair<int, rbldg*>(r_2->bid, r_2));
-            }
-        }
-    }
-}
-*/
 void cblok::risk_loc_night(int year, int day){
     risk_rbldg.clear();
     risk_schol.clear();
     risk_workp.clear();
-
+    
     for(map<int, rbldg*>::iterator j = inf_rbldg_night.begin(); j != inf_rbldg_night.end(); ++j){
         rbldg *r_1 = j->second;
         risk_rbldg.insert(pair<int, rbldg*>(r_1->bid, r_1));
-
+        
         for(int i = 0; i < r_1->r_neigh.size(); ++i){       //add household
             rbldg *r_2 = r_1->r_neigh[i];
             if(r_2->h_d == NULL) continue;
@@ -867,18 +809,14 @@ void cblok::risk_loc_night(int year, int day){
         }
     }
 }
+
 // update epidemic status in AS
 void cblok::update_epi_status(int year, int day){
     //update the worms in each person with worms and update their epidemic status accordingly.
     //To stop people who go from prepatent to uninfected or infected or from uninfected to infected from getting updated twice, we keep track of the 'ChangedEpiToday' attribute indicating whether they have been updated today yet
-    //Need to include the variable timestep
-
     for(map<int, agent*>::iterator j = pre_indiv.begin(); j != pre_indiv.end();){
-
         agent *p = j->second;
-
         p->update(year, day);
-
         if(p->epids != 'e'){
             p->ChangedEpiToday = true;
             pre_indiv.erase(j++);
@@ -957,7 +895,7 @@ void cblok::validate_pop(int year, int day){
                 exit(1);
             }
         }
-
+        
         for(map<int, hhold*>::iterator k = mbk->mblok_hholds.begin(); k != mbk->mblok_hholds.end(); ++k){
             hhold *cur = k->second;
             if(cur->rdg == NULL){
@@ -1064,434 +1002,4 @@ void cblok::implement_MDA(int year, mda_strat strat){
     achieved_coverage[year] = (treat_m + treat_f)/(double)cpop;
     achieved_coverage_m[year] = treat_m/(double)n_males;
     achieved_coverage_f[year] = treat_f/(double)n_females;
-}
-
-void cblok::selective_MDA(int year, mda_strat strat) {
-    /*
-     * Need to decide best way to choose who gets MDA, lots of schemes we can use to analyse pop
-     * First iteration going to look at 21 random villages and then treat everyone in said villages
-     * Then want to to do the same but check Antigen status
-     * Possibly then look at school children - would be nice to have different built in regimes
-     * Could also target known villages where there is high prev
-     *
-     */
-
-    //This section we are choosing who we gets the MDA
-    char scheme;
-    scheme = toupper(strat.Ad_Scheme);
-
-    string village_output;
-    village_output = "../output/targeted_villages.txt";
-
-    if (scheme == 'R') {
-        cout << "Targeting Randomly Selected Villages" << endl;
-        int tot_villages = mbloks.size();
-        vector<unsigned> keys; // Vector that is used to choose the villages that we want (keys for the map of villages)
-
-        for (unsigned int i = 0; i < tot_villages; ++i) //Filling vector with numbers from 1-number of villages
-        {
-            keys.push_back(i + 1);
-        }
-
-        random_shuffle(keys.begin(),
-                       keys.end()); // Randomising the vector to give random villages and selecting the desired number
-        keys.resize(strat.Ad_N_Buildings); // Number of villages we want to look at
-
-        cout << "Randomly Selected Villages: " << endl;
-        for (auto const &i : keys) {
-            cout << mbloksIndexB[i] << endl;
-        }
-
-        village_mda(year, strat, keys);
-
-        //saving villages used
-        ofstream fout;
-        fout.open(village_output, ios::out | ios::app);
-        fout << seed << endl;
-        fout << 2009+ year << '\n';
-        fout << "Scheme: " << scheme <<'\n';
-        for(auto const& i: keys){
-            fout << mbloksIndexB[i] << '\n';
-        }
-        fout << '\n';
-        fout.close();
-    }
-
-    if (scheme == 'P') {
-        cout<<"Targeting " << strat.Ad_N_Buildings << " Villages with Highest Prev" << endl;
-        int tot_villages = mbloks.size();
-        vector<unsigned> keys; // Vector that is used to choose the villages that we want (keys for the map of villages)
-
-        multimap<double, int, greater<double>> inf_villages;
-
-        int village_number = 1;
-        double vill_prev, num_people, num_inf;
-
-        for (auto const &i : mbloks) {
-            num_people = 0;
-            num_inf = 0;
-            for (auto const &j : i.second->mblok_males) {
-                ++num_people;
-                if (j.second->epids == 'i') {
-                    ++num_inf;
-                }
-            }
-            for (auto const &j : i.second->mblok_fmals) {
-                ++num_people;
-                if (j.second->epids == 'i') {
-                    ++num_inf;
-                }
-            }
-            vill_prev = num_inf / num_people;
-            inf_villages.insert(make_pair(vill_prev, village_number)); //going to sort by prev
-            //inf_villages.insert(make_pair(village_number,num_inf)); //going to sort by number infected
-            ++village_number;
-        }
-
-
-        for (auto const& i : inf_villages){
-            keys.push_back(i.second);
-        }
-        keys.resize(strat.Ad_N_Buildings);
-
-        cout << strat.Ad_N_Buildings << " with highest prev are: " << endl;
-        for (auto const& i : keys){
-            cout << mbloksIndexB[i] << endl;
-        }
-    village_mda(year, strat, keys);
-    //saving villages used
-    ofstream fout;
-    fout.open(village_output, ios::out | ios::app);
-    fout << seed << endl;
-    fout << 2009+ year << '\n';
-    fout << "Scheme: " << scheme <<'\n';
-    for(auto const& i: keys){
-        fout << mbloksIndexB[i] << '\n';
-    }
-    fout << '\n';
-    fout.close();
-    }
-
-
-    if (scheme == 'S') {
-        cout << "Targetting Households of Positive TAS Children" << endl;
-        map<unsigned, vector<unsigned>> mda_houses;
-        vector<unsigned> houses;
-
-        for (auto const &i : mbloks) { //looping through villages
-
-            for (auto const &j : i.second->mblok_hholds) { //looping through households
-                    //j.second->rdg->r_neigh.
-                for (auto const &k: j.second->mmbrs) { // looping through household members
-                    double year_age;
-                    year_age = k.second->age / 365; //the age of household member
-
-                    if (year_age >= 6 && year_age <= 70 &&
-                        k.second->epids == 'i') { //if household member is of tas age and infected
-
-                        if (drand48() <= strat.Ad_C_School) {
-                            houses.push_back(j.first); // storing household that will recieve mda
-                            goto household_loop;
-                        } else { //this household will not recieve MDA (assuming if dont want one child wont change mind for multiple
-                            goto household_loop;
-                        }
-                    }
-                }
-                household_loop:;
-            }
-            if (houses.size() > 0) {
-                mda_houses[i.first] = houses;
-            }
-            houses.clear();
-
-        }
-
-        cout << "Number of Villages with MDA: " << mda_houses.size() << endl;
-        household_mda(year, strat, mda_houses);
-    }
-
-    if (scheme == 'W'){
-        cout<<"Targeting " << strat.Ad_N_Buildings << " Workplaces with Highest Prev" << endl;
-        //currently setup to treat n work places with most infections
-        multimap<unsigned, pair<unsigned,unsigned>, greater<>> mda_workplaces;
-        pair<unsigned, unsigned> vil_and_w_id;
-
-
-        for (auto const& i : mbloks){ //villages
-            for (auto const& j : i.second->mblok_workps){ //places of work
-                int infected_workers = 0;
-                for (auto const& k : j.second->workers){ //workers
-                    if (k.second->epids=='i')
-                        ++ infected_workers;
-                }
-                vil_and_w_id.first = i.first; // village_id
-                vil_and_w_id.second = j.first; //workplace id
-                mda_workplaces.insert(make_pair(infected_workers,vil_and_w_id));
-            }
-        }
-        mda_workplaces.erase(prev(mda_workplaces.end(), mda_workplaces.size()-strat.Ad_N_Buildings), mda_workplaces.end());
-        workplace_mda(year, strat, mda_workplaces);
-    }
-
-}
-
-void cblok::village_mda(int year, mda_strat strat, vector<unsigned>keys){
-
-    int under_min_age1 = 0;
-    int child_bearing_age_women = 0;
-    int under_nine_months = 0;
-
-    int n_males = 0;
-    int n_females = 0;
-
-    int treat_m = 0; //number of males treated this year
-    int treat_f = 0; //number of females treated this year
-
-
-    for (auto const& i: keys){
-        n_males += mbloks[i]->mblok_males.size();
-        n_females += mbloks[i]->mblok_fmals.size();
-
-        for (auto const& k: mbloks[i]->mblok_males){ // Males in selected villages
-            double age = k.second->age/365.0;
-            if(age<0.75) ++under_nine_months; // Count number of recent births
-            if(age < strat.MinAge1){
-                ++under_min_age1; // Count number of people under the lowest age group (these will get no drugs)
-            }
-        }
-
-        for (auto const& k: mbloks[i]->mblok_fmals){
-            double age = k.second->age/365.0;
-            if(age<0.75) ++under_nine_months; // Count number of recent births (proxy estimate of number of women currntly pregnant)
-            if(age < strat.MinAge1){
-                ++under_min_age1; // Count number of people under the lowest age group (these will get no drugs)
-            }else if(age>=15 && age<49) ++child_bearing_age_women;
-        }
-    }
-
-    double target_pop = n_males + n_females;
-
-    double target_prop = 1 - (under_min_age1 + under_nine_months)/target_pop;
-    cout << "Target prop: " << target_prop << endl;
-    double prop_preg_childbearing = under_nine_months/(double)child_bearing_age_women; //estimates the number of women that are pregnant now by the number of infants under 9 months now
-
-    for (auto const& i : keys){
-        for (auto const& k : mbloks[i]->mblok_males){
-            double age = k.second->age/365.0;
-            if(drand48() <= strat.Coverage/(double)target_prop) {
-                if (age >= strat.MinAge1) {
-                    if (age >= strat.MinAge2) {
-                        k.second->get_drugs(
-                                strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
-                    } else {
-                        k.second->get_drugs(
-                                strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
-                    }
-                    ++treat_m;
-                }
-            }
-        }
-        for (auto const& k : mbloks[i]->mblok_fmals){
-            double age = k.second->age/365.0;
-            if(age >= 49 || age < 15){ //non child-bearing age
-                if(drand48() <= strat.Coverage/(double)target_prop){
-                    if(age >= strat.MinAge1){
-                        if(age >= strat.MinAge2){
-                            k.second->get_drugs(strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
-                        }else{
-                            k.second->get_drugs(strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
-                        }
-                        ++treat_f;
-                    }
-                }
-            } else if(drand48() <= (1-prop_preg_childbearing) * strat.Coverage/(double)target_prop){ // for women of child-bearing age
-                if(age >= strat.MinAge1){
-                    if(age >= strat.MinAge2){
-                        k.second->get_drugs(strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
-                    }else{
-                        k.second->get_drugs(strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
-                    }
-                    ++treat_f;
-                }
-            }
-        }
-    }
-
-    // The actually achieved coverage proportions
-    achieved_coverage[year] = (treat_m + treat_f)/(double)target_pop;
-    achieved_coverage_m[year] = treat_m/(double)n_males;
-    achieved_coverage_f[year] = treat_f/(double)n_females;
-}
-
-void cblok::household_mda(int year, mda_strat strat, map<unsigned, vector<unsigned>> mda_houses){
-
-    int under_min_age1 = 0;
-    int child_bearing_age_women = 0;
-    int under_nine_months = 0;
-
-    int n_pop = 0;
-    int n_houses = 0;
-
-    int treat_ed = 0; //number of males treated this year
-
-    for (auto const& i: mda_houses){ //villages
-        for (auto const& j : i.second ){ //households in said village
-            ++n_houses;
-            n_pop += mbloks[i.first]->mblok_hholds[j]->size;
-            for (auto const& k : mbloks[i.first]->mblok_hholds[j]->mmbrs){
-                double age = k.second->age/365.0;
-                if(age<0.75) ++under_nine_months;
-                if(age < strat.MinAge1) {
-                    ++under_min_age1;
-                }
-                else if (k.second->gendr == 'f' && age>=15 && age<49) {
-                    ++child_bearing_age_women;
-                }
-            }
-        }
-    }
-
-    cout <<"Number of Houses with MDA: " << n_houses << endl;
-    cout <<"Number of People with MDA: " << n_pop << endl;
-
-    double target_prop = 1 - (under_min_age1 + under_nine_months)/n_pop;
-    double prop_preg_childbearing = under_nine_months/(double)child_bearing_age_women; //estimates the number of women that are pregnant now by the number of infants under 9 months now
-    cout << "Proportion of woman who are pregnant: " << prop_preg_childbearing << endl;
-
-    for (auto const& i : mda_houses){ //villages
-        for (auto const& j : i.second){ //households
-            for (auto const& k : mbloks[i.first]->mblok_hholds[j]->mmbrs){// members of said household
-                double age = k.second->age/365.0; //age of person- assuming everyone will be getting MDA as if willing to get tested will take MDA can easily include noncompliance
-                if (k.second->gendr=='m'){
-                    if (age >= strat.MinAge1){
-                        if (age >= strat.MinAge2){
-                            k.second->get_drugs(strat.drug2);
-                        } else {
-                            k.second->get_drugs(strat.drug1);
-                        }
-                        ++treat_ed;
-                    }
-                }
-                if (k.second->gendr=='f'){
-                    if(age >= 49 || age < 15){ //non child-bearing age
-                        if(age >= strat.MinAge1){
-                            if(age >= strat.MinAge2){
-                                k.second->get_drugs(strat.drug2);
-                            }else{
-                                k.second->get_drugs(strat.drug1);
-                            }
-                            ++treat_ed;
-                        }
-                    } else if(drand48() <= (1-prop_preg_childbearing)){ // for women of child-bearing age
-                        if(age >= strat.MinAge1){
-                            if(age >= strat.MinAge2){
-                                k.second->get_drugs(strat.drug2);
-                            }else{
-                                k.second->get_drugs(strat.drug1);
-                            }
-                            ++treat_ed;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-
-    // The actually achieved coverage proportions
-    achieved_coverage[year] = (treat_ed)/(double)n_pop;
-    achieved_coverage_m[year] = treat_ed/(double)n_pop;
-    achieved_coverage_f[year] = treat_ed/(double)n_pop;
-}
-
-void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, pair<unsigned, unsigned>, greater<>> mda_workplaces){
-    int under_min_age1 = 0;
-    int child_bearing_age_women = 0;
-    int under_nine_months = 0;
-
-
-    int n_pop = 0;
-    int n_males = 0;
-    int n_females = 0;
-
-    int treat_m = 0; //number of males treated this year
-    int treat_f = 0; //number of females treated this year
-
-
-    for (auto const& i: mda_workplaces){//villages
-        n_pop += mbloks[i.second.first]->mblok_workps[i.second.second]->workers.size(); //number of workers
-
-
-        for (auto const& j: mbloks[i.second.first]->mblok_workps[i.second.second]->workers){
-            double age = j.second->age/365.0;
-
-            if(age<0.75) ++under_nine_months;
-            if(age < strat.MinAge1) {
-                ++under_min_age1;
-            }
-            else if (j.second->gendr == 'f' && age>=15 && age<49) {
-                ++child_bearing_age_women;
-            }
-
-        }
-
-    }
-
-
-    double target_prop = 1 - (under_min_age1 + under_nine_months)/n_pop;
-    cout << "Target prop: " << target_prop << endl;
-    double prop_preg_childbearing = under_nine_months/(double)child_bearing_age_women; //estimates the number of women that are pregnant now by the number of infants under 9 months now
-
-    for (auto const& i : mda_workplaces){
-        for (auto const& j : mbloks[i.second.first]->mblok_workps[i.second.second]->workers){
-            double age = j.second->age/365.0;
-
-            if(j.second->gendr=='m'){
-                if(drand48() <= strat.Ad_C_Workplace/(double)target_prop) {
-                    if (age >= strat.MinAge1) {
-                        if (age >= strat.MinAge2) {
-                            j.second->get_drugs(
-                                    strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
-                        } else {
-                            j.second->get_drugs(
-                                    strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
-                        }
-                        ++treat_m;
-                    }
-                }
-            }
-
-            if(j.second->gendr=='f'){
-                if(age >= 49 || age < 15){ //non child-bearing age
-                    if(drand48() <= strat.Ad_C_Workplace/(double)target_prop){
-                        if(age >= strat.MinAge1){
-                            if(age >= strat.MinAge2){
-                                j.second->get_drugs(strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
-                            }else{
-                                j.second->get_drugs(strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
-                            }
-                            ++treat_f;
-                        }
-                    }
-                } else if(drand48() <= (1-prop_preg_childbearing) * strat.Ad_C_Workplace/(double)target_prop) { // for women of child-bearing age
-                    if (age >= strat.MinAge1) {
-                        if (age >= strat.MinAge2) {
-                            j.second->get_drugs(
-                                    strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
-                        } else {
-                            j.second->get_drugs(
-                                    strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
-                        }
-                        ++treat_f;
-                    }
-                }
-            }
-        }
-    }
-
-    // The actually achieved coverage proportions
-    achieved_coverage[year] = (treat_m + treat_f)/(double)n_pop;
-    achieved_coverage_m[year] = treat_m/(double)n_pop;
-    achieved_coverage_f[year] = treat_f/(double)n_pop;
 }

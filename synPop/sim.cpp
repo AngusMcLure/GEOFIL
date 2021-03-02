@@ -52,14 +52,7 @@ void cblok::sim_pop(int year, mda_strat strategy){
         implement_MDA(year, strategy);
         cout << endl << year+sim_bg << " is a MDA year" << endl;
     }
-
-    if(toupper(strategy.Ad_MDA) == 'Y') {
-
-        if (strategy.is_additonal_mda_year(year + sim_bg)) {
-            selective_MDA(year, strategy);
-            cout << endl << year + sim_bg << " is a targeted MDA year" << endl;
-        }
-    }
+    
     
     
     get_epidemics(year,strategy); //write epidemic status summary to screen and linelist to csv
@@ -69,12 +62,11 @@ void cblok::sim_pop(int year, mda_strat strategy){
     cout << "year = " << year+sim_bg << " cpop = " << cpop << endl;
     get_students(year);
     get_works(year);
-
+    
     for(int day = 0; day < 365; ++day){
-        if(!(inf_indiv.size() == 0 & pre_indiv.size() == 0 & uninf_indiv.size() == 0)) { //If disease has not been eliminated
+        if(!(inf_indiv.size() == 0 & pre_indiv.size() == 0 & uninf_indiv.size() == 0)){ //If disease has not been eliminated
             calc_risk(year, day, strategy); //Determine who gets infected with new worms today - doesn't update epi status
             update_epi_status(year, day); //update everyone's LF epi status (including the status of each of their worms)
-
         }
         renew_pop(year, day); //update demographic aspects of population
         hndl_birth(year, day);
