@@ -226,6 +226,10 @@ public:
     void seed_epidemics(double p, int age_dn, int age_up, string village = "all");
     
     void implement_MDA(int year, mda_strat strat);
+    void selective_MDA(int year, mda_strat strat);
+    void village_mda(int year, mda_strat strat, vector<unsigned> keys);
+    void household_mda(int year, mda_strat strat, map<unsigned, vector<unsigned>> mda_houses);
+    void workplace_mda(int year, mda_strat strat, multimap<unsigned, pair<unsigned, unsigned>, greater<>> mda_workplaces);
     double achieved_coverage[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
     double achieved_coverage_m[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
     double achieved_coverage_f[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
