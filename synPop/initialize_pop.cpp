@@ -7,7 +7,6 @@
 //
 
 #include "block.h"
-
 using namespace std;
 
 // Constructor of AS
@@ -70,9 +69,7 @@ cblok::cblok(int cid, string cname, double lat, double log){
             
             //out population
             file = config_pop;  file = file + mbk_str;  file = file + "_pop.init";
-
-
-
+            
             out.open(file.c_str());
             out << "ID,age,gender,marriage,births" << endl;
             for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
@@ -1386,6 +1383,9 @@ void cblok::hndl_land_data(){
             char *p = std::strtok(str, ",");    int sid = atoi(p);
             p = std::strtok(NULL, ",");         string name = p;
             p = std::strtok(NULL, ",");         char level = p[0];
+            p = std::strtok(NULL, ",");         double log = atof(p);
+            p = std::strtok(NULL, ",");         double lat = atof(p);
+            
             schol *sh = new schol(sid, name, level, log, lat);
             cblok_schols.push_back(sh);
             

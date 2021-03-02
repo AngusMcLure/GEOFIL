@@ -188,7 +188,7 @@ void agent::get_drugs(drugs drug){
 // Write linelist for person to file
 void agent::write_line_list(int SimNum, int y, int s){
     // location where line list data by year will be outputted
-    string line_list = outdir;    line_list = line_list + "population.csv";
+    string line_list = outdir;    line_list = line_list + "line_list.csv";
     
     ofstream out;   ifstream in;
     in.open(line_list.c_str()); // try opening the target for output

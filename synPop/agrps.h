@@ -10,7 +10,6 @@
 #define agrps_h
 #include <vector>
 #include "paras.h"
-#include <cstring>
 using namespace std;
 
 // age groups

@@ -104,15 +104,24 @@ int L3LarvaePerMos();
 
 //files ----------------------------------------------------------------------------------
 //paths
+#define datadir                 "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/data/"
+#define config                  "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/"
+#define config_pop              "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/pop/"
+#define config_hhold            "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/hold/"
+#define config_unit             "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/unit/"
+#define config_bldg             "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/$config/bldg/"
+#define parameters              "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/parameters/"
+#define outdir                  "/Users/angus/Google Drive/Angus/Work/Active/LF/synPop/output/"
 
-#define datadir                 "../data/"
-#define config                  "../$config/"
-#define config_pop              "../$config/pop/"
-#define config_hhold            "../$config/hold/"
-#define config_unit             "../$config/unit/"
-#define config_bldg             "../$config/bldg/"
-#define parameters              "../parameters/"
-#define outdir                  "../output/"
+//define datadir                 "../data/"
+//define config                  "../$config/"
+//define config_pop              "../$config/pop/"
+//define config_hhold            "../$config/hold/"
+//define config_unit             "../$config/unit/"
+//define config_bldg             "../$config/bldg/"
+//define parameters              "../parameters/"
+//define outdir                  "../output/"
+
 
 //parameters
 #define fertility               "fertility.csv"
