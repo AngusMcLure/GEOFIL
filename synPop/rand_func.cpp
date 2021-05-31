@@ -14,7 +14,7 @@ using namespace std;
 //      switch out all the other random number generators being used for the modern equivalents (i.e. replace rand48, rand, others?)
 
 //functions to generate random numbers with different distributions
-double gaussian(double m_mu, double s_sigma){
+double gaussian(double m_mu, double s_sigma){ //Currently unused so not updated
     unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
     std::normal_distribution<double> distribution(m_mu, s_sigma);
@@ -42,7 +42,13 @@ double ztpoisson(int k, double l_lambda){
     }
     return p;
 }
-
+/*
+ * Binomial only used when generating custom populations
+ * therefore not currently in use and function called before
+ * the simulation loop, hence would require a larger reworking
+ * to ensure that the distribution is using the same random
+ * number generator
+ */
 int binomial(int r, double p){
 	unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
@@ -51,12 +57,10 @@ int binomial(int r, double p){
     return distribution(generator);
 }
 
-int poisson(double rate){
-    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator (seed);
-    std::poisson_distribution<int> distribution(rate);
-    
-    return distribution(generator);
+int poisson(double rate, default_random_engine* generator_path){
+    poisson_distribution<int> distribution(rate);
+
+    return distribution(*generator_path);
 }
 
 /*

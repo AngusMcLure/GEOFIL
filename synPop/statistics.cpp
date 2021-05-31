@@ -10,7 +10,7 @@
 
 extern int SimulationNumber;
 extern unsigned seed;
-extern __iom_t10<char> SimulationDateStr;
+//extern __iom_t10<char> SimulationDateStr;
 extern string prv_out_loc;
 
 // reset pop prevalence
@@ -564,7 +564,7 @@ void cblok::get_epidemics(int year, mda_strat strategy){
         if(n_village==0) out << "NA,"; // there's a chance that populations in small villages might drop to zero - this it to avoid crashes in that situation
         else out <<  antigen_pos_villages[j -> first - 1]/(double)n_village << ",";
     }
-    out << SimulationDateStr << ",";
+    out << 9999999 << ","; //output instead of the simulation date as does not run on linux
     out << achieved_coverage[year] << ",";
     out << achieved_coverage_m[year] << ",";
     out << achieved_coverage_f[year] << ",";

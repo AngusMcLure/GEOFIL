@@ -9,6 +9,7 @@
 #ifndef agrps_h
 #define agrps_h
 #include <vector>
+#include <cstring>
 #include "paras.h"
 using namespace std;
 

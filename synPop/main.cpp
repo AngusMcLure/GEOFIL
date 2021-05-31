@@ -20,7 +20,7 @@ int SimulationNumber;
 unsigned seed;
 auto t = time(nullptr);
 auto tm = *localtime(&t);
-__iom_t10<char> SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
+//__iom_t10<char> SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S"); Does not run on linux, replaced in output with 99999
 string prv_out_loc;
 
 
@@ -58,19 +58,21 @@ int main(int argc, const char * argv[]) {
             // Set random seeds -- I am getting a new seed for each simulation so that each simulation is reproducible (rather than having to run the whole batch to reproduce)
             seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
             srand(seed);
-            std::default_random_engine generator(seed);
             srand48(seed);
-            
+            default_random_engine  generator(seed);
+            default_random_engine* generator_path;
+            generator_path = &generator;
+
             SimulationNumber = i+1;
             auto t = time(nullptr);
             auto tm = *localtime(&t);
-            SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
+            //SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
             
             cbk->reset_cpop();
             cbk->reset_prv();
             
             for(int year = 0; year < strategy.SimYears; ++year){ // for each year
-                cbk->sim_pop(year,strategy);
+                cbk->sim_pop(year,strategy, generator_path);
             }
         }
     }

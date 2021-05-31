@@ -11,7 +11,7 @@
 double max_prv;     // max prevalence of infective mosquitoes
 
 // simulate the population & transmission
-void cblok::sim_pop(int year, mda_strat strategy){
+void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generator_path){
     
     max_prv = 0;
     
@@ -65,7 +65,7 @@ void cblok::sim_pop(int year, mda_strat strategy){
     
     for(int day = 0; day < 365; ++day){
         if(!(inf_indiv.size() == 0 & pre_indiv.size() == 0 & uninf_indiv.size() == 0)){ //If disease has not been eliminated
-            calc_risk(year, day, strategy); //Determine who gets infected with new worms today - doesn't update epi status
+            calc_risk(year, day, strategy, generator_path); //Determine who gets infected with new worms today - doesn't update epi status
             update_epi_status(year, day); //update everyone's LF epi status (including the status of each of their worms)
         }
         renew_pop(year, day); //update demographic aspects of population

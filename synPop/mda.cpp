@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstring>
 #include "mda.h"
 using namespace std;
 
