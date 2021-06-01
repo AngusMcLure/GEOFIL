@@ -14,15 +14,11 @@
 
 using namespace std;
 
-
-// Simulation number and random seed are made global so that they can be accessed for writing data to files from across the program -- shouldn't be too difficult to rework to pass them through but it's a job...
 int SimulationNumber;
 unsigned seed;
 auto t = time(nullptr);
 auto tm = *localtime(&t);
-//__iom_t10<char> SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S"); Does not run on linux, replaced in output with 99999
 string prv_out_loc;
-
 
 int main(int argc, const char * argv[]) {
     
