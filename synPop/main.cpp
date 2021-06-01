@@ -1,4 +1,4 @@
-//
+////
 //  main.cpp
 //  synPop
 //
@@ -14,11 +14,17 @@
 
 using namespace std;
 
+
+// Simulation number and random seed are made global so that they can be accessed for writing data to files from across the program -- shouldn't be too difficult to rework to pass them through but it's a job...
 int SimulationNumber;
 unsigned seed;
 auto t = time(nullptr);
 auto tm = *localtime(&t);
+
+//_Put_time<char> SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
+//__iom_t10<char> SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
 string prv_out_loc;
+
 
 int main(int argc, const char * argv[]) {
     
@@ -29,32 +35,51 @@ int main(int argc, const char * argv[]) {
     char * dir = getcwd(NULL, 0);
     printf("Current dir: %s", dir);
     cout << endl;
-    
     // contructor of AS, if no config pop data avaiable, synthetic generation will be called to generate pop
     // otherwise, the function will read pop config data to contruct the pop
+
     cblok *cbk = new cblok(as_cid, "American Samoa", as_lat, as_long);
-    
+
     string data = outdir;
     data = data + syn_mosquitoes;
-    
     ofstream out(data.c_str());
     for(map<int, mblok*>::iterator j = cbk->mbloks.begin(); j != cbk->mbloks.end(); ++j){
         out << cbk->mbloksIndexB[j->first] << ",";
     }
     out << endl;
     out.close();
-    
+
+    string TargettedMDA = parameters; TargettedMDA = TargettedMDA + TMDA;
     string MDAScenarioLoc = parameters; MDAScenarioLoc = MDAScenarioLoc + MDAParams;
+
     int NumMDAScenarios = count_mda_scenarios(MDAScenarioLoc);
     cout << "There are " << NumMDAScenarios << " scenarios" << endl;
+
     for(int ScenarioCount = 0; ScenarioCount<NumMDAScenarios; ++ScenarioCount){
         mda_strat strategy = get_nth_mda_strat(MDAScenarioLoc,ScenarioCount+1);
         strategy.print_mda_strat();
+
+        if (toupper(strategy.Targetted)=='Y'){
+            //have to work out number of desired teams and build them
+            int n_teams = count_teams(TargettedMDA);
+            cout << "Targeted MDA Selected With "<< n_teams << " Teams Selected" << endl;
+
+            for (int i = 0; i < n_teams; i++ ){ //buidling teams
+                vector<double> teamdata;
+                teamdata = get_targeted(TargettedMDA, i+1);
+                targeted_mda* p = NULL;
+                p = new targeted_mda(i+1,teamdata[0],teamdata[1],teamdata[2],teamdata[3],teamdata[4],teamdata[5],teamdata[6]);
+                strategy.MDA_Teams.push_back(p);
+
+            }
+        }
         for(int i = 0; i < strategy.NumSims; ++i){ // for every simulation
             // Set random seeds -- I am getting a new seed for each simulation so that each simulation is reproducible (rather than having to run the whole batch to reproduce)
+
             seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
             srand(seed);
             srand48(seed);
+
             default_random_engine  generator(seed);
             default_random_engine* generator_path;
             generator_path = &generator;
@@ -68,6 +93,7 @@ int main(int argc, const char * argv[]) {
             cbk->reset_prv();
             
             for(int year = 0; year < strategy.SimYears; ++year){ // for each year
+                cout << "Year is: " << year << endl;
                 cbk->sim_pop(year,strategy, generator_path);
             }
         }

@@ -21,6 +21,8 @@
 #include <set>
 #include <map>
 
+using namespace std;
+
 #define sim_bg              2010
 #define sim_nd              2050
 #define unit_types          5
@@ -92,7 +94,7 @@
 #define sim_years           26  // duration of simulaiton in years. Note that 2010 to 2035 is 26 years
 //define coverage            0.8
 //define c_female            0.93
-using namespace std;
+
 //functions
 int ztpoisson(double l_lambda);
 int binomial(int r, double p);
@@ -114,7 +116,6 @@ int L3LarvaePerMos();
 #define parameters              "../parameters/"
 #define outdir                  "../output/"
 
-
 //parameters
 #define fertility               "fertility.csv"
 #define net_pop_loss            "net_migrants.csv"
@@ -123,6 +124,7 @@ int L3LarvaePerMos();
 #define labor_force_pp_rate     "LFPRs.csv"
 #define exposure_age            "exposure_age.csv"
 #define MDAParams               "MDAParams.csv"
+#define TMDA                    "target_mda.csv"
 
 //demographics
 #define villages                "villages.dat"

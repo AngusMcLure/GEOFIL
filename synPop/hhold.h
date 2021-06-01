@@ -40,10 +40,14 @@ struct unit{
 class hhold{
 public:
     int hid;                            //hhold id
+    int villagid;
     int size;
     
-    bool exp;                           //hhold expanding
-    
+    bool exp;//hhold expanding
+
+    int mda = 0; // keep track if mda has been done on house already
+
+
     double lat, log;
     double area;
     rbldg *rdg;

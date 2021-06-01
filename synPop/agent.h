@@ -46,7 +46,7 @@ public:
 };
 
 // human individual
-class agent{
+class agent{ //TODO make classes to neaten up properties and aid readability for targeted drug admin
 public:
     int aid;
     int age;        //in days

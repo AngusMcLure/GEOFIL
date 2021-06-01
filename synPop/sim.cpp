@@ -7,17 +7,18 @@
 //
 
 #include "block.h"
+#include "mda.h"
+
 
 double max_prv;     // max prevalence of infective mosquitoes
 
 // simulate the population & transmission
 void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generator_path){
-    
     max_prv = 0;
-    
+
     hndl_jobs(year);
     hndl_schol(year);
-    
+
     // initialise pop
     if(year == 0){
         //custom
@@ -44,33 +45,56 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
             }
         }
     }
-    
+
     achieved_coverage[year] = 0;
     achieved_coverage_m[year] = 0;
     achieved_coverage_f[year] = 0;
+
     if(strategy.is_mda_year(year+sim_bg)){
         implement_MDA(year, strategy);
         cout << endl << year+sim_bg << " is a MDA year" << endl;
     }
-    
-    
-    
+
+    if(toupper(strategy.Ad_MDA) == 'Y') {
+
+        if (strategy.is_additonal_mda_year(year + sim_bg)) {
+            selective_MDA(year, strategy);
+            cout << endl << year + sim_bg << " is a targeted MDA year" << endl;
+        }
+    }
+
+
+
+
     get_epidemics(year,strategy); //write epidemic status summary to screen and linelist to csv
     get_cpop(year); //write population breakdown by age group to csv (seems to overwrite with each new simulation?)
     get_sexratiob(year);
-    
+
     cout << "year = " << year+sim_bg << " cpop = " << cpop << endl;
     get_students(year);
     get_works(year);
-    
+
     for(int day = 0; day < 365; ++day){
-        if(!(inf_indiv.size() == 0 & pre_indiv.size() == 0 & uninf_indiv.size() == 0)){ //If disease has not been eliminated
+        if(!(inf_indiv.empty() & pre_indiv.empty() & uninf_indiv.empty())) { //If disease has not been eliminated
             calc_risk(year, day, strategy, generator_path); //Determine who gets infected with new worms today - doesn't update epi status
             update_epi_status(year, day); //update everyone's LF epi status (including the status of each of their worms)
+
         }
         renew_pop(year, day); //update demographic aspects of population
         hndl_birth(year, day);
+
+
+        for (auto const& x : strategy.MDA_Teams){
+            if (year+sim_bg > x->start_year & year+sim_bg < (x->start_year+x->years)){
+                continuous_mda(year, day, strategy, x);
+            }
+        }
+        mda_countdown();
+
     }
+
+    cout << "List of villages" << endl;
+
     if(year == 6) get_mosquitoes(year);
     
     //test mda

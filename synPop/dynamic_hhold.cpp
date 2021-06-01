@@ -13,6 +13,7 @@
 
 // Constructor of household, with id, size, householder
 hhold::hhold(int hid, int size, agent *holder){
+    //this->villageid=villageid;
     this->hid = hid;
     this->size = size;
     hldr = holder;
