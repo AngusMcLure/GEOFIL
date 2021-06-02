@@ -63,7 +63,8 @@ void agent::add_child(agent *p){
 // calculate force of infection, considering mosquito exposure,
 // prevalence of infective mosquitoes, and probability of receiving mated worms
 void agent::sim_bites(double prv, char time, double c, double ProbOneSex, double ProbBothSex, default_random_engine* generator_path){
-    double pos_inf_bites_rate = c * prv * (ProbBothSex + ProbOneSex); // mean number of possibly infected bites per period = bites per period * prevalence in mosquitoes
+    double gamma = 0.72; //factor to tune model and give realistic infections- poisson far too high otherwise
+    double pos_inf_bites_rate = gamma * c * prv * (ProbBothSex + ProbOneSex); // mean number of possibly infected bites per period = bites per period * prevalence in mosquitoes
     if(time == 'd') pos_inf_bites_rate *= rb_working; //biting rate day vs night
     else pos_inf_bites_rate *= rb_offwork;
     int InfectiveBites = poisson(pos_inf_bites_rate, generator_path); //actual random number of bites from infected mosquitoes

@@ -1,3 +1,5 @@
 
 output
 synPop\.xcodeproj
+parameters/MDAParams.csv
+synPop/main
