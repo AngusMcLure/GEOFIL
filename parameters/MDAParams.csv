@@ -1,2 +1,2 @@
 Coverage,KillProb1,FullSterProb1,PartSterProb1,SterDuration1,PartSterMagnitude1,MinAge1,KillProb2,FullSterProb2,PartSterProb2,SterDuration2,PartSterMagnitude2,MinAge2, StartYear, NumRounds, YearsBetweenRounds,Additional_MDA,Additional_Scheme,Additional_Start,Additional_Rounds,Additional_Years,Additional_Buildings,Ad_Cov_School,Ad_Cov_Work,NumSims,ProbOneSex,ProbBothSex,InitType,InitPrev,SimYears,Target_MDA
-0.5,0.5,0.33,0.17,1,0.5,2,0.5,0.46,0.04,3,0.5,5,2015,5,1,N,W,2021,5,1,10,0.6,0.7,100,0.002,0.00041,A,0,26,N
+0.5,0.5,0.33,0.17,1,0.5,2,0.5,0.46,0.04,3,0.5,5,2015,5,1,N,W,2021,5,1,10,0.6,0.7,100,0.00071,0.00023,A,0,26,N
