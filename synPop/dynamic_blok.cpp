@@ -1082,6 +1082,11 @@ void cblok::selective_MDA(int year, mda_strat strat) {
     string village_output;
     village_output = "../output/targeted_villages.txt";
 
+    //Regular MDA done a second time
+    if (scheme == 'A'){
+        implement_MDA(year, strat);
+    }
+
     //treating n villages randomly
     if (scheme == 'R') {
         cout << "Targeting Randomly Selected Villages" << endl;
