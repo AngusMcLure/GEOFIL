@@ -970,6 +970,7 @@ void cblok::validate_pop(int year, int day){
 
 // implement MDA, c is coverage, r1 indicates % of worms killed; r2 indicates % of worms sterlized; l indicates effective length
 void cblok::implement_MDA(int year, mda_strat strat){
+    cout << "Coverage: " << strat.Coverage << endl;
     //First we calculate the number of people in the target group for MDA (i.e. people over 2 years except pregnant or breastfeeding women)
     int under_min_age1 = 0;
     int child_bearing_age_women = 0;
@@ -1084,6 +1085,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
 
     //Regular MDA done a second time
     if (scheme == 'A'){
+        strat.Coverage = strat.Ad_C_Workplace;
         implement_MDA(year, strat);
     }
 
@@ -1303,12 +1305,13 @@ void cblok::selective_MDA(int year, mda_strat strat) {
                 if (find(will_not_take.begin(), will_not_take.end(), house_id) != will_not_take.end()){ //first we check if the household has already refused MDA
                     cout << "Household Has Refused MDA" << endl;
                 } else {
-                    if (j.second->epids == 'i'){ //if worker is infected
-                        if (drand48() <= strat.Ad_C_Workplace ){ //if will accept test
-                            will_take.emplace(village_id,  house_id); //Storing house data (village id, house id)
-                        } else{
-                            will_not_take.push_back( house_id);
+                    if (drand48() <= strat.Ad_C_Workplace) { //if will accept test
+                        if (j.second->epids == 'i') { //if found to be infected
+                            will_take.emplace(village_id,
+                                              house_id); //Storing house data (village id, house id) as infected person found and tested
                         }
+                    } else {
+                        will_not_take.push_back(house_id); //household has refused test
                     }
                 }
             }
@@ -1326,30 +1329,61 @@ void cblok::selective_MDA(int year, mda_strat strat) {
         will_take.clear();
     }
 
-    /*
-    Families of school aged children but centred on school based testing
-    The idea is to test n schools each year then test the families of positive 
-    children from said schools. Currently not working as mbloks does not 
-    contain infomation on schools, have to find schools via children not
-    children via schools. So idea on hold, will impliment if really needed
-    but potentially more involved than otherwise expected
-    */
-    if (scheme == 'K'){
-        int schoolid;
-        int schools_to_test = 10; //number of schools we will look at
+    //Families of positive elemantary or highschool students
+    if (scheme == 'E' || scheme == 'H'){
 
-        multimap <unsigned, unsigned> schools;
+        map <int, schol *>  school_type;
+
+        if (scheme == 'E') school_type = cblok_e_schols;
+
+        if (scheme == 'H') school_type = cblok_h_schols;
+
+        int number_schools = school_type.size();
+        cout << "Testing at " << number_schools << ", schools!" << endl;
+
+        multimap<unsigned, unsigned> will_take; //map to store households of children that will take MDA
+        vector<unsigned > will_not_take;  //vector to store households that will not take MDA- vector as do not need Village ID
+        //I am assuming if child will get tested then will take MDA
 
         //Determining schools to analyse
-        for (auto const& v : cblok_schols){
-            schoolid = v->sid;
-            cout << "SID: "<<schoolid << endl;
-            //cout << "First: " << v.first << endl;
-           // v->day_p 
-            //for (auto const& s: v->);
+        for (auto const& v : school_type){ // looping through all elementary schools
+            for (auto const& j : v.second->student) { // looping through all students of selected school
 
+              unsigned house_id;
+              unsigned village_id;
+
+              house_id = j.second->h_d->hid;
+              village_id = j.second->h_d->rdg->mbk->mid;
+
+              cout << village_id << endl;
+
+              if (find(will_not_take.begin(), will_not_take.end(), house_id) != will_not_take.end()){ //first we check if the household has already refused MDA
+                  cout << "Household Has Previously Refused MDA" << endl;
+              } else {
+                  if (drand48() <= strat.Ad_C_Workplace) { //if will accept test
+                      if (j.second->epids == 'i') { //if found to be infected
+                          will_take.emplace(village_id,
+                                            house_id); //Storing house data (village id, house id) as infected person found and tested
+                      }
+                  } else {
+                      will_not_take.push_back(house_id); //household has refused test
+                  }
+              }
+          }
         }
+        cout << "Treating positive childrens' families" << endl;
+        cout << "Houses to treat: " << will_take.size() << endl;
+
+        if (will_take.size() > 0 ){
+            refined_household_mda(will_take, strat);
+        } else {
+            cout << "No Need to treat" << endl;
+        }
+
+        will_not_take.clear();
+        will_take.clear();
     }
+
 }
 
 void cblok::village_mda(int year, mda_strat strat, vector<unsigned>keys){
