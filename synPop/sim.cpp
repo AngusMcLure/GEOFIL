@@ -93,8 +93,6 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
 
     }
 
-    cout << "List of villages" << endl;
-
     if(year == 6) get_mosquitoes(year);
     
     //test mda
