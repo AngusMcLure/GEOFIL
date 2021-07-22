@@ -233,12 +233,13 @@ public:
     void implement_MDA(int year, mda_strat strat);
     void selective_MDA(int year, mda_strat strat);
     void village_mda(int year, mda_strat strat, vector<unsigned> keys);
-    void refined_household_mda(multimap<unsigned, unsigned> mda_houses, mda_strat strat);
+    void refined_household_mda(int year, multimap<unsigned, unsigned> mda_houses, mda_strat strat);
     void workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned> mda_workplaces);
     void continuous_mda(int year, int day, mda_strat strat, targeted_mda *data);
     double achieved_coverage[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
     double achieved_coverage_m[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
     double achieved_coverage_f[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
+    int number_treated[sim_years];
 
     void householdistances(int max_distance, int village_number); //used to choose and store "nearest neighbours"
     void mda_countdown();

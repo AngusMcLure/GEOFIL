@@ -544,6 +544,7 @@ void cblok::get_epidemics(int year, mda_strat strategy){
         out << "ant_60_69,";
         out << "ant_70_79,";
         out << "ant_80_plus,";
+        out << "treated,";
         for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
             out << "Prevalence" << mbloksIndexB[j -> second -> mid] << ","; //For each village prints "Prevalence<Village Name>,"
         }
@@ -631,6 +632,12 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     out << ant_60_69 << ",";
     out << ant_70_79 << ",";
     out << ant_80_plus << ",";
+    if (strategy.Targetted == 'Y' && year > 11){
+        out << number_treated[year-1] << ",";
+    } else {
+        out << number_treated[year] << ",";
+    }
+    
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         double n_village = (j -> second -> mblok_fmals).size() + (j -> second -> mblok_males).size();
         if(n_village==0) out << "NA,"; // there's a chance that populations in small villages might drop to zero - this is to avoid crashes in that situation
@@ -649,6 +656,7 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     out << seed;
     out << endl;
     out.close();
+
 }
 
 // output epidemic map (household with infectious individuals) to draw map

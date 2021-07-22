@@ -14,6 +14,7 @@ double max_prv;     // max prevalence of infective mosquitoes
 
 // simulate the population & transmission
 void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generator_path){
+    
     max_prv = 0;
 
     hndl_jobs(year);
@@ -45,7 +46,7 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
             }
         }
     }
-
+    
     achieved_coverage[year] = 0;
     achieved_coverage_m[year] = 0;
     achieved_coverage_f[year] = 0;
@@ -74,6 +75,8 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
     get_students(year);
     get_works(year);
 
+
+    number_treated[year] = 0; // resetting the number treated
     for(int day = 0; day < 365; ++day){
         if(!(inf_indiv.empty() & pre_indiv.empty() & uninf_indiv.empty())) { //If disease has not been eliminated
             calc_risk(year, day, strategy, generator_path); //Determine who gets infected with new worms today - doesn't update epi status
@@ -85,7 +88,8 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
 
 
         for (auto const& x : strategy.MDA_Teams){
-            if (year+sim_bg > x->start_year & year+sim_bg < (x->start_year+x->years)){
+            if (year == 0 && day ==0) cout << "Number of Teams: "<< strategy.MDA_Teams.size() <<", Max Distance: "<< x->max_distance << ", Village Test: " << 100*x->village_test << "%" << endl;
+            if (year+sim_bg >= x->start_year & year+sim_bg < (x->start_year+x->years)){
                 continuous_mda(year, day, strategy, x);
             }
         }

@@ -58,7 +58,7 @@ class targeted_mda{
 public:
 
     int days_in_village = 0; // counter used for days spent in each village
-    int min_time = 7; // minimum time spent in each village
+    int min_time = 14; // minimum time spent in each village
 
     int years; // number of years that team will go around
     int start_year; // starting year of targetted MDA
@@ -70,7 +70,7 @@ public:
     int max_distance; //distance from infective house we want to treat
     int min_test = 10; // min number of households in each village that we will test
 
-    int days_before_return = 50; //time before we can return to village -this team or any other
+    int days_before_return = 180; //time before we can return to village -this team or any other
 
     int team_number;
 
@@ -126,7 +126,6 @@ public:
     double InitPrev; //The initialisation prevalence of Mf-positive people. Only used if InitType == 'C'
     int SimYears; //Number of Simulation Years
     char Targetted;
-
     vector<targeted_mda*> MDA_Teams;
 
     mda_strat(double C,
