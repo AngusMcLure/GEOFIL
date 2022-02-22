@@ -63,6 +63,12 @@ int poisson(double rate, default_random_engine* generator_path){
     return distribution(*generator_path);
 }
 
+double normal(double mean, double stddev, default_random_engine* generator_path){
+    normal_distribution<double> distribution(mean, stddev);
+
+    return distribution(*generator_path);
+}
+
 /*
 int negbinomial(double rate){
     unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();

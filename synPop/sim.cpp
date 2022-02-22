@@ -44,6 +44,8 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
                     seed_epidemics(0.0476/2, 8, 14, "Fagalii");
                 }
             }
+        } else if(strategy.InitType == 'S'){
+            seed_clustered_epidemics(generator_path);
         }
     }
     
@@ -63,8 +65,6 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
             cout << endl << year + sim_bg << " is a targeted MDA year" << endl;
         }
     }
-
-
 
 
     get_epidemics(year,strategy); //write epidemic status summary to screen and linelist to csv
@@ -116,9 +116,12 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
         exit(1);
     }
     cchild = 0;
+
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
         mblok *mbk = j->second;
+
         if(village == "all" || mbloksIndexB[mbk->mid] == village){
+            
             for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
                 agent *cur = k->second;
                 int age = int(cur->age/365);
@@ -195,5 +198,117 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                 }
             }
         }
+    }
+}
+
+void cblok::seed_clustered_epidemics(default_random_engine* generator_path){
+    cchild = 0;
+
+    for (auto const& j: mbloks){//iterating through villages
+        
+        double village_effect = normal(0.0, sigma_v, generator_path); //random effect for village
+        
+        for(auto const& k: j.second->mblok_hholds){ //iterating through households
+            
+            double household_effect = normal(0.0, sigma_h, generator_path); //random effect for village
+            double adult_log_odds = village_effect + household_effect + beta_0; //logodds for household adults
+            double child_log_odds = village_effect + household_effect + beta_0_c; //logodds for household 
+            
+            double adult_prev = 1/(1+exp(-adult_log_odds)); //household prevalence adults
+            double child_prev = 1/(1+exp(-child_log_odds)); //household prevalence children
+
+
+            for(auto const& l: k.second->mmbrs){ //iterating through household members
+                
+                agent *cur = l.second;
+                double r = drand48();
+                
+                int age = int(cur->age/365);
+                
+                if(age < 15) ++cchild;
+
+                if(age >= 8 && age <= 15){
+                    if (r <= child_prev){ //household member is infected
+                    
+                        double infection_type = drand48(); //determine number, sex and maturity of worms
+
+                        if (infection_type < 0.785){ //one mature worm of one gender
+                            
+                            cur->epids = 'u';
+                            //add one mature worm of one gender
+                            double worm_life = drand48() * max_inf_period;
+                            if(drand48() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            else cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
+                            uninf_indiv.insert(pair<int, agent*>(cur->aid, cur));
+
+                        } else if (infection_type <0.928){ //one mature worms of each gender
+                            
+                            cur->epids = 'i';
+                            //add one mature worms of each gender
+                            double worm_life = drand48()*max_inf_period;
+                            cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
+                            inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
+                            cur->h_d->rdg->mbk->sum_mf++;
+
+                        } else{ //one prepatent worm of each gender
+
+                            cur->epids = 'e';
+                            //add one prepatent worm of each gender
+                            double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
+                            double worm_life_prepat = drand48()*max_pre_period;
+                            cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
+                            cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
+                            
+                            pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
+
+                        }  
+                    
+                    }
+                } else if(age >= 15){
+                    if (r <= adult_prev){ //household member is infected
+                    
+                        double infection_type = drand48(); //determine number, sex and maturity of worms
+
+                        if (infection_type < 0.785){ //one mature worm of one gender
+                            
+                            cur->epids = 'u';
+                            //add one mature worm of one gender
+                            double worm_life = drand48() * max_inf_period;
+                            if(drand48() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            else cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
+                            uninf_indiv.insert(pair<int, agent*>(cur->aid, cur));
+
+                        } else if (infection_type <0.928){ //one mature worms of each gender
+                            
+                            cur->epids = 'i';
+                            //add one mature worms of each gender
+                            double worm_life = drand48()*max_inf_period;
+                            cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
+                            inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
+                            cur->h_d->rdg->mbk->sum_mf++;
+
+                        } else{ //one prepatent worm of each gender
+
+                            cur->epids = 'e';
+                            //add one prepatent worm of each gender
+                            double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
+                            double worm_life_prepat = drand48()*max_pre_period;
+                            cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
+                            cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
+                            
+                            pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
+
+                        }  
+                    
+                    }
+
+                }
+
+            }
+
+        }
+
     }
 }

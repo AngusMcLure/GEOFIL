@@ -229,6 +229,7 @@ public:
     void risk_loc_night(int year, int day);        //time = 'd' or 'n', day/night
     void update_epi_status(int year, int day);
     void seed_epidemics(double p, int age_dn, int age_up, string village = "all");
+    void seed_clustered_epidemics(default_random_engine* generator_path);
     
     void implement_MDA(int year, mda_strat strat);
     void selective_MDA(int year, mda_strat strat);
