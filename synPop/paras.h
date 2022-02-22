@@ -64,8 +64,8 @@ using namespace std;
 #define rb_offwork          70
 
 //Parameters for initial distribution found via stan_glmer in R, included parameter file based upon ICCH of 0.7 and ICCV of 0.28
-#define sigma_h             1.75            //Household standard dev   
-#define sigma_v             2.15            //Village standard dev
+#define sigma_h             2.15            //Household standard dev   
+#define sigma_v             1.75            //Village standard dev
 #define beta_0              -6.0993         //beta_0 adult (prevalence of 3.285%)
 #define beta_0_c            -7.1049         //beta_0 children (prevalence of 1.913%)
 
