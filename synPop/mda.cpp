@@ -47,6 +47,7 @@ mda_strat get_nth_mda_strat(string filename, int N)
     p = strtok(NULL, ",");      double MDASterDur2 = atof(p);
     p = strtok(NULL, ",");      double MDAPartSterMagnitude2 = atof(p);
     p = strtok(NULL, ",");      int MinAge2 = atoi(p);
+    p = strtok(NULL, ",");      char Real_Years = *p;
     p = strtok(NULL, ",");      int MDAStartYear = atoi(p);
     p = strtok(NULL, ",");      int MDANumRound = atoi(p);
     p = strtok(NULL, ",");      int MDAYearsBetweenRound = atoi(p);
@@ -75,6 +76,7 @@ mda_strat get_nth_mda_strat(string filename, int N)
     mda_strat strat {MDACoverage,
         drug1, MinAge1,
         drug2, MinAge2,
+        Real_Years,
         MDAStartYear, MDANumRound, MDAYearsBetweenRound,
         Additional_MDA, Additional_Scheme, Additional_Start,
         Additional_Rounds, Additional_Years, Additonal_Buildings,

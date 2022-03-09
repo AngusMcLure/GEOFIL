@@ -106,6 +106,7 @@ public:
     int MinAge1;
     drugs drug2;
     int MinAge2;
+    char Real_Years;
     int StartYear;
     int NumRounds;
     int YearsBetweenRounds;
@@ -131,6 +132,7 @@ public:
     mda_strat(double C,
               drugs D1, int MA1,
               drugs D2, int MA2,
+              char RY,
               int S, int N, int Y,
               char ADM, char ADS,
               int AD_S, int AD_N, int AD_Y,
@@ -143,13 +145,21 @@ public:
         MinAge1 = MA1;
         drug2 = D2;
         MinAge2 = MA2;
+        Real_Years = RY;
         StartYear = S;
         NumRounds = N;
         YearsBetweenRounds = Y;
-        MDAYears.resize(NumRounds);
-        for(int count = 0; count<NumRounds; ++count){
+
+        if (toupper(Real_Years) == 'Y' ){
+            MDAYears.push_back(2018);
+            MDAYears.push_back(2019);
+            MDAYears.push_back(2021);
+        } else {
+            MDAYears.resize(NumRounds);
+            for(int count = 0; count<NumRounds; ++count){
             MDAYears[count] = StartYear + count * YearsBetweenRounds;
             cout << MDAYears[count] << " is a MDA year" << endl;
+            }   
         }
         Ad_MDA = ADM;
         Ad_Scheme = ADS;// What scheme to run
@@ -183,9 +193,9 @@ public:
         cout << "Min Age 1: " << MinAge1 << endl;
         drug2.print_drugs();
         cout << "Min Age 2: " << MinAge2 << endl;
-        cout << "MDA Start Year: " << StartYear << endl;
-        cout << "Number of Rounds: " << NumRounds << endl;
-        cout << "Years Between Rounds: " << YearsBetweenRounds << endl;
+        if (toupper(Real_Years) == 'Y' ){
+            cout << "MDA in 2018, 2019, 2021: " << Real_Years << endl;
+        }
         cout << "Number of Simulations: " << NumSims << endl;
         cout << "Prob One Sex: " << ProbOneSex << endl;
         cout << "Prob Both Sex: " << ProbBothSex << endl;
