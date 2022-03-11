@@ -52,7 +52,7 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
     achieved_coverage[year] = 0;
     achieved_coverage_m[year] = 0;
     achieved_coverage_f[year] = 0;
-
+    
     if(strategy.is_mda_year(year+sim_bg)){
         implement_MDA(year, strategy);
         cout << endl << year+sim_bg << " is a MDA year" << endl;
@@ -77,6 +77,7 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
 
 
     number_treated[year] = 0; // resetting the number treated
+    number_tested[year] = 0;
     for(int day = 0; day < 365; ++day){
         if(!(inf_indiv.empty() & pre_indiv.empty() & uninf_indiv.empty())) { //If disease has not been eliminated
             calc_risk(year, day, strategy, generator_path); //Determine who gets infected with new worms today - doesn't update epi status
