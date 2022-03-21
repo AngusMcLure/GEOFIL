@@ -1180,67 +1180,6 @@ void cblok::selective_MDA(int year, mda_strat strat) {
     fout << '\n';
     fout.close();
     }
-
-    /*treating families of school aged children- village based (not the best should test at schools not home)
-    if (scheme == 'S') {
-        cout << "Targetting Households of Positive TAS Children" << endl;
-        multimap<unsigned, unsigned> mda_houses;
-
-        for (auto const &i : mbloks) { //looping through villages
-
-            for (auto const &j : i.second->mblok_hholds) { //looping through households
-                    //j.second->rdg->r_neigh.
-                for (auto const &k: j.second->mmbrs) { // looping through household members
-                    double year_age;
-                    year_age = k.second->age / 365; //the age of household member
-
-                    if (year_age >= 6 && year_age <= 17 &&
-                        k.second->epids == 'i') { //if household member is of tas age and infected
-                        if (drand48() <= strat.Ad_C_School) {
-                            mda_houses.emplace(i.first,j.first); // storing household that will recieve mda- (village id, household id)
-                            goto household_loop;
-                        } else { //this household will not recieve MDA (assuming if dont want one child wont change mind for multiple houses)
-                            goto household_loop;
-                        }
-                    }
-                }
-                household_loop:;
-            }
-        }
-
-        cout << "Number of Villages with MDA: " << mda_houses.size() << endl;
-        
-        if (mda_houses.size() != 0){
-            refined_household_mda(mda_houses, strat);
-        } else {
-            cout << "No MDA Conducted This Year" << endl;
-        }
-        
-    }*/
-
-    /*treating n workplaces with highest prev- randomly selected not the best
-    if (scheme == 'W'){
-        cout<<"Targetting " << strat.Ad_N_Buildings << " Workplaces with Highest Prev" << endl;
-        //currently setup to treat n work places with most infections
-        multimap<unsigned, pair<unsigned,unsigned>, greater<>> mda_workplaces;
-        pair<unsigned, unsigned> vil_and_w_id;
-
-
-        for (auto const& i : mbloks){ //villages
-            for (auto const& j : i.second->mblok_workps){ //places of work
-                int infected_workers = 0;
-                for (auto const& k : j.second->workers){ //workers
-                    if (k.second->epids=='i')
-                        ++ infected_workers;
-                }
-                vil_and_w_id.first = i.first; // village_id
-                vil_and_w_id.second = j.first; //workplace id
-                mda_workplaces.insert(make_pair(infected_workers,vil_and_w_id));
-            }
-        }
-        mda_workplaces.erase(prev(mda_workplaces.end(), mda_workplaces.size()-strat.Ad_N_Buildings), mda_workplaces.end()); //cutting down list to required people
-        workplace_mda(year, strat, mda_workplaces);
-    }*/
     
     //treating n workplaces with over a thresh-hold amount of workers
     if (scheme == 'X'){
@@ -1329,7 +1268,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
     if (scheme == 'E' || scheme == 'H'){
         bool TAS = false; // if only want tas age children
         bool Both = false; //if want both high school and elementary
-
+        int n_tested = 0;
         int number_schools = 0;
         map <int, schol *>  school_type;
 
@@ -1339,6 +1278,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
 
         //Determining schools to analyse
         if (scheme == 'E' || Both == true){
+            
             for (auto const& v : cblok_e_schols){ // looping through all elementary school
                 ++number_schools;
                 for (auto const& j : v.second->student) { // looping through all students of selected school
@@ -1354,7 +1294,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
                                 cout << "Household Has Previously Refused MDA" << endl;
                             } else {
                                 if (drand48() <= strat.Ad_C_Workplace) { //if will accept test
-
+                                    n_tested += 1;
                                     if (j.second->epids == 'i' || j.second->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if found to be infected
                                         cout << "Will take infected" << endl;
                                         will_take.emplace(village_id,
@@ -1372,6 +1312,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
                             //cout << "Household Has Previously Refused MDA" << endl;
                         } else {
                             if (drand48() <= strat.Ad_C_Workplace) { //if will accept test
+                                n_tested += 1;
                                 if (j.second->epids == 'i' || j.second->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if found to be infected
                                     will_take.emplace(village_id,
                                                       house_id); //Storing house data (village id, house id) as infected person found and tested
@@ -1398,6 +1339,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
                         //cout << "Household Has Previously Refused MDA" << endl;
                     } else {
                         if (drand48() <= strat.Ad_C_Workplace) { //if will accept test
+                            n_tested += 1;
                             if (j.second->epids == 'i' || j.second->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if found to be infected
                                 will_take.emplace(village_id,
                                                   house_id); //Storing house data (village id, house id) as infected person found and tested
@@ -1409,6 +1351,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
                 }
             }
         }
+        number_tested[year] += n_tested; 
         cout << "Testing at " << number_schools << ", schools!" << endl;
 
         cout << "Treating positive childrens' families" << endl;
@@ -1605,7 +1548,7 @@ void cblok::refined_household_mda(int year, multimap<unsigned, unsigned> mda_hou
     }
 
     number_treated[year] += treat_ed; 
-    cout << "Total Treateed: " <<number_treated[year] << endl;
+    cout << "Total Treated: " <<number_treated[year] << endl;
 }
 
 void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned> mda_workplaces){
@@ -1620,6 +1563,8 @@ void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned
 
     int treat_m = 0; //number of males treated this year
     int treat_f = 0; //number of females treated this year
+
+    int n_tested = 0;
 
     for (auto const& i: mda_workplaces){ //looping through villages
 
@@ -1648,9 +1593,11 @@ void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned
     for (auto const& i : mda_workplaces){ //looping through workplaces
         for (auto const& j : mbloks[i.first]->mblok_workps[i.second]->workers){ //going through workers
             double age = j.second->age/365.0;
-            if (j.second->epids == 'i' || j.second->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if test positive
-                if (j.second->gendr == 'm') {
-                    if (drand48() <= strat.Ad_C_Workplace / (double) target_prop) {
+            
+            if (drand48() <= strat.Ad_C_Workplace / (double) target_prop) { // if the person accpects test
+                n_tested += 1; // adding person to test sum
+                if (j.second->epids == 'i' || j.second->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if test positive
+                    if (j.second->gendr == 'm') {
                         if (age >= strat.MinAge1) {
                             if (age >= strat.MinAge2) {
                                 j.second->get_drugs(
@@ -1661,12 +1608,25 @@ void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned
                             }
                             ++treat_m;
                         }
+                        
                     }
-                }
 
-                if (j.second->gendr == 'f') {
-                    if (age >= 49 || age < 15) { //non child-bearing age
-                        if (drand48() <= strat.Ad_C_Workplace / (double) target_prop) {
+                    if (j.second->gendr == 'f') {
+                        if (age >= 49 || age < 15) { //non child-bearing age
+                            if (drand48() <= strat.Ad_C_Workplace / (double) target_prop) {
+                                if (age >= strat.MinAge1) {
+                                    if (age >= strat.MinAge2) {
+                                        j.second->get_drugs(
+                                                strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
+                                    } else {
+                                        j.second->get_drugs(
+                                                strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
+                                    }
+                                    ++treat_f;
+                                }
+                            }
+                        } else if (drand48() <= (1 - prop_preg_childbearing) * strat.Ad_C_Workplace /
+                                                (double) target_prop) { // for women of child-bearing age
                             if (age >= strat.MinAge1) {
                                 if (age >= strat.MinAge2) {
                                     j.second->get_drugs(
@@ -1678,23 +1638,12 @@ void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned
                                 ++treat_f;
                             }
                         }
-                    } else if (drand48() <= (1 - prop_preg_childbearing) * strat.Ad_C_Workplace /
-                                            (double) target_prop) { // for women of child-bearing age
-                        if (age >= strat.MinAge1) {
-                            if (age >= strat.MinAge2) {
-                                j.second->get_drugs(
-                                        strat.drug2); //administer drug combination 2 with probability coverage/target_prop if over second minimum age
-                            } else {
-                                j.second->get_drugs(
-                                        strat.drug1); //administer drug combination 1 with probability coverage/target_prop if over first minimum age but over first minimum age
-                            }
-                            ++treat_f;
-                        }
                     }
                 }
             }
         }
     }
+    number_tested[year] += n_tested;
     number_treated[year]  += treat_m + treat_f;
     cout << "Treated: " << treat_f +treat_m << endl;
     // The actually achieved coverage proportions
@@ -1705,156 +1654,199 @@ void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned
 
 void cblok::continuous_mda(int year, int day, mda_strat strat, targeted_mda *data) {\
 
- if (data->days_in_village==0){ //the team has finished working in a village and is ready to go to next village
+    if (data->days_in_village==0){ //the team has finished working in a village and is ready to go to next village
+        bool sph = false; //Testing only a single person per hosuehold, instead of the whole house
+        unsigned time;
+        unsigned n_villages;
+        unsigned n_houses;
+        unsigned n_test;
+        unsigned village_id; //ID of village that "team is in"
+        int villages_total = 0;
+        int houses_per_day = 15; // number of houses workers can test/ treat in a day
 
-     unsigned time;
-     unsigned n_villages;
-     unsigned n_houses;
-     unsigned n_test;
-     unsigned village_id; //ID of village that "team is in"
-     int villages_total = 0;
-     int houses_per_day = 15; // number of houses workers can test/ treat in a day
-
-     vector<unsigned> houses_to_test; //houses that we are going to 'test' for mda.
-     vector<unsigned> infected_houses;
-     vector<unsigned> uninfected_houses;
-     multimap<unsigned,unsigned> mda_houses;
-
-
-     while (mbloks[data->village_path[data->treated_v]]->mda != 0 ){//testing to see if villages are ready to be treated
-         cout << "\n"<< mbloksIndexB[data->village_path[data->treated_v]]<< " Already Treated!" << endl;
-         villages_total += 1;
-         if (data->treated_v<(data->n_villages-1)){
-             data->treated_v += 1; //moving onto the next village
-         } else if (data -> treated_v == (data->n_villages-1)){
-             data-> treated_v = 0; // resetting count when reaches last village
-         }
-         cout << "Trying: " << mbloksIndexB[data->village_path[data->treated_v]] << endl;
-         if (villages_total > 64){
-             cout << "Cannot Treat Any Villages, Trying Again Tomorrow" << endl;
-             return;
-         }
-     }
+        int n_tested = 0;
+        vector<unsigned> houses_to_test; //houses that we are going to 'test' for mda.
+        vector<unsigned> infected_houses;
+        vector<unsigned> uninfected_houses;
+        multimap<unsigned,unsigned> mda_houses;
 
 
-     village_id = data->village_path[data->treated_v]; //picking out the village we are in
+        while (mbloks[data->village_path[data->treated_v]]->mda != 0 ){//testing to see if villages are ready to be treated
+            cout << "\n"<< mbloksIndexB[data->village_path[data->treated_v]]<< " Already Treated!" << endl;
+            villages_total += 1;
+            if (data->treated_v<(data->n_villages-1)){
+                data->treated_v += 1; //moving onto the next village
+            } else if (data -> treated_v == (data->n_villages-1)){
+                data-> treated_v = 0; // resetting count when reaches last village
+            }
+            cout << "Trying: " << mbloksIndexB[data->village_path[data->treated_v]] << endl;
+            if (villages_total > 64){
+                cout << "Cannot Treat Any Villages, Trying Again Tomorrow" << endl;
+                return;
+            }
+        }
 
 
-     int mda_id;
-     mda_id = rand() % 10000; //generating an ID which we will use to keep track of houses that take MDA
+        village_id = data->village_path[data->treated_v]; //picking out the village we are in
 
-     cout << "\n" <<"Team "<< data->team_number <<" Currently In: "<<mbloksIndexB[village_id] << endl;
-     cout << "Radius: " << data->max_distance << " metres!" << endl;
-     householdistances(data->max_distance,village_id); //working out all households within x distance of all houses in our selected village
 
-     n_houses = mbloks[village_id]->mblok_hholds.size(); //number of houses in village
-     n_test  = n_houses*data->village_test; //Try to test so much of village
+        int mda_id;
+        mda_id = rand() % 10000; //generating an ID which we will use to keep track of houses that take MDA
 
-     if (n_test <data->min_test){ //ensuring enough households are test
-         n_test=data->min_test;
-     }
+        cout << "\n" <<"Team "<< data->team_number <<" Currently In: "<<mbloksIndexB[village_id] << endl;
+        cout << "Radius: " << data->max_distance << " metres!" << endl;
+        householdistances(data->max_distance,village_id); //working out all households within x distance of all houses in our selected village
 
-     for (auto const& u : mbloks[village_id]->mblok_hholds){ // making vector of all household ids
-         houses_to_test.push_back(u.first);
-     }
+        n_houses = mbloks[village_id]->mblok_hholds.size(); //number of houses in village
+        n_test  = n_houses*data->village_test; //Try to test so much of village
 
-     random_shuffle(houses_to_test.begin(), houses_to_test.end()); // Randomising the vector to give random houses and selecting the desired number
+        if (n_test <data->min_test){ //ensuring enough households are test
+        cout << "Only " << n_test << "Houses we are testing!" << endl;
+        n_test=data->min_test;
+        }
 
-     if (n_test > n_houses){
-         cout << "Due to small village size will attempt to test all households" << endl;
-     }else{
-         houses_to_test.resize(n_test);
-     }
-     cout  << "Number of houses will attempt to test: " << houses_to_test.size() << endl;
+        for (auto const& u : mbloks[village_id]->mblok_hholds){ // making vector of all household ids
+            houses_to_test.push_back(u.first);
+        }
 
-     time = houses_to_test.size()/houses_per_day; //TODO realistic timing param
-     if (time < data->min_time){
-         time = data->min_time; //minimum time in each village
-     }
+        random_shuffle(houses_to_test.begin(), houses_to_test.end()); // Randomising the vector to give random houses and selecting the desired number
 
-     data->days_in_village=time;
+        if (n_test > n_houses){
+            cout << "Due to small village size will attempt to test all households" << endl;
+        }else{
+            houses_to_test.resize(n_test);
+        }
+        cout  << "Number of houses will attempt to test: " << houses_to_test.size() << endl;
 
-     //Here we are testing the houses in the village
-     for (auto const& y : houses_to_test){
-         if ((mbloks[village_id]->mblok_hholds[y]->mda == 0) & (drand48() < data->coverage) ) {// likelyhood that household will get tested and household has not had mda already (no ID)
-             int house_size = 0; // number of people in household
-             int house_sum = 0; //number of people we have tested in household
-             
-             //finding the house size of people eligble to be tested/treated normal housesize includes young children 
-             for (auto const &x : mbloks[village_id]->mblok_hholds[y]->mmbrs) {
-                 if (x.second->age / 365 > 6){
-                     house_size += 1;
-                 }
-             }
+        time = houses_to_test.size()/houses_per_day; //TODO realistic timing param
+        if (time < data->min_time){
+            time = data->min_time; //minimum time in each village
+        }
 
-             for (auto const &x : mbloks[village_id]->mblok_hholds[y]->mmbrs) {
-                 if (x.second->age / 365 > 6){ // if of age to test
-                    if ((x.second->epids == 'i' || x.second->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - x.second->LastDayWithAdultWorm))) { // if postive
-                     infected_houses.push_back(y);
-                     mbloks[village_id]->mblok_hholds[y]->mda = mda_id; //assigning unique ID to positive houses in this round
-                     goto backtohouses; //to avoid household being recorded multiple times)
-                    } else { //they are antigen and mf negative so want to store as no need to give this house mda
-                     house_sum += 1;
-                     if (house_size == house_sum) uninfected_houses.push_back(y);
+        data->days_in_village=time; 
+
+        if (sph == false){ //testing every member of a household
+            cout << "Testing every household member!" << endl;
+            for (auto const& y : houses_to_test){
+                if ((mbloks[village_id]->mblok_hholds[y]->mda == 0) & (drand48() < data->coverage) ) {// likelyhood that household will get tested and household has not had mda already (no ID)
+                    int house_size = 0; // number of people in household
+                    int house_sum = 0; //number of people we have tested in household
+                    
+                    //finding the house size of people eligble to be tested/treated normal housesize includes young children 
+                    for (auto const &x : mbloks[village_id]->mblok_hholds[y]->mmbrs) {
+                        if (x.second->age / 365 > 5){
+                            house_size += 1;
+                        }
                     }
-                 } 
-             }
-         } else {
-            uninfected_houses.push_back(y); //We are includeding the houses that don't want to be tested with the uninfected as none will recieve MDA
-         }
-         backtohouses:;
 
-     }
+                    for (auto const &x : mbloks[village_id]->mblok_hholds[y]->mmbrs) {
+                        if (x.second->age / 365 > 5){ // if of age to test
+                            n_tested += 1;
+                            if ((x.second->epids == 'i' || x.second->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - x.second->LastDayWithAdultWorm))) { // if postive
+                                infected_houses.push_back(y);
+                                mbloks[village_id]->mblok_hholds[y]->mda = mda_id; //assigning unique ID to positive houses in this round
+                                goto backtohouses; //to avoid household being recorded multiple times)
+                            } else { //they are antigen and mf negative so want to store as no need to give this house mda
+                                house_sum += 1;
+                                if (house_size == house_sum) uninfected_houses.push_back(y);
+                            }
+                        } 
+                    }
+                } else {
+                uninfected_houses.push_back(y); //We are includeding the houses that don't want to be tested with the uninfected as none will recieve MDA
+                }
+                backtohouses:;
+            }
+        }else if (sph == true) {
+            cout << "Testing one household member!" << endl;
+            for (auto const& y : houses_to_test){
+                int min_age = 20;
+                if ((mbloks[village_id]->mblok_hholds[y]->mda == 0) & (drand48() < data->coverage) ) {// likelyhood that household will get tested and household has not had mda already (no ID)
+                    
 
-     //Now we need find and store all the neighbours of the infected houses (could be in different villages)
-     if(!infected_houses.empty()) { // only doing this if there have been infected houses found
-         for (auto const &x : infected_houses) { //looping through infected houses
-             for (auto const&z : house_distance[x]){ //looping through neighbours of infected houses
-                 if (mbloks[z.first]->mblok_hholds[z.second]->mda == 0){ // if hasnt recieved MDA
+                    for (auto const &x : mbloks[village_id]->mblok_hholds[y]->mmbrs) { //now iterating through household
+                        if (x.second->age / 365 >= min_age){ // if of age to test want an older member of the house
+                            n_tested += 1;
+                            // we have now tested the amount we want!
+                            if ((x.second->epids == 'i' || x.second->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - x.second->LastDayWithAdultWorm))) { // if postive
+                                infected_houses.push_back(y);
+                                mbloks[village_id]->mblok_hholds[y]->mda = mda_id; //assigning unique ID to positive houses in this round
+                                goto backtohouses; //to avoid household being recorded multiple times)
+                            } else { //they are antigen and mf negative so want to store as no need to give this house mda
+                                uninfected_houses.push_back(y);
+                                goto backtohouses;
+                            }
+                        } 
+                    }
+                } else {
+                uninfected_houses.push_back(y); //We are includeding the houses that don't want to be tested with the uninfected as none will recieve MDA
+                }
+                backtohouses:;
+            }
+
+        }
+
+        number_tested[year] += n_tested; 
+
+        //Now we need find and store all the neighbours of the infected houses (could be in different villages)
+        if(!infected_houses.empty()) { // only doing this if there have been infected houses found
+            for (auto const &x : infected_houses) { //looping through infected houses
+                for (auto const&z : house_distance[x]){ //looping through neighbours of infected houses
+                    if (mbloks[z.first]->mblok_hholds[z.second]->mda == 0){ // if hasnt recieved MDA
                     // we now need to check that the house hasn't already refused MDA or that its already known to be uninfected
                     if (find(uninfected_houses.begin(), uninfected_houses.end(), z.second) != uninfected_houses.end()){
-                     //no need to give MDA to these houses as already know it is negative or they have refused to be tested
+                        //no need to give MDA to these houses as already know it is negative or they have refused to be tested
                     } else {
                         if (drand48() < data->coverage) { // prob that will allow mda
                             mda_houses.emplace(z.first, z.second);
                         }//adding in houses that we need to treat
                         mbloks[z.first]->mblok_hholds[z.second]->mda = mda_id; //recording that the house has been found (to avoid doubling) CAN ADD special TAG for non compliance
                     }
-                 }
-             }
-             mda_houses.emplace(village_id, x); //Now we also have to include the houses that actually had the positive! No new prob as already accepted test
-         }
+                    }
+                }
+                mda_houses.emplace(village_id, x); //Now we also have to include the houses that actually had the positive! No new prob as already accepted test
+            }
 
 
-         cout << mda_houses.size() << " Households to receive MDA" << endl;
-         time = mda_houses.size()/houses_per_day; 
-             if (time < data->min_time){
+            cout << mda_houses.size() << " Households to receive MDA" << endl;
+            
+            time = (mda_houses.size() + houses_to_test.size()) /houses_per_day; 
+                if (time < data->min_time){
                 time = data->min_time; //minimum time in each village
                 }
 
-         data->days_in_village=time;
+            data->days_in_village=time;
 
-         cout << "Spending "<< data->days_in_village << " Days" << endl;
+            cout << "Spending "<< data->days_in_village << " Days" << endl;
 
-         //Now we need to treat the people in the selected households
-         refined_household_mda(year, mda_houses, strat);
+            //Now we need to treat the people in the selected households
+            refined_household_mda(year, mda_houses, strat);
 
-     }else{
-         cout << "No Infection Detected"<< endl;
-         cout << "Spending "<< data->days_in_village << " Days" << endl;
-     }
-     mbloks[village_id]->mda = mda_id; //storing id
-     mbloks[village_id]->days_before_mda = data->days_before_return; //storing days before we can return to said village
+        }else{
 
-     if (data->treated_v<(data->n_villages-1)){ //setting up the next village we will move too
-         data->treated_v += 1; //moving onto the next village
-     } else if (data -> treated_v == (data->n_villages-1)){
+            time = houses_to_test.size()/houses_per_day; 
+                    if (time < data->min_time){
+                    time = data->min_time; //minimum time in each village
+                    }
 
-         data-> treated_v = 0; // resetting count when reaches last village
-     }
- }else{
-     data->days_in_village -= 1; //counting down days left in village (time before next village)
- }
+            data->days_in_village=time;
+
+            cout << "No Infection Detected"<< endl;
+            cout << "Spending "<< data->days_in_village << " Days" << endl;
+        }
+
+        mbloks[village_id]->mda = mda_id; //storing id
+        mbloks[village_id]->days_before_mda = data->days_before_return; //storing days before we can return to said village
+
+        if (data->treated_v<(data->n_villages-1)){ //setting up the next village we will move too
+            data->treated_v += 1; //moving onto the next village
+        } else if (data -> treated_v == (data->n_villages-1)){
+
+            data-> treated_v = 0; // resetting count when reaches last village
+        }
+    }else{
+        data->days_in_village -= 1; //counting down days left in village (time before next village)
+    }
 }
 
 void cblok::mda_countdown(){

@@ -545,6 +545,7 @@ void cblok::get_epidemics(int year, mda_strat strategy){
         out << "ant_70_79,";
         out << "ant_80_plus,";
         out << "treated,";
+        out << "tested,";
         for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){
             out << "Prevalence" << mbloksIndexB[j -> second -> mid] << ","; //For each village prints "Prevalence<Village Name>,"
         }
@@ -634,8 +635,10 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     out << ant_80_plus << ",";
     if (strategy.Targetted == 'Y' && year > 11){
         out << number_treated[year-1] << ",";
+        out << number_tested[year-1] << ",";
     } else {
         out << number_treated[year] << ",";
+        out << number_tested[year] << ",";
     }
     
     for(map<int, mblok*>::iterator j = mbloks.begin(); j != mbloks.end(); ++j){

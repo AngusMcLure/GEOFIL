@@ -241,6 +241,7 @@ public:
     double achieved_coverage_m[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
     double achieved_coverage_f[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
     int number_treated[sim_years];
+    int number_tested[sim_years];
 
     void householdistances(int max_distance, int village_number); //used to choose and store "nearest neighbours"
     void mda_countdown();
