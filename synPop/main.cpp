@@ -29,9 +29,8 @@ string prv_out_loc;
 
 int main(int argc, const char * argv[]) {
     
-    //get location for outputting prevalence data
-    cout << "Please enter a file name for the output file with annual prevalence reports:";
-    getline(cin, prv_out_loc);
+    
+    prv_out_loc = argv[1];
     
     char * dir = getcwd(NULL, 0);
     printf("Current dir: %s", dir);
@@ -56,25 +55,11 @@ int main(int argc, const char * argv[]) {
     int NumMDAScenarios = count_mda_scenarios(MDAScenarioLoc);
     cout << "There are " << NumMDAScenarios << " scenarios" << endl;
 
-    for(int ScenarioCount = 0; ScenarioCount<NumMDAScenarios; ++ScenarioCount){
-        mda_strat strategy = get_nth_mda_strat(MDAScenarioLoc,ScenarioCount+1);
-        strategy.print_mda_strat();
+    
+    mda_strat strategy = get_nth_mda_strat(MDAScenarioLoc,1);
+    strategy.print_mda_strat();
 
-        if (toupper(strategy.Targetted)=='Y'){
-            //have to work out number of desired teams and build them
-            int n_teams = count_teams(TargettedMDA);
-            cout << "Targeted MDA Selected With "<< n_teams << " Teams Selected" << endl;
-
-            for (int i = 0; i < n_teams; i++ ){ //buidling teams.
-                vector<double> teamdata;
-                teamdata = get_targeted(TargettedMDA, i+1);
-                targeted_mda* p = NULL;
-                p = new targeted_mda(i+1,teamdata[0],teamdata[1],teamdata[2],teamdata[3],teamdata[4],teamdata[5],teamdata[6]);
-                strategy.MDA_Teams.push_back(p);
-
-            }
-        }
-        for(int i = 0; i < strategy.NumSims; ++i){ // for every simulation
+    for(int i = 0; i < strategy.NumSims; ++i){ // for every simulation
             // Set random seeds -- I am getting a new seed for each simulation so that each simulation is reproducible (rather than having to run the whole batch to reproduce)
             seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
             srand(seed);
@@ -91,7 +76,6 @@ int main(int argc, const char * argv[]) {
                 cout << "Year is: " << year << endl;
                 cbk->sim_pop(year,strategy);
             }
-        }
     }
     
     return 0;

@@ -123,10 +123,11 @@ public:
     int NumSims;
     double ProbOneSex;
     double ProbBothSex;
-    char InitType; // C = custom, A = Scenario A
+    char InitType; // C = custom, A = Scenario A, H= household clustering
     double InitPrev; //The initialisation prevalence of Mf-positive people. Only used if InitType == 'C'
     int SimYears; //Number of Simulation Years
     char Targetted;
+    int N_Day_Bites;
     vector<targeted_mda*> MDA_Teams;
 
     mda_strat(double C,
@@ -139,7 +140,7 @@ public:
               int ADNB, double ADCS, double ADCW,
               int NS, double POS,
               double PBS,char IT,
-              double IP, int SY, char TG){
+              double IP, int SY, char TG, int NDB){
         Coverage = C;
         drug1 = D1;
         MinAge1 = MA1;
@@ -183,6 +184,7 @@ public:
         InitPrev = IP;
         SimYears = SY;
         Targetted = TG;
+        N_Day_Bites = NDB;
     }
 
 

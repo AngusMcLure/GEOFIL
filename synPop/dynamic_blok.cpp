@@ -412,6 +412,8 @@ void cblok::calc_risk(int year, int day, mda_strat strategy) {
 
     double ProbOneSex = strategy.ProbOneSex;
     double ProbBothSex = strategy.ProbBothSex;
+    int Day_bites = strategy.N_Day_Bites;
+    int Night_bites = rb_total - Day_bites; 
 
     // looping through infected people to find force of infection, for all three locations (home, school and work)
     for (auto const& j : inf_indiv){//for each infected  agent add their contributon to the FOI (via mosquito infection prevalence) to the appropriate buildings day and night
@@ -534,7 +536,7 @@ void cblok::calc_risk(int year, int day, mda_strat strategy) {
             int age = int(p->age / 365);
             if (age <= 15) c = exposure_by_age[age];
 
-            p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex);
+            p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex, Day_bites, Night_bites);
 
             //Add new exposure to the list of prepatent agents
             if (ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent *>(p->aid, p));
@@ -610,7 +612,7 @@ void cblok::calc_risk(int year, int day, mda_strat strategy) {
             if (age <= 15)
                 c = exposure_by_age[age];
 
-            p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex);
+            p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex, Day_bites, Night_bites);
 
             if (ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent *>(p->aid, p));
         }
@@ -682,7 +684,7 @@ void cblok::calc_risk(int year, int day, mda_strat strategy) {
             if (age <= 15)
                 c = exposure_by_age[age];
 
-            p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex);
+            p->sim_bites(prv, 'd', c, ProbOneSex, ProbBothSex, Day_bites, Night_bites);
 
             if (ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent *>(p->aid, p));
         }
@@ -732,7 +734,7 @@ void cblok::calc_risk(int year, int day, mda_strat strategy) {
             if (age <= 15)
                 c = exposure_by_age[age];
 
-            p->sim_bites(prv, 'n', c, ProbOneSex, ProbBothSex);
+            p->sim_bites(prv, 'n', c, ProbOneSex, ProbBothSex, Day_bites, Night_bites);
 
             if (ps == 's' && p->epids == 'e') pre_indiv.insert(pair<int, agent *>(p->aid, p));
 
