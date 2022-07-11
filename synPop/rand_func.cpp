@@ -7,23 +7,16 @@
 //
 #include "paras.h"
 using namespace std;
+extern mt19937 gen;
 
-//These all set their own seeds every time they are called! Rework to:
-//      Set from a single seed for each simulation
-//      switch to a better random number generator (like merseene twister or something)
-//      switch out all the other random number generators being used for the modern equivalents (i.e. replace rand48, rand, others?)
-
-//functions to generate random numbers with different distributions
 double gaussian(double m_mu, double s_sigma){ //Currently unused so not updated
-    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator (seed);
-    std::normal_distribution<double> distribution(m_mu, s_sigma);
+    normal_distribution<double> distribution(m_mu, s_sigma);
     
-    return distribution(generator);
+    return distribution(gen);
 }
 
 int ztpoisson(double l_lambda){
-    double r = drand48();
+    double r = random_real();
     
     int k = 1;
     double t = l_lambda/(exp(l_lambda)-1), s = t;
@@ -42,48 +35,26 @@ double ztpoisson(int k, double l_lambda){
     }
     return p;
 }
-/*
- * Binomial only used when generating custom populations
- * therefore not currently in use and function called before
- * the simulation loop, hence would require a larger reworking
- * to ensure that the distribution is using the same random
- * number generator
- */
+
 int binomial(int r, double p){
-	unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator (seed);
-    std::binomial_distribution<int> distribution(r, p);
-    
-    return distribution(generator);
+	binomial_distribution<int> distribution(r, p);
+    return distribution(gen);
 }
 
-int poisson(double rate, default_random_engine* generator_path){
+int poisson(double rate){
     poisson_distribution<int> distribution(rate);
 
-    return distribution(*generator_path);
+    return distribution(gen);
 }
 
-double normal(double mean, double stddev, default_random_engine* generator_path){
+double normal(double mean, double stddev){
     normal_distribution<double> distribution(mean, stddev);
 
-    return distribution(*generator_path);
+    return distribution(gen);
 }
 
-/*
-int negbinomial(double rate){
-    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator (seed);
-    std::poisson_distribution<int> distribution(rate);
-    
-    return distribution(generator);
-}
+double random_real(){
+    uniform_real_distribution<> distribution(0.0,1.0);
 
-int L3LarvaePerMos(){
-    // Generate a random number of L3 larvae in an infected mosquito. Modelled using a discritised version of the two parameter Weibull (approximates a zero truncated neg binomial reasonably well and comes builtin to std)
-    // if the zero-truncated binomial is a better fit to the data we could probably generate these using a poisson-gamma mixture?
-    unsigned seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator(seed);
-    std::weibull_distribution<double> distribution(0.72666035,3.22927636);
-    return int(distribution(generator)) + 1;
+    return distribution(gen);
 }
-*/

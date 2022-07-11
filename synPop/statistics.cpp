@@ -368,7 +368,7 @@ void cblok::get_epidemics(int year, mda_strat strategy){
                 if(age >=70 && age <=79)++inf_70_79;
                 if(age >=80)++inf_80_plus;
             }
-            if(a->epids == 'i' || a->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - a->LastDayWithAdultWorm) ){ //all people infected with any number of mature worms or who still have lingering antibodies are counted
+            if(a->epids == 'i' || a->epids == 'u'|| random_real() < pow(DailyProbLoseAntigen, year*365 - a->LastDayWithAdultWorm) ){ //all people infected with any number of mature worms or who still have lingering antibodies are counted
                 ++antigen_pos_villages[j->first - 1];
                 ++ant_total;
                 
@@ -427,7 +427,7 @@ void cblok::get_epidemics(int year, mda_strat strategy){
                 if(age >=80)++inf_80_plus;
             }
 
-            if(a->epids == 'i' || a->epids == 'u'|| drand48() < pow(DailyProbLoseAntigen, year*365 - a->LastDayWithAdultWorm) ){ //all people infected with any number of mature worms or who still have lingering antibodies are counted
+            if(a->epids == 'i' || a->epids == 'u'|| random_real() < pow(DailyProbLoseAntigen, year*365 - a->LastDayWithAdultWorm) ){ //all people infected with any number of mature worms or who still have lingering antibodies are counted
                 ++antigen_pos_villages[j->first - 1];
                 ++ant_total;
                 

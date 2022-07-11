@@ -2912,7 +2912,7 @@ void mblok::allocate_child(vector<agent*> &chld_vec, vector<unit*> &famly){
         double total = 0;
         for(int j = age_dn; j <= age_up; ++j) total += cbk->live_birth_order_by_age[index][j];
         
-        double r = drand48(), prob = 0;
+        double r = random_real(), prob = 0;
         int jj = age_dn;
         for(jj = age_dn; jj <= age_up; ++jj){
             prob += cbk->live_birth_order_by_age[index][jj]/total;

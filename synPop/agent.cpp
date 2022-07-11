@@ -62,22 +62,22 @@ void agent::add_child(agent *p){
 
 // calculate force of infection, considering mosquito exposure,
 // prevalence of infective mosquitoes, and probability of receiving mated worms
-void agent::sim_bites(double prv, char time, double c, double ProbOneSex, double ProbBothSex, default_random_engine* generator_path){
+void agent::sim_bites(double prv, char time, double c, double ProbOneSex, double ProbBothSex){
     double pos_inf_bites_rate = c * prv * (ProbBothSex + ProbOneSex); // mean number of possibly infected bites per period = bites per period * prevalence in mosquitoes
     if(time == 'd') pos_inf_bites_rate *= rb_working; //biting rate day vs night
     else pos_inf_bites_rate *= rb_offwork;
-    int InfectiveBites = poisson(pos_inf_bites_rate, generator_path); //actual random number of bites from infected mosquitoes
+    int InfectiveBites = poisson(pos_inf_bites_rate); //actual random number of bites from infected mosquitoes
     
     for(int b = 0; b < InfectiveBites ; ++b){
-        int clock_pre = min_pre_period + int(drand48()*(max_pre_period-min_pre_period)); //
-        int active = min_inf_period + int(drand48()*(max_inf_period-min_inf_period)); //the active period (infectious lifetime) of the worm to be a random uniform between min and max duration
-        if(drand48() < ProbBothSex/(ProbBothSex + ProbOneSex)){
+        int clock_pre = min_pre_period + int(random_real()*(max_pre_period-min_pre_period)); //
+        int active = min_inf_period + int(random_real()*(max_inf_period-min_inf_period)); //the active period (infectious lifetime) of the worm to be a random uniform between min and max duration
+        if(random_real() < ProbBothSex/(ProbBothSex + ProbOneSex)){
             // make two new prepatent worms, one of each gender, with prepatent lifetimes 'clock_pre' and infectious lifetimes 'active'
             wvec.push_back(new worm('p', clock_pre, active, 'm'));
             wvec.push_back(new worm('p', clock_pre, active, 'f'));
         }else{
             char gender = 'f';
-            if(drand48() < prob_worm_male) gender = 'm';
+            if(random_real() < prob_worm_male) gender = 'm';
             
             wvec.push_back(new worm('p', clock_pre, active, gender)); // make a new prepatent worm with prepatent lifetime 'clock_pre' and infectious lifetime 'active' and gender 'gender'
         }
@@ -167,7 +167,7 @@ void agent::update(int year, int day){
 
 void agent::get_drugs(drugs drug){
     if(wvec.size() > 0){ // if the person has worms
-        double rr = drand48(); //the same thing happens to all a person's worms...
+        double rr = random_real(); //the same thing happens to all a person's worms...
         for(int i = 0; i < wvec.size(); ++i){
             wvec[i]->clock_mda = max(wvec[i]->clock_mda,
                                      int(drug.SterDur * 365)); // set count-down timer for the duration of mda effects. If already sterilised it resets the count-down but makes sure that taking another round of drugs always makes sterilization last longer ('permanent' sterilization is achieved by setting the duration of sterilization for the drug to be greater than the maximum lifetime of a worm in the MDA drug parameters input)

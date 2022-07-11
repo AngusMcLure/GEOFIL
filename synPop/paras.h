@@ -64,8 +64,8 @@ using namespace std;
 #define rb_offwork          120
 
 //Parameters for initial distribution found via stan_glmer in R, included parameter file based upon ICCH of 0.7 and ICCV of 0.28
-#define sigma_h             2.15            //Household standard dev   
-#define sigma_v             1.75            //Village standard dev
+#define sigma_h             2.7706            //Household standard dev   
+#define sigma_v             1.752            //Village standard dev
 #define beta_0              -6.0993         //beta_0 adult (prevalence of 3.285%)
 #define beta_0_c            -7.1049         //beta_0 children (prevalence of 1.913%)
 
@@ -106,8 +106,9 @@ int ztpoisson(double l_lambda);
 int binomial(int r, double p);
 double ztpoisson(int k, double l_lambda);
 double gaussian(double m_mu, double s_sigma);
-int poisson(double rate, default_random_engine* generator_path);
-double normal(double mean, double stddev, default_random_engine* generator_path);
+int poisson(double rate);
+double normal(double mean, double stddev);
+double random_real();
 int negbinomial(double rate);
 int L3LarvaePerMos();
 

@@ -13,7 +13,7 @@
 double max_prv;     // max prevalence of infective mosquitoes
 
 // simulate the population & transmission
-void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generator_path){
+void cblok::sim_pop(int year, mda_strat strategy){
     
     max_prv = 0;
 
@@ -44,8 +44,12 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
                     seed_epidemics(0.0476/2, 8, 14, "Fagalii");
                 }
             }
-        } else if(strategy.InitType == 'S'){
-            seed_clustered_epidemics(generator_path);
+        } else if(strategy.InitType == 'S'){ //Seed with village and household level clustering - village level clustering still causing intialisation issues
+            seed_clustered_epidemics();
+        }
+
+         else if(strategy.InitType == 'H'){ //seed with only household level clustering, no init issues
+            seed_clustered_epidemics_household();
         }
     }
     
@@ -80,7 +84,7 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
     number_tested[year] = 0;
     for(int day = 0; day < 365; ++day){
         if(!(inf_indiv.empty() & pre_indiv.empty() & uninf_indiv.empty())) { //If disease has not been eliminated
-            calc_risk(year, day, strategy, generator_path); //Determine who gets infected with new worms today - doesn't update epi status
+            calc_risk(year, day, strategy); //Determine who gets infected with new worms today - doesn't update epi status
             update_epi_status(year, day); //update everyone's LF epi status (including the status of each of their worms)
 
         }
@@ -89,7 +93,7 @@ void cblok::sim_pop(int year, mda_strat strategy, default_random_engine* generat
 
 
         for (auto const& x : strategy.MDA_Teams){
-            if (year == 0 && day ==0) cout << "Number of Teams: "<< strategy.MDA_Teams.size() <<", Max Distance: "<< x->max_distance << ", Village Test: " << 100*x->village_test << "%" << endl;
+            if (year == 0 && day ==0) cout << "Number of Teams: "<< strategy.MDA_Teams.size() <<", Max Distance: "<< x->max_distance << ", Village Test Aim: " << 100*x->village_test << "%" << endl;
             if (year+sim_bg >= x->start_year & year+sim_bg < (x->start_year+x->years)){
                 continuous_mda(year, day, strategy, x);
             }
@@ -130,11 +134,11 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                 if(age < 15) ++cchild;
                 
                 if(age >= age_dn && age <= age_up){
-                    double r = drand48();
+                    double r = random_real();
                     if(r <= p){
                         cur->epids = 'i';
                         //add one mature worms of each gender
-                        double worm_life = drand48()*max_inf_period;
+                        double worm_life = random_real()*max_inf_period;
                         cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
                         cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                         inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
@@ -143,8 +147,8 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                     else if(r < p * (1 + Init_prepatent_infect_ratio)){
                         cur->epids = 'e';
                         //add one prepatent worm of each gender
-                        double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
-                        double worm_life_prepat = drand48()*max_pre_period;
+                        double worm_life_mature = min_inf_period + random_real()*(max_inf_period-min_inf_period);
+                        double worm_life_prepat = random_real()*max_pre_period;
                         cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
                         cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
 
@@ -153,8 +157,8 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                     else if(r < p * (1 + Init_uninfect_infect_ratio + Init_prepatent_infect_ratio)){
                         cur->epids = 'u';
                         //add one mature worm of one gender
-                        double worm_life = drand48() * max_inf_period;
-                        if(drand48() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                        double worm_life = random_real() * max_inf_period;
+                        if(random_real() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
                         else cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                         uninf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                     }
@@ -168,11 +172,11 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                 if(age < 15) ++cchild;
                 
                 if(age >= age_dn && age <= age_up){
-                    double r = drand48();
+                    double r = random_real();
                     if(r < p){
                         cur->epids = 'i';
                         //add one mature worms of each gender
-                        double worm_life = drand48()*max_inf_period;
+                        double worm_life = random_real()*max_inf_period;
                         cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
                         cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                         inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
@@ -181,8 +185,8 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                     else if(r < p * (1 + Init_prepatent_infect_ratio)){
                         cur->epids = 'e';
                         //add one prepatent worm of each gender
-                        double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
-                        double worm_life_prepat = drand48()*max_pre_period;
+                        double worm_life_mature = min_inf_period + random_real()*(max_inf_period-min_inf_period);
+                        double worm_life_prepat = random_real()*max_pre_period;
                         cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
                         cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
                         
@@ -191,8 +195,8 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
                     else if(r < p * (1 + Init_uninfect_infect_ratio + Init_prepatent_infect_ratio)){
                         cur->epids = 'u';
                         //add one mature worm of one gender
-                        double worm_life = drand48() * max_inf_period;
-                        if(drand48() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                        double worm_life = random_real() * max_inf_period;
+                        if(random_real() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
                         else cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                         uninf_indiv.insert(pair<int, agent*>(cur->aid, cur));
                     }
@@ -202,27 +206,28 @@ void cblok::seed_epidemics(double p, int age_dn, int age_up, string village){
     }
 }
 
-void cblok::seed_clustered_epidemics(default_random_engine* generator_path){
+void cblok::seed_clustered_epidemics(){
     cchild = 0;
 
     for (auto const& j: mbloks){//iterating through villages
         
-        double village_effect = normal(0.0, sigma_v, generator_path); //random effect for village
+        double village_effect = normal(0.0, sigma_v); //random effect for village
+
         
         for(auto const& k: j.second->mblok_hholds){ //iterating through households
             
-            double household_effect = normal(0.0, sigma_h, generator_path); //random effect for village
+            double household_effect = normal(0.0, sigma_h); //random effect for village
             double adult_log_odds = village_effect + household_effect + beta_0; //logodds for household adults
             double child_log_odds = village_effect + household_effect + beta_0_c; //logodds for household 
             
             double adult_prev = 1/(1+exp(-adult_log_odds)); //household prevalence adults
             double child_prev = 1/(1+exp(-child_log_odds)); //household prevalence children
-
-
+            
             for(auto const& l: k.second->mmbrs){ //iterating through household members
                 
                 agent *cur = l.second;
-                double r = drand48();
+
+                double r = random_real();
                 
                 int age = int(cur->age/365);
                 
@@ -231,14 +236,14 @@ void cblok::seed_clustered_epidemics(default_random_engine* generator_path){
                 if(age >= 8 && age <= 15){
                     if (r <= child_prev){ //household member is infected
                     
-                        double infection_type = drand48(); //determine number, sex and maturity of worms
+                        double infection_type = random_real(); //determine number, sex and maturity of worms
 
                         if (infection_type < 0.785){ //one mature worm of one gender
                             
                             cur->epids = 'u';
                             //add one mature worm of one gender
-                            double worm_life = drand48() * max_inf_period;
-                            if(drand48() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            double worm_life = random_real() * max_inf_period;
+                            if(random_real() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
                             else cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                             uninf_indiv.insert(pair<int, agent*>(cur->aid, cur));
 
@@ -246,7 +251,7 @@ void cblok::seed_clustered_epidemics(default_random_engine* generator_path){
                             
                             cur->epids = 'i';
                             //add one mature worms of each gender
-                            double worm_life = drand48()*max_inf_period;
+                            double worm_life = random_real()*max_inf_period;
                             cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
                             cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                             inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
@@ -256,8 +261,8 @@ void cblok::seed_clustered_epidemics(default_random_engine* generator_path){
 
                             cur->epids = 'e';
                             //add one prepatent worm of each gender
-                            double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
-                            double worm_life_prepat = drand48()*max_pre_period;
+                            double worm_life_mature = min_inf_period + random_real()*(max_inf_period-min_inf_period);
+                            double worm_life_prepat = random_real()*max_pre_period;
                             cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
                             cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
                             
@@ -269,14 +274,14 @@ void cblok::seed_clustered_epidemics(default_random_engine* generator_path){
                 } else if(age >= 15){
                     if (r <= adult_prev){ //household member is infected
                     
-                        double infection_type = drand48(); //determine number, sex and maturity of worms
+                        double infection_type = random_real(); //determine number, sex and maturity of worms
 
                         if (infection_type < 0.785){ //one mature worm of one gender
                             
                             cur->epids = 'u';
                             //add one mature worm of one gender
-                            double worm_life = drand48() * max_inf_period;
-                            if(drand48() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            double worm_life = random_real() * max_inf_period;
+                            if(random_real() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
                             else cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                             uninf_indiv.insert(pair<int, agent*>(cur->aid, cur));
 
@@ -284,7 +289,7 @@ void cblok::seed_clustered_epidemics(default_random_engine* generator_path){
                             
                             cur->epids = 'i';
                             //add one mature worms of each gender
-                            double worm_life = drand48()*max_inf_period;
+                            double worm_life = random_real()*max_inf_period;
                             cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
                             cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
                             inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
@@ -294,8 +299,117 @@ void cblok::seed_clustered_epidemics(default_random_engine* generator_path){
 
                             cur->epids = 'e';
                             //add one prepatent worm of each gender
-                            double worm_life_mature = min_inf_period + drand48()*(max_inf_period-min_inf_period);
-                            double worm_life_prepat = drand48()*max_pre_period;
+                            double worm_life_mature = min_inf_period + random_real()*(max_inf_period-min_inf_period);
+                            double worm_life_prepat = random_real()*max_pre_period;
+                            cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
+                            cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
+                            
+                            pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
+
+                        }  
+                    
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+}
+
+void cblok::seed_clustered_epidemics_household(){
+    cchild = 0;
+    for (auto const& j: mbloks){//iterating through villages
+        
+        for(auto const& k: j.second->mblok_hholds){ //iterating through households
+            
+            double household_effect = normal(0.0, sigma_h); //random effect for village
+            double adult_log_odds = household_effect + beta_0; //logodds for household adults
+            double child_log_odds = household_effect + beta_0_c; //logodds for household 
+            
+            double adult_prev = 1/(1+exp(-adult_log_odds)); //household prevalence adults
+            double child_prev = 1/(1+exp(-child_log_odds)); //household prevalence children
+            
+            for(auto const& l: k.second->mmbrs){ //iterating through household members
+                
+                agent *cur = l.second;
+
+                double r = random_real();
+                
+                int age = int(cur->age/365);
+                
+                if(age < 15) ++cchild;
+
+                if(age >= 8 && age <= 15){
+                    if (r <= child_prev){ //household member is infected
+                    
+                        double infection_type = random_real(); //determine number, sex and maturity of worms
+
+                        if (infection_type < 0.785){ //one mature worm of one gender
+                            
+                            cur->epids = 'u';
+                            //add one mature worm of one gender
+                            double worm_life = random_real() * max_inf_period;
+                            if(random_real() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            else cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
+                            uninf_indiv.insert(pair<int, agent*>(cur->aid, cur));
+
+                        } else if (infection_type <0.928){ //one mature worms of each gender
+                            
+                            cur->epids = 'i';
+                            //add one mature worms of each gender
+                            double worm_life = random_real()*max_inf_period;
+                            cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
+                            inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
+                            cur->h_d->rdg->mbk->sum_mf++;
+
+                        } else{ //one prepatent worm of each gender
+
+                            cur->epids = 'e';
+                            //add one prepatent worm of each gender
+                            double worm_life_mature = min_inf_period + random_real()*(max_inf_period-min_inf_period);
+                            double worm_life_prepat = random_real()*max_pre_period;
+                            cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
+                            cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
+                            
+                            pre_indiv.insert(pair<int, agent*>(cur->aid, cur));
+
+                        }  
+                    
+                    }
+                } else if(age >= 15){
+                    if (r <= adult_prev){ //household member is infected
+                    
+                        double infection_type = random_real(); //determine number, sex and maturity of worms
+
+                        if (infection_type < 0.785){ //one mature worm of one gender
+                            
+                            cur->epids = 'u';
+                            //add one mature worm of one gender
+                            double worm_life = random_real() * max_inf_period;
+                            if(random_real() < prob_worm_male) cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            else cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
+                            uninf_indiv.insert(pair<int, agent*>(cur->aid, cur));
+
+                        } else if (infection_type <0.928){ //one mature worms of each gender
+                            
+                            cur->epids = 'i';
+                            //add one mature worms of each gender
+                            double worm_life = random_real()*max_inf_period;
+                            cur->wvec.push_back(new worm('m', 0, worm_life ,'m'));
+                            cur->wvec.push_back(new worm('m', 0, worm_life,'f'));
+                            inf_indiv.insert(pair<int, agent*>(cur->aid, cur));
+                            cur->h_d->rdg->mbk->sum_mf++;
+
+                        } else{ //one prepatent worm of each gender
+
+                            cur->epids = 'e';
+                            //add one prepatent worm of each gender
+                            double worm_life_mature = min_inf_period + random_real()*(max_inf_period-min_inf_period);
+                            double worm_life_prepat = random_real()*max_pre_period;
                             cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'f'));
                             cur->wvec.push_back(new worm('p', worm_life_prepat, worm_life_mature, 'm'));
                             

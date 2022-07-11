@@ -212,7 +212,7 @@ public:
     
     void radt_model(char m);
     
-    void sim_pop(int year, mda_strat strategy, default_random_engine* generator_path);
+    void sim_pop(int year, mda_strat strategy);
     void rnd_jobs(agent *p);
     void hndl_jobs(int year);
     void hndl_schol(int year);
@@ -224,12 +224,13 @@ public:
     void hndl_birth(int year, int day);
     void validate_pop(int year, int day);
     void select_schol(agent *p, char level);
-    void calc_risk(int year, int day, mda_strat strat, default_random_engine* generator_path);
+    void calc_risk(int year, int day, mda_strat strat);
     void risk_loc_day(int year, int day);
     void risk_loc_night(int year, int day);        //time = 'd' or 'n', day/night
     void update_epi_status(int year, int day);
     void seed_epidemics(double p, int age_dn, int age_up, string village = "all");
-    void seed_clustered_epidemics(default_random_engine* generator_path);
+    void seed_clustered_epidemics();
+    void seed_clustered_epidemics_household();
     
     void implement_MDA(int year, mda_strat strat);
     void selective_MDA(int year, mda_strat strat);

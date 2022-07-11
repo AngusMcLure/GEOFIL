@@ -14,15 +14,16 @@
 
 using namespace std;
 
-
-// Simulation number and random seed are made global so that they can be accessed for writing data to files from across the program -- shouldn't be too difficult to rework to pass them through but it's a job...
 int SimulationNumber;
 unsigned seed;
 auto t = time(nullptr);
 auto tm = *localtime(&t);
 
-//_Put_time<char> SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
-//__iom_t10<char> SimulationDateStr = put_time(&tm, "%Y/%m/%d %H:%M:%S");
+random_device r;
+seed_seq seeds{r(), r(), r(), r(), r(), r(), r(), r()};
+mt19937 gen(seeds);
+
+
 string prv_out_loc;
 
 
@@ -64,7 +65,7 @@ int main(int argc, const char * argv[]) {
             int n_teams = count_teams(TargettedMDA);
             cout << "Targeted MDA Selected With "<< n_teams << " Teams Selected" << endl;
 
-            for (int i = 0; i < n_teams; i++ ){ //buidling teams
+            for (int i = 0; i < n_teams; i++ ){ //buidling teams.
                 vector<double> teamdata;
                 teamdata = get_targeted(TargettedMDA, i+1);
                 targeted_mda* p = NULL;
@@ -75,14 +76,8 @@ int main(int argc, const char * argv[]) {
         }
         for(int i = 0; i < strategy.NumSims; ++i){ // for every simulation
             // Set random seeds -- I am getting a new seed for each simulation so that each simulation is reproducible (rather than having to run the whole batch to reproduce)
-
             seed = (unsigned)std::chrono::system_clock::now().time_since_epoch().count();
             srand(seed);
-            srand48(seed);
-
-            default_random_engine  generator(seed);
-            default_random_engine* generator_path;
-            generator_path = &generator;
 
             SimulationNumber = i+1;
             auto t = time(nullptr);
@@ -94,7 +89,7 @@ int main(int argc, const char * argv[]) {
             
             for(int year = 0; year < strategy.SimYears; ++year){ // for each year
                 cout << "Year is: " << year << endl;
-                cbk->sim_pop(year,strategy, generator_path);
+                cbk->sim_pop(year,strategy);
             }
         }
     }
