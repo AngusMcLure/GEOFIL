@@ -66,6 +66,7 @@ mda_strat get_nth_mda_strat(string filename, int N)
     p = strtok(NULL, ",");      double InitPrev = atof(p);
     p = strtok(NULL, ",");      int SimYears = atoi(p);
     p = strtok(NULL, ",");      char Targetted = *p;
+    p = strtok(NULL, ",");      int N_Day_Bites = atoi(p);
     delete []str;
 
     drugs drug1 {MDAKillProb1, MDAFullSterProb1, MDAPartSterProb1, MDASterDur1, MDAPartSterMagnitude1};
@@ -81,7 +82,7 @@ mda_strat get_nth_mda_strat(string filename, int N)
         Additional_MDA, Additional_Scheme, Additional_Start,
         Additional_Rounds, Additional_Years, Additonal_Buildings,
         adc, adw,NumSims,ProbOneSex, ProbBothSex,
-        InitType, InitPrev, SimYears, Targetted};
+        InitType, InitPrev, SimYears, Targetted, N_Day_Bites};
 
     return strat;
 }
