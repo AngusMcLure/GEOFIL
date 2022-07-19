@@ -60,14 +60,17 @@ using namespace std;
 
 //parameters for risk
 #define r_r                 100            //risk range, 100m average, Aedes polynesiensis
-#define rb_working          22             //bitten rate per half day
-#define rb_offwork          118
+#define rb_working          20             //bitten rate per half day
+#define rb_offwork          120
 
 //Parameters for initial distribution found via stan_glmer in R, included parameter file based upon ICCH of 0.7 and ICCV of 0.28
-#define sigma_h             2.7706            //Household standard dev   
+#define sigma_h             2.146           //Household standard dev   
 #define sigma_v             1.752            //Village standard dev
-#define beta_0              -6.0993         //beta_0 adult (prevalence of 3.285%)
-#define beta_0_c            -6.8916        //beta_0 children (prevalence of 1.913%)
+#define beta_0              -5.602324       //beta_0 adult (20+) (prevalence of 4.51%)
+#define beta_0_c            -6.655307      //beta_0 children (5-19) (prevalence of 2.57%)
+
+#define min_2010            2.75
+#define max_2010            3.75
 
 #define c0_4                0.25           //relative exposure to mosquitos, age 0-4
 #define c5_15               0.75           //relative exposure to mosquitos, age 5-15

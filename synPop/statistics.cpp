@@ -868,3 +868,32 @@ void cblok::get_mosquitoes(int year){
     out << endl;
     out.close();
 }
+
+void cblok::get_prevalence(int year){
+
+    double pop_total = 0;
+    double ant_total = 0;
+    double prev = 0;
+    for (auto const &i : mbloks) {
+        for(auto const &j : i.second->mblok_males){
+            ++pop_total;
+        
+            if (j.second->epids == 'i' || j.second->epids == 'u'|| random_real() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)){
+                ++ ant_total;
+            } 
+        }
+        for(auto const &j : i.second->mblok_fmals){
+            ++pop_total;
+        
+            if (j.second->epids == 'i' || j.second->epids == 'u'|| random_real() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)){
+                ++ ant_total;
+            } 
+        }
+        
+    }
+
+    prev = 100 * ant_total/pop_total;
+
+    init_prev = prev;
+    cout << "Init prev: " << init_prev << "%" << endl;
+}

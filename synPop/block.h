@@ -94,7 +94,7 @@ public:
     int cid;                            //cblock id
     string cname;                       //cblock name
     double lat, log;
-    
+    double init_prev = 0;
     int cpop;
     int cchild;
     int chold;
@@ -268,6 +268,7 @@ public:
     void get_bbldgarea(int year);
     void get_epidemics(int year,mda_strat strategy);
     void get_mosquitoes(int year);
+    void get_prevalence(int year);
     void out_epidemics(int year, int day);
     void out_riskmap(int year);
     void out_vg_prv(int year);
