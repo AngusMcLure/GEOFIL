@@ -268,7 +268,7 @@ public:
     void get_bbldgarea(int year);
     void get_epidemics(int year,mda_strat strategy);
     void get_mosquitoes(int year);
-    void get_prevalence(int year);
+    void get_prevalence();
     void out_epidemics(int year, int day);
     void out_riskmap(int year);
     void out_vg_prv(int year);

@@ -60,8 +60,8 @@ using namespace std;
 
 //parameters for risk
 #define r_r                 100            //risk range, 100m average, Aedes polynesiensis
-#define rb_working          20             //bitten rate per half day
-#define rb_offwork          120
+#define rb_working          14.5             //bitten rate per half day
+#define rb_offwork          125.5
 
 //Parameters for initial distribution found via stan_glmer in R, included parameter file based upon ICCH of 0.7 and ICCV of 0.28
 #define sigma_h             2.146           //Household standard dev   

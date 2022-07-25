@@ -14,10 +14,11 @@ double max_prv;     // max prevalence of infective mosquitoes
 
 // simulate the population & transmission
 void cblok::sim_pop(int year, mda_strat strategy){
-    
     max_prv = 0;
     // initialise pop
     if(year == 0){
+         init_prev = 0;
+         
         //custom
         if(strategy.InitType == 'C'){
             //Scenario 0
@@ -316,5 +317,5 @@ void cblok::seed_clustered_epidemics(){
 
     }
     
-    get_prevalence(0);
+    get_prevalence();
 }

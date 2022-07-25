@@ -869,8 +869,9 @@ void cblok::get_mosquitoes(int year){
     out.close();
 }
 
-void cblok::get_prevalence(int year){
+void cblok::get_prevalence(){
 
+    int year = 0;
     double pop_total = 0;
     double ant_total = 0;
     double prev = 0;
