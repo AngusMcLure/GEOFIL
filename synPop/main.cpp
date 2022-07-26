@@ -28,10 +28,10 @@ string prv_out_loc;
 
 
 int main(int argc, const char * argv[]) {
-    
+    prv_out_loc = argv[1];
     //get location for outputting prevalence data
-    cout << "Please enter a file name for the output file with annual prevalence reports:";
-    getline(cin, prv_out_loc);
+    //cout << "Please enter a file name for the output file with annual prevalence reports:";
+    //getline(cin, prv_out_loc);
     
     char * dir = getcwd(NULL, 0);
     printf("Current dir: %s", dir);

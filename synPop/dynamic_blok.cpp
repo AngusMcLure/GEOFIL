@@ -1655,7 +1655,7 @@ void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned
 void cblok::continuous_mda(int year, int day, mda_strat strat, targeted_mda *data) {\
 
     if (data->days_in_village==0){ //the team has finished working in a village and is ready to go to next village
-        bool sph = true; //Testing only a single person per hosuehold, instead of the whole house
+        bool sph = false; //Testing only a single person per hosuehold, instead of the whole house
         unsigned time;
         unsigned n_villages;
         unsigned n_houses;
@@ -1725,7 +1725,7 @@ void cblok::continuous_mda(int year, int day, mda_strat strat, targeted_mda *dat
 
         data->days_in_village=time; 
 
-        if (sph == false){ //testing every member of a household
+        if (!sph){ //testing every member of a household
             cout << "Testing every household member!" << endl;
             for (auto const& y : houses_to_test){
                 if ((mbloks[village_id]->mblok_hholds[y]->mda == 0) & (random_real() < data->coverage) ) {// likelyhood that household will get tested and household has not had mda already (no ID)
@@ -1757,7 +1757,7 @@ void cblok::continuous_mda(int year, int day, mda_strat strat, targeted_mda *dat
                 }
                 backtohouses:;
             }
-        }else if (sph == true) {
+        }else if (sph) {
             cout << "Testing one household member!" << endl;
             for (auto const& y : houses_to_test){
                 int min_age = 20;
