@@ -91,7 +91,7 @@ void cblok::sim_pop(int year, mda_strat strategy){
 
 
         for (auto const& x : strategy.MDA_Teams){
-            if (year == 0 && day ==0) cout << "Number of Teams: "<< strategy.MDA_Teams.size() <<", Max Distance: "<< x->max_distance << ", Village Test Aim: " << 100*x->village_test << "%" << endl;
+            if (year == 0 && day ==0) cout << "Number of Teams: "<< strategy.MDA_Teams.size() <<", Max Distance: "<< x->Treatment_Radius << ", Household Test Aim: " << 100*x->household_test << "%" << endl;
             if (year+sim_bg >= x->start_year & year+sim_bg < (x->start_year+x->years)){
                 continuous_mda(year, day, strategy, x);
             }

@@ -56,9 +56,8 @@ mda_strat get_nth_mda_strat(string filename, int N)
     p = strtok(NULL, ",");      int Additional_Start = atoi(p);
     p = strtok(NULL, ",");      int Additional_Rounds = atoi(p);
     p = strtok(NULL, ",");      int Additional_Years = atoi(p);
-    p = strtok(NULL, ",");      int Additonal_Buildings = atoi(p);
-    p = strtok(NULL, ",");      double adc = atof(p);
-    p = strtok(NULL, ",");      double adw = atof(p);
+    p = strtok(NULL, ",");      int Additonal_Villages = atoi(p);
+    p = strtok(NULL, ",");      double Additonal_Coverage = atof(p);
     p = strtok(NULL, ",");      int NumSims = atoi(p);
     p = strtok(NULL, ",");      double ProbOneSex = atof(p);
     p = strtok(NULL, ",");      double ProbBothSex = atof(p);
@@ -67,7 +66,7 @@ mda_strat get_nth_mda_strat(string filename, int N)
     p = strtok(NULL, ",");      int SimYears = atoi(p);
     p = strtok(NULL, ",");      char Targetted = *p;
     delete []str;
-
+    
     drugs drug1 {MDAKillProb1, MDAFullSterProb1, MDAPartSterProb1, MDASterDur1, MDAPartSterMagnitude1};
     drug1.print_drugs();
     drugs drug2 {MDAKillProb2, MDAFullSterProb2, MDAPartSterProb2, MDASterDur2, MDAPartSterMagnitude2};
@@ -79,8 +78,8 @@ mda_strat get_nth_mda_strat(string filename, int N)
         Real_Years,
         MDAStartYear, MDANumRound, MDAYearsBetweenRound,
         Additional_MDA, Additional_Scheme, Additional_Start,
-        Additional_Rounds, Additional_Years, Additonal_Buildings,
-        adc, adw,NumSims,ProbOneSex, ProbBothSex,
+        Additional_Rounds, Additional_Years, Additonal_Villages,
+        Additonal_Coverage,NumSims,ProbOneSex, ProbBothSex,
         InitType, InitPrev, SimYears, Targetted};
 
     return strat;
@@ -138,20 +137,20 @@ vector <double> get_targeted(string filename, int N){
 
     p = strtok(str, ",");       int Number_Teams = atoi(p);
     p = strtok(NULL, ",");      double Coverage = atof(p);
-    p = strtok(NULL, ",");      double Village_Test = atof(p);
+    p = strtok(NULL, ",");      double Household_Test = atof(p);
     p = strtok(NULL, ",");      int Years = atoi(p);
     p = strtok(NULL, ",");      int Start_Year = atoi(p);
-    p = strtok(NULL, ",");      int Max_Distance = atoi(p);
+    p = strtok(NULL, ",");      int Treatment_Radius = atoi(p);
     p = strtok(NULL, ",");      int Min_Test = atoi(p);
     p = strtok(NULL, ",");      int Days_Return = atoi(p);
     delete []str;
 
 
     storage.push_back(Coverage);
-    storage.push_back(Village_Test);
+    storage.push_back(Household_Test);
     storage.push_back(Years);
     storage.push_back(Start_Year);
-    storage.push_back(Max_Distance);
+    storage.push_back(Treatment_Radius);
     storage.push_back(Min_Test);
     storage.push_back(Days_Return);
 

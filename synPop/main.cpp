@@ -58,6 +58,7 @@ int main(int argc, const char * argv[]) {
 
     for(int ScenarioCount = 0; ScenarioCount<NumMDAScenarios; ++ScenarioCount){
         mda_strat strategy = get_nth_mda_strat(MDAScenarioLoc,ScenarioCount+1);
+      
         strategy.print_mda_strat();
 
         if (toupper(strategy.Targetted)=='Y'){

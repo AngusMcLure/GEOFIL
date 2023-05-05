@@ -1086,7 +1086,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
 
     //Regular MDA done a second time
     if (scheme == 'A'){
-        strat.Coverage = strat.Ad_C_Workplace;
+        strat.Coverage = strat.Ad_Coverage;
         implement_MDA(year, strat);
     }
 
@@ -1103,7 +1103,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
 
         random_shuffle(keys.begin(),
                        keys.end()); // Randomising the vector to give random villages and selecting the desired number
-        keys.resize(strat.Ad_N_Buildings); // Number of villages we want to look at
+        keys.resize(strat.Ad_N_Villages); // Number of villages we want to look at
 
         cout << "Randomly Selected Villages: " << endl;
         for (auto const &i : keys) {
@@ -1127,7 +1127,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
 
     //treating n villages with highest prev
     if (scheme == 'P') {
-        cout<<"Targeting " << strat.Ad_N_Buildings << " Villages with Highest Prev" << endl;
+        cout<<"Targeting " << strat.Ad_N_Villages << " Villages with Highest Prev" << endl;
         int tot_villages = mbloks.size();
         vector<unsigned> keys; // Vector that is used to choose the villages that we want (keys for the map of villages)
 
@@ -1161,9 +1161,9 @@ void cblok::selective_MDA(int year, mda_strat strat) {
         for (auto const& i : inf_villages){
             keys.push_back(i.second);
         }
-        keys.resize(strat.Ad_N_Buildings);
+        keys.resize(strat.Ad_N_Villages);
 
-        cout << strat.Ad_N_Buildings << " with highest prev are: " << endl;
+        cout << strat.Ad_N_Villages << " with highest prev are: " << endl;
         for (auto const& i : keys){
             cout << mbloksIndexB[i] << endl;
         }
@@ -1240,7 +1240,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
                 if (find(will_not_take.begin(), will_not_take.end(), house_id) != will_not_take.end()){ //first we check if the household has already refused MDA
 
                 } else {
-                    if (random_real() <= strat.Ad_C_Workplace) { //if will accept test
+                    if (random_real() <= strat.Ad_Coverage) { //if will accept test
                         if (j.second->epids == 'i' || j.second->epids == 'u'|| random_real() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if found to be infected
                             will_take.emplace(village_id,
                                               house_id); //Storing house data (village id, house id) as infected person found and tested
@@ -1293,7 +1293,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
                             if (find(will_not_take.begin(), will_not_take.end(), house_id) != will_not_take.end()){ //first we check if the household has already refused MDA
                                 cout << "Household Has Previously Refused MDA" << endl;
                             } else {
-                                if (random_real() <= strat.Ad_C_Workplace) { //if will accept test
+                                if (random_real() <= strat.Ad_Coverage) { //if will accept test
                                     n_tested += 1;
                                     if (j.second->epids == 'i' || j.second->epids == 'u'|| random_real() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if found to be infected
                                         cout << "Will take infected" << endl;
@@ -1311,7 +1311,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
                         if (find(will_not_take.begin(), will_not_take.end(), house_id) != will_not_take.end()){ //first we check if the household has already refused MDA
                             //cout << "Household Has Previously Refused MDA" << endl;
                         } else {
-                            if (random_real() <= strat.Ad_C_Workplace) { //if will accept test
+                            if (random_real() <= strat.Ad_Coverage) { //if will accept test
                                 n_tested += 1;
                                 if (j.second->epids == 'i' || j.second->epids == 'u'|| random_real() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if found to be infected
                                     will_take.emplace(village_id,
@@ -1338,7 +1338,7 @@ void cblok::selective_MDA(int year, mda_strat strat) {
                     if (find(will_not_take.begin(), will_not_take.end(), house_id) != will_not_take.end()){ //first we check if the household has already refused MDA
                         //cout << "Household Has Previously Refused MDA" << endl;
                     } else {
-                        if (random_real() <= strat.Ad_C_Workplace) { //if will accept test
+                        if (random_real() <= strat.Ad_Coverage) { //if will accept test
                             n_tested += 1;
                             if (j.second->epids == 'i' || j.second->epids == 'u'|| random_real() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if found to be infected
                                 will_take.emplace(village_id,
@@ -1594,7 +1594,7 @@ void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned
         for (auto const& j : mbloks[i.first]->mblok_workps[i.second]->workers){ //going through workers
             double age = j.second->age/365.0;
             
-            if (random_real() <= strat.Ad_C_Workplace / (double) target_prop) { // if the person accpects test
+            if (random_real() <= strat.Ad_Coverage / (double) target_prop) { // if the person accpects test
                 n_tested += 1; // adding person to test sum
                 if (j.second->epids == 'i' || j.second->epids == 'u'|| random_real() < pow(DailyProbLoseAntigen, year*365 - j.second->LastDayWithAdultWorm)) { //if test positive
                     if (j.second->gendr == 'm') {
@@ -1613,7 +1613,7 @@ void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned
 
                     if (j.second->gendr == 'f') {
                         if (age >= 49 || age < 15) { //non child-bearing age
-                            if (random_real() <= strat.Ad_C_Workplace / (double) target_prop) {
+                            if (random_real() <= strat.Ad_Coverage / (double) target_prop) {
                                 if (age >= strat.MinAge1) {
                                     if (age >= strat.MinAge2) {
                                         j.second->get_drugs(
@@ -1625,7 +1625,7 @@ void cblok::workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned
                                     ++treat_f;
                                 }
                             }
-                        } else if (random_real() <= (1 - prop_preg_childbearing) * strat.Ad_C_Workplace /
+                        } else if (random_real() <= (1 - prop_preg_childbearing) * strat.Ad_Coverage /
                                                 (double) target_prop) { // for women of child-bearing age
                             if (age >= strat.MinAge1) {
                                 if (age >= strat.MinAge2) {
@@ -1694,11 +1694,11 @@ void cblok::continuous_mda(int year, int day, mda_strat strat, targeted_mda *dat
         mda_id = rand() % 10000; //generating an ID which we will use to keep track of houses that take MDA
 
         cout << "\n" <<"Team "<< data->team_number <<" Currently In: "<<mbloksIndexB[village_id] << endl;
-        cout << "Radius: " << data->max_distance << " metres!" << endl;
-        householdistances(data->max_distance,village_id); //working out all households within x distance of all houses in our selected village
+        cout << "Radius: " << data->Treatment_Radius << " metres!" << endl;
+        householdistances(data->Treatment_Radius,village_id); //working out all households within x distance of all houses in our selected village
 
         n_houses = mbloks[village_id]->mblok_hholds.size(); //number of houses in village
-        n_test  = n_houses*data->village_test; //Try to test so much of village
+        n_test  = n_houses*data->household_test; //Try to test so much of village
 
         if (n_test <data->min_test){ //ensuring enough households are test
         cout << "Only " << n_test << "Houses we are testing!" << endl;
@@ -1871,7 +1871,7 @@ void cblok::mda_countdown(){
     }
 }
 
-void cblok::householdistances(int max_distance, int village_number) {
+void cblok::householdistances(int Treatment_Radius, int village_number) {
 
     house_distance.clear(); //getting rid of previous
 
@@ -1897,7 +1897,7 @@ void cblok::householdistances(int max_distance, int village_number) {
 
                 distance = sqrt(pow((i.second->lat-k.second->lat),2)+pow((i.second->log-k.second->log),2)); // distance between houses
 
-                if (distance >0 & distance < max_distance){//making sure not choosing same house again and house not too fair away
+                if (distance >0 & distance < Treatment_Radius){//making sure not choosing same house again and house not too fair away
                     vil_house_id.first = secondary_village_id;
                     vil_house_id.second = secondary_house_id;
                     a_house.push_back(vil_house_id); //storing the data of the house

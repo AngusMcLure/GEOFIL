@@ -244,7 +244,7 @@ public:
     int number_treated[sim_years];
     int number_tested[sim_years];
 
-    void householdistances(int max_distance, int village_number); //used to choose and store "nearest neighbours"
+    void householdistances(int Treatment_Radius, int village_number); //used to choose and store "nearest neighbours"
     void mda_countdown();
 
     double adult_prv[40];

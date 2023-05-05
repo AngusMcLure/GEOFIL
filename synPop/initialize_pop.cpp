@@ -157,7 +157,7 @@ bool cblok::pop_reload(){
         if(rupture == true) break;
         else ++hhold_threshold;
     }
-    cout << "hhold threshold rupture: " << hhold_threshold << endl;
+    //cout << "hhold threshold rupture: " << hhold_threshold << endl;
     
     string file = config;   file = file + cname;    file = file + ".init";
     ifstream in(file.c_str());

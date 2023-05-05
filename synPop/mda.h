@@ -67,7 +67,7 @@ public:
     int treated_v = 0; //village we are currently treating
     int n_villages = 64; //total number of villages in am sam
 
-    int max_distance; //distance from infective house we want to treat
+    int Treatment_Radius; //distance from infective house we want to treat
     int min_test = 10; // min number of households in each village that we will test
 
     int days_before_return = 180; //time before we can return to village -this team or any other
@@ -75,16 +75,16 @@ public:
     int team_number;
 
     double coverage;
-    double village_test;
+    double household_test;
     vector<unsigned> village_path; //Vector to keep track of villages visited
 
     targeted_mda( int tn, double c, double vt, int ys, int sy, int md, int mt, int dbr){
         team_number = tn;
         coverage = c;
-        village_test = vt;
+        household_test = vt;
         years = ys;
         start_year = sy;
-        max_distance = md;
+        Treatment_Radius = md;
         min_test = mt;
         days_before_return = dbr;
 
@@ -117,9 +117,8 @@ public:
     int Ad_Start;
     int Ad_Rounds;
     int Ad_Years;
-    int Ad_N_Buildings;
-    double Ad_C_School;
-    double Ad_C_Workplace;
+    int Ad_N_Villages;
+    double Ad_Coverage;
     int NumSims;
     double ProbOneSex;
     double ProbBothSex;
@@ -136,7 +135,7 @@ public:
               int S, int N, int Y,
               char ADM, char ADS,
               int AD_S, int AD_N, int AD_Y,
-              int ADNB, double ADCS, double ADCW,
+              int ADNV, double ADC,
               int NS, double POS,
               double PBS,char IT,
               double IP, int SY, char TG){
@@ -173,9 +172,8 @@ public:
                 cout << MDAYearstarg[i] << " is an targeted MDA year" << endl;
             }
         }
-        Ad_N_Buildings = ADNB;
-        Ad_C_School = ADCS; //School coverage
-        Ad_C_Workplace = ADCW; //Workplace Coverage
+        Ad_N_Villages = ADNV;
+        Ad_Coverage = ADC; // Coverage
         NumSims = NS;
         ProbOneSex = POS;
         ProbBothSex = PBS;

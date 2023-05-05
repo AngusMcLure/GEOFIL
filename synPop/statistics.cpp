@@ -495,9 +495,8 @@ void cblok::get_epidemics(int year, mda_strat strategy){
         out << "Add_Start,";
         out << "Add_Rounds,";
         out << "Add_Years_Between,";
-        out << "Add_N_Work_or_Vil,";
-        out << "Add_School_Coverage,";
-        out << "Add_Work_Coverage,";
+        out << "Add_N_Villages,";
+        out << "Add_Coverage,";
         out << "Team_MDA,";
         out << "AchievedMDACoverage,";
         out << "ProbOneGender,";
@@ -584,9 +583,8 @@ void cblok::get_epidemics(int year, mda_strat strategy){
     out << strategy.Ad_Start << ",";
     out << strategy.Ad_Rounds << ",";
     out << strategy.Ad_Years << ",";
-    out << strategy.Ad_N_Buildings << ",";
-    out << strategy.Ad_C_School << ",";
-    out << strategy.Ad_C_Workplace << ",";
+    out << strategy.Ad_N_Villages << ",";
+    out << strategy.Ad_Coverage << ",";
     out << strategy.Targetted << ",";
     out << achieved_coverage[year] << ",";
     out << strategy.ProbOneSex << ",";

@@ -1,6 +1,6 @@
 # GEOFIL
 
-GEOFIL is a spatially explicit agent-based modelling framework, designed to model LF transmission dynamics in American Samoa. 
+GEOFIL is a spatially explicit agent-based modelling framework, designed to model LF transmission dynamics in American Samoa. GEOFIL was developed at the National Centre for Epidemiology and Population Health at the Australian National University.
 
 To accurately model American Samoan population dynamics, GEOFIL uses a synthetic population model, which allows for births, deaths, couple formation and separation, movement within American Samoa, immigration, and emigration. People are assigned households, workplaces, and schools; the locations of these buildings correspond to known locations of buildings in American Samoa. During the day people are at their day-time location (workplace for employed, school for students, or household for all other people) and during night people are at their night-time location (household for all people). The immediate area around these locations is where transmission may occur. 
 
@@ -48,7 +48,6 @@ MDAParams.csv contains 32 columns, each column controlling providing a value for
 
 If you want to run multiple different strategies, you just have to add an extra row of variable values below the first. GEOFIL will the run sequentially down the rows of input values.
 
-
 The household-based strategy is run from an additional file, target_mda.csv. The file contains eight columns/variables that govern the household based strategy. It is important to note, if running with multiple teams there must be an row of input values for each team (done as teams within the same strategy can be run with different attributes).  Below is an outline of what each variable controls-
 
 | **Variable** | **Description** |
@@ -58,7 +57,8 @@ The household-based strategy is run from an additional file, target_mda.csv. The
 |*Household_test*| The household test aim|
 |*Years*| Number of years the strategy will run for|
 |*Start_Year*| The starting year for the intervention|
-|*Max_Distance*| The treatment radius|
+|*Treatment_Radius*| The treatment radius|
 |*Min_Test*| The minimum number of households a team will aim to test in each village|
 |*Days_return*| The number of days till a team can return to a village|
 			  
+Once you have configured MDAParams.csv and target_mda.csv the model is run by compiling the code and running with an arguement (this will be the name of the outpyt file). For example ./main ouput_name.csv. 
