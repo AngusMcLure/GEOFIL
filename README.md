@@ -6,11 +6,11 @@ To accurately model American Samoan population dynamics, GEOFIL uses a synthetic
 
 To model LF transmission in the human population, the model is run on a daily time step and explicitly models the human-agent while implicitly modelling the mosquito-vector. At each time-step the model simulates synthetic population changes, potential transmission, and the worm life-cycle within the host (acquisition, maturation, fecundity, and mortality). As transmission can occur at either a person's day-time location or night-time location, transmission during working hours and off-work hours is modelled separately. At each time-step a person may zero, one, or multiple transmission events, where a transmission event may transmit either one third stage-larvae of single sex, or two third stage-larvae of both sexes. 
 
-The model is currently configured to initialise in 2010 and simulate for $n$ years. There are 3 initial rounds of territory-wide MDA which occur in 2018, 2019, 2021, these are based on actual MDA rounds that occurred in American Samoa. After these initial rounds of MDA, a number of different additional interventions can be simulated.
+The model is currently configured to initialise in 2010 and runs for $n$ years. There are 3 initial rounds of territory-wide MDA which occur in 2018, 2019, 2021, these are based on actual MDA rounds that occurred in American Samoa. After these initial rounds of MDA, a number of different additional interventions can be simulated.
 
-The GEOFIL repository contains four directories. All code for the model is contained within synPop, data and $config contain a number of csv, dat, and init files which are used to build the initial synthetic population and all building locations used by GEOFIL. The parameters folder contains additional .csv files for the synthetic population & transmission, and files that control the simulation (MDAParams.csv and target_mda.csv).
+The GEOFIL repository contains four directories. All code is contained within synPop. Data and $config contain a number of csv, dat, and init files which are used to build the initial synthetic population and contain all building locations used by GEOFIL. The parameters folder contains additional .csv files for the synthetic population & transmission, and files that control the simulation (MDAParams.csv and target_mda.csv).
 
-MDAParams.csv contains 32 columns, each column controlling providing a value for a variable that controls different aspect of the simulation and intervention. For clarity the effect of each variable/column is listed below-
+MDAParams.csv contains 32 columns, each column providing a value for a variable that controls different aspect of the simulation and intervention. For clarity the effect of each variable/column is listed below-
 
 | **Variable** | **Description** |
 | --- | --- |
@@ -46,7 +46,7 @@ MDAParams.csv contains 32 columns, each column controlling providing a value for
 |*SimYears*|The number of years the simulation will run for |
 |*Household_MDA*| Y for household-based strategy of N for no household-based strategy. The household based strategy can run concurrently with any other additional scheme and the specifics of the household based strategy are defined in file target_mda.csv.|
 
-If you want to run multiple different strategies, you just have to add an extra row of variable values below the first. GEOFIL will the run sequentially down the rows of input values.
+If you want to simulate more than one strategy, you just have to add an extra row of variables values below the first row. GEOFIL will the run sequentially down the rows of input values.
 
 The household-based strategy is run from an additional file, target_mda.csv. The file contains eight columns/variables that govern the household based strategy. It is important to note, if running with multiple teams there must be an row of input values for each team (done as teams within the same strategy can be run with different attributes).  Below is an outline of what each variable controls-
 
