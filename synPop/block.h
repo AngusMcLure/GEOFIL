@@ -8,7 +8,7 @@
 
 #ifndef blocks_hpp
 #define blocks_hpp
-#include <cstring>
+
 #include "hhold.h"
 #include "agrps.h"
 #include "mda.h"
@@ -22,10 +22,14 @@ class mblok{
 public:
     int mid;                            //mblock id
     double lat, log;                    //latitude & longitude
+
+    int mda = 0; //unique id to keep track of village MDA
+    int days_before_mda = 0;
+
     cblok *cbk;                         //city block
     
     double sum_mf;
-    
+
     map<int, agent*> mblok_males;       // village male pop
     map<int, agent*> mblok_fmals;       // village female pop
     map<int, hhold*> mblok_hholds;      // village household
@@ -90,7 +94,7 @@ public:
     int cid;                            //cblock id
     string cname;                       //cblock name
     double lat, log;
-    
+    double init_prev = 0;
     int cpop;
     int cchild;
     int chold;
@@ -149,7 +153,9 @@ public:
     map<int, int> mblok_mpops;          //male pop in each mblok
     map<int, int> mblok_fpops;          //female pop in each mblok
     map<int, agrps*> mblok_agrps;       //mblok pop by age group;
-    
+
+    map<unsigned ,vector<pair<unsigned,unsigned>>> house_distance;
+
     int male_by_agrp[age_grps];         //males by age groups
     int fmal_by_agrp[age_grps];         //females by age groups
     int male_by_age[max_ages+1];        //males by singular age - triangle smoothed
@@ -195,7 +201,6 @@ public:
     void bld_cblok_hhold();
     void hndl_land_data();
     void allct_rbldgs();
-    void calc_bldg_dist();
     void calc_marital_prob();
     void rmv_agent(agent *p);
     void add_vcnt_rbldg(rbldg *p);
@@ -207,7 +212,7 @@ public:
     
     void radt_model(char m);
     
-    void sim_pop(int year, mda_strat strategy, default_random_engine* generator_path);
+    void sim_pop(int year, mda_strat strategy);
     void rnd_jobs(agent *p);
     void hndl_jobs(int year);
     void hndl_schol(int year);
@@ -219,18 +224,29 @@ public:
     void hndl_birth(int year, int day);
     void validate_pop(int year, int day);
     void select_schol(agent *p, char level);
-    void calc_risk(int year, int day, mda_strat strat, default_random_engine* generator_path);
+    void calc_risk(int year, int day, mda_strat strat);
     void risk_loc_day(int year, int day);
     void risk_loc_night(int year, int day);        //time = 'd' or 'n', day/night
     void update_epi_status(int year, int day);
     void seed_epidemics(double p, int age_dn, int age_up, string village = "all");
+    void seed_clustered_epidemics();
+    void seed_clustered_epidemics_household();
     
     void implement_MDA(int year, mda_strat strat);
+    void selective_MDA(int year, mda_strat strat);
+    void village_mda(int year, mda_strat strat, vector<unsigned> keys);
+    void refined_household_mda(int year, multimap<unsigned, unsigned> mda_houses, mda_strat strat);
+    void workplace_mda(int year, mda_strat strat, multimap<unsigned, unsigned> mda_workplaces);
+    void continuous_mda(int year, int day, mda_strat strat, targeted_mda *data);
     double achieved_coverage[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
     double achieved_coverage_m[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
     double achieved_coverage_f[sim_years]; // the actual drug coverage achieved each year (for each year of the simulation). Will be zero for most years.
+    int number_treated[sim_years];
+    int number_tested[sim_years];
 
-    
+    void householdistances(int Treatment_Radius, int village_number); //used to choose and store "nearest neighbours"
+    void mda_countdown();
+
     double adult_prv[40];
     double child_6_7_prv[40];
     double child_11_12_prv[40];
@@ -252,6 +268,7 @@ public:
     void get_bbldgarea(int year);
     void get_epidemics(int year,mda_strat strategy);
     void get_mosquitoes(int year);
+    void get_prevalence();
     void out_epidemics(int year, int day);
     void out_riskmap(int year);
     void out_vg_prv(int year);

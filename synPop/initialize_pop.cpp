@@ -7,6 +7,7 @@
 //
 
 #include "block.h"
+
 using namespace std;
 
 // Constructor of AS
@@ -69,7 +70,9 @@ cblok::cblok(int cid, string cname, double lat, double log){
             
             //out population
             file = config_pop;  file = file + mbk_str;  file = file + "_pop.init";
-            
+
+
+
             out.open(file.c_str());
             out << "ID,age,gender,marriage,births" << endl;
             for(map<int, agent*>::iterator k = mbk->mblok_males.begin(); k != mbk->mblok_males.end(); ++k){
@@ -154,7 +157,7 @@ bool cblok::pop_reload(){
         if(rupture == true) break;
         else ++hhold_threshold;
     }
-    cout << "hhold threshold rupture: " << hhold_threshold << endl;
+    //cout << "hhold threshold rupture: " << hhold_threshold << endl;
     
     string file = config;   file = file + cname;    file = file + ".init";
     ifstream in(file.c_str());
@@ -1383,9 +1386,6 @@ void cblok::hndl_land_data(){
             char *p = std::strtok(str, ",");    int sid = atoi(p);
             p = std::strtok(NULL, ",");         string name = p;
             p = std::strtok(NULL, ",");         char level = p[0];
-            p = std::strtok(NULL, ",");         double log = atof(p);
-            p = std::strtok(NULL, ",");         double lat = atof(p);
-            
             schol *sh = new schol(sid, name, level, log, lat);
             cblok_schols.push_back(sh);
             
@@ -2912,7 +2912,7 @@ void mblok::allocate_child(vector<agent*> &chld_vec, vector<unit*> &famly){
         double total = 0;
         for(int j = age_dn; j <= age_up; ++j) total += cbk->live_birth_order_by_age[index][j];
         
-        double r = drand48(), prob = 0;
+        double r = random_real(), prob = 0;
         int jj = age_dn;
         for(jj = age_dn; jj <= age_up; ++jj){
             prob += cbk->live_birth_order_by_age[index][jj]/total;

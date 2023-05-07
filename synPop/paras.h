@@ -21,6 +21,8 @@
 #include <set>
 #include <map>
 
+using namespace std;
+
 #define sim_bg              2010
 #define sim_nd              2050
 #define unit_types          5
@@ -58,8 +60,17 @@
 
 //parameters for risk
 #define r_r                 100            //risk range, 100m average, Aedes polynesiensis
-#define rb_working          70             //bitten rate per half day
-#define rb_offwork          70
+#define rb_working          14.5             //bitten rate per half day
+#define rb_offwork          125.5
+
+//Parameters for initial distribution found via stan_glmer in R, included parameter file based upon ICCH of 0.7 and ICCV of 0.28
+#define sigma_h             2.146           //Household standard dev   
+#define sigma_v             1.752            //Village standard dev
+#define beta_0              -5.602324       //beta_0 adult (20+) (prevalence of 4.51%)
+#define beta_0_c            -6.655307      //beta_0 children (5-19) (prevalence of 2.57%)
+
+#define min_2010            2.75
+#define max_2010            3.75
 
 #define c0_4                0.25           //relative exposure to mosquitos, age 0-4
 #define c5_15               0.75           //relative exposure to mosquitos, age 5-15
@@ -92,13 +103,15 @@
 #define sim_years           26  // duration of simulaiton in years. Note that 2010 to 2035 is 26 years
 //define coverage            0.8
 //define c_female            0.93
-using namespace std;
+
 //functions
 int ztpoisson(double l_lambda);
 int binomial(int r, double p);
 double ztpoisson(int k, double l_lambda);
 double gaussian(double m_mu, double s_sigma);
-int poisson(double rate, default_random_engine* generator_path);
+int poisson(double rate);
+double normal(double mean, double stddev);
+double random_real();
 int negbinomial(double rate);
 int L3LarvaePerMos();
 
@@ -114,7 +127,6 @@ int L3LarvaePerMos();
 #define parameters              "../parameters/"
 #define outdir                  "../output/"
 
-
 //parameters
 #define fertility               "fertility.csv"
 #define net_pop_loss            "net_migrants.csv"
@@ -123,6 +135,7 @@ int L3LarvaePerMos();
 #define labor_force_pp_rate     "LFPRs.csv"
 #define exposure_age            "exposure_age.csv"
 #define MDAParams               "MDAParams.csv"
+#define TMDA                    "target_mda.csv"
 
 //demographics
 #define villages                "villages.dat"

@@ -13,6 +13,7 @@
 
 // Constructor of household, with id, size, householder
 hhold::hhold(int hid, int size, agent *holder){
+    //this->villageid=villageid;
     this->hid = hid;
     this->size = size;
     hldr = holder;
@@ -219,10 +220,10 @@ void cblok::hndl_hold_rupt(int year){
             hhold *cur = k->second;
             if(cur->exp == false) continue;
             
-            if(cur->size < hhold_threshold && cur->size >= lambda && drand48() < hhold_rup_p_2)
+            if(cur->size < hhold_threshold && cur->size >= lambda && random_real() < hhold_rup_p_2)
                 h_vec.push_back(cur);
             
-            if(cur->size >= hhold_threshold && drand48() < hhold_rup_p_1)
+            if(cur->size >= hhold_threshold && random_real() < hhold_rup_p_1)
                 h_vec.push_back(cur);
             
             cur->exp = false;

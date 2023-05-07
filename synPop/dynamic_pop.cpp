@@ -89,10 +89,10 @@ void cblok::renew_pop(int year, int day){
             
             double prob = 1 - exp(-mmortlty[index]*pow(mortality_improve, year));
             
-            if(drand48() < prob) v_1.push_back(cur);
+            if(random_real() < prob) v_1.push_back(cur);
             else{
                 ++cur->age;
-                if(cur->age == 365*15 && drand48() < adult_relocation) v_2.push_back(cur);
+                if(cur->age == 365*15 && random_real() < adult_relocation) v_2.push_back(cur);
             }
         }
         
@@ -107,10 +107,10 @@ void cblok::renew_pop(int year, int day){
             
             double prob = 1 - exp(-fmortlty[index]*pow(mortality_improve, year));
             
-            if(drand48() < prob) v_1.push_back(cur);
+            if(random_real() < prob) v_1.push_back(cur);
             else{
                 ++cur->age;
-                if(cur->age == 365*15 && drand48() < adult_relocation) v_2.push_back(cur);
+                if(cur->age == 365*15 && random_real() < adult_relocation) v_2.push_back(cur);
                 if(cur->bth_wind > 0) --cur->bth_wind;
                 
                 if(cur->age == 365*50 && cur->margs == 'm'){
@@ -173,7 +173,7 @@ void cblok::rnd_jobs(agent *p){
     while(true){
         int ii = 0;
         map<int, double>::iterator j = mbk->mblok_commuting.begin();
-        double rnd = drand48();
+        double rnd = random_real();
         while(rnd >= j->second && ii < mbk->mblok_commuting.size()-1) {
             rnd -= j->second;
             ++j; ++ii;
@@ -185,7 +185,7 @@ void cblok::rnd_jobs(agent *p){
         if(dst->mblok_working.size() == 0) continue;
         
         ii = 0;
-        rnd = drand48();
+        rnd = random_real();
         while(rnd >= dst->mblok_working[ii]->p && ii < dst->mblok_working.size()-1){
             rnd -= dst->mblok_working[ii]->p;
             ++ii;
@@ -211,7 +211,7 @@ void cblok::hndl_birth(int year, int day){
                 int index = int((int(cur->age/365)-15)/5);
                 double prob = 1 - exp(-fertlty[year][index]);
                 
-                if(drand48() < prob) ++total_birth;
+                if(random_real() < prob) ++total_birth;
             }
         }
     }
@@ -219,7 +219,7 @@ void cblok::hndl_birth(int year, int day){
     //births += total_birth;
     
     while(total_birth > 0){
-        double rnd = drand48();
+        double rnd = random_real();
         int index = 0;
         while(rnd > live_birth_order_pro[index]) rnd -= live_birth_order_pro[index++];
         
@@ -245,7 +245,9 @@ void cblok::hndl_birth(int year, int day){
         for(int i = 0; i < 7; ++i){
             if(v[i].size() > 0) v_p[i] = live_birth_age_pro[index][i];
             else v_p[i] = 0;
-            
+            //cout << "i: " << i << endl;
+            //cout << "index: " << index << endl;
+            //cout << "livebirthpro: " << live_birth_age_pro[index][i] << endl;
             t_1 += v_p[i];
         }
         
@@ -253,17 +255,23 @@ void cblok::hndl_birth(int year, int day){
         
         for(int i = 0; i < 7; ++i) v_p[i] /= t_1;
         
-        double d_rnd = drand48();
+        double d_rnd = random_real();
+        //cout << "D_rand ini:" << d_rnd << endl;
         int ii = 0;
         for(ii = 0; ii < 7; ++ii){
+            //cout << "D_rand:" << d_rnd << endl;
+            //cout << "ii " << ii << endl;
+            //cout << v_p[ii] << endl;
+
             d_rnd -= v_p[ii];
+
             if(d_rnd <= 0 && v_p[ii] != 0) break;
         }
         
         agent *cur = v[ii][rand()%v[ii].size()];
         mblok *mbk = cur->h_d->rdg->mbk;
         
-        char gender = drand48()<male_born ? 'm' : 'f';
+        char gender = random_real()<male_born ? 'm' : 'f';
         agent *bb = new agent(next_aid++, 0, gender, 's', cur->h_d);
         mbk->add_member(bb);
         
@@ -299,7 +307,7 @@ void cblok::hndl_marrg(int year){
             
             int index = int(cur->age/365-15);
             index = index>54 ? 54 : index;
-            if(cur->margs != 'm' && drand48() < male_mrg_prob[index])
+            if(cur->margs != 'm' && random_real() < male_mrg_prob[index])
                 v_1.push_back(cur);
         }
         
@@ -309,7 +317,7 @@ void cblok::hndl_marrg(int year){
             
             int index = int(cur->age/365-15);
             index = index>54 ? 54 : index;
-            if(cur->margs != 'm' && drand48() < fmal_mrg_prob[index])
+            if(cur->margs != 'm' && random_real() < fmal_mrg_prob[index])
                 v_2.push_back(cur);
         }
     }
@@ -349,7 +357,7 @@ void cblok::hndl_marrg(int year){
             else re_location(p, q_h);
         }
         else{
-            if(drand48() < marg_relocation){
+            if(random_real() < marg_relocation){
                 hhold *new_hold = new hhold(next_hid++);
                 
                 int rnd = rand() % cblok_vcnt_rbldgs.size();
@@ -392,12 +400,12 @@ void cblok::hndl_divrc(int year){
     
     for(int i = 0; i < 11; ++i){
         for(map<int, agent*>::iterator j = fmal_cbrs[i].begin(); j != fmal_cbrs[i].end(); ++j){
-            if(drand48() < annual_divorce) v_1.push_back(j->second);
+            if(random_real() < annual_divorce) v_1.push_back(j->second);
         }
     }
     
     for(map<int, agent*>::iterator j = fmal_marry.begin(); j != fmal_marry.end(); ++j){
-        if(drand48() < annual_divorce) v_1.push_back(j->second);
+        if(random_real() < annual_divorce) v_1.push_back(j->second);
     }
     
     //cout << "year = " << year << " divorce = " << v_1.size() << endl;

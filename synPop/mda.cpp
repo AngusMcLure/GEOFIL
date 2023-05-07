@@ -29,11 +29,11 @@ mda_strat get_nth_mda_strat(string filename, int N)
     }
     
     getline(in,line);
-    
     char *str = new char[line.size()+1];
     strcpy(str, line.c_str());
     char *p = NULL;
-    
+
+
     p = strtok(str, ",");       double MDACoverage = atof(p);
     p = strtok(NULL, ",");      double MDAKillProb1 = atof(p);
     p = strtok(NULL, ",");      double MDAFullSterProb1 = atof(p);
@@ -47,15 +47,24 @@ mda_strat get_nth_mda_strat(string filename, int N)
     p = strtok(NULL, ",");      double MDASterDur2 = atof(p);
     p = strtok(NULL, ",");      double MDAPartSterMagnitude2 = atof(p);
     p = strtok(NULL, ",");      int MinAge2 = atoi(p);
+    p = strtok(NULL, ",");      char Real_Years = *p;
     p = strtok(NULL, ",");      int MDAStartYear = atoi(p);
     p = strtok(NULL, ",");      int MDANumRound = atoi(p);
     p = strtok(NULL, ",");      int MDAYearsBetweenRound = atoi(p);
+    p = strtok(NULL, ",");      char Additional_MDA = *p;
+    p = strtok(NULL, ",");      char Additional_Scheme = *p;
+    p = strtok(NULL, ",");      int Additional_Start = atoi(p);
+    p = strtok(NULL, ",");      int Additional_Rounds = atoi(p);
+    p = strtok(NULL, ",");      int Additional_Years = atoi(p);
+    p = strtok(NULL, ",");      int Additonal_Villages = atoi(p);
+    p = strtok(NULL, ",");      double Additonal_Coverage = atof(p);
     p = strtok(NULL, ",");      int NumSims = atoi(p);
     p = strtok(NULL, ",");      double ProbOneSex = atof(p);
     p = strtok(NULL, ",");      double ProbBothSex = atof(p);
     p = strtok(NULL, ",");      char InitType = *p;
     p = strtok(NULL, ",");      double InitPrev = atof(p);
     p = strtok(NULL, ",");      int SimYears = atoi(p);
+    p = strtok(NULL, ",");      char Targetted = *p;
     delete []str;
     
     drugs drug1 {MDAKillProb1, MDAFullSterProb1, MDAPartSterProb1, MDASterDur1, MDAPartSterMagnitude1};
@@ -66,11 +75,13 @@ mda_strat get_nth_mda_strat(string filename, int N)
     mda_strat strat {MDACoverage,
         drug1, MinAge1,
         drug2, MinAge2,
-        MDAStartYear, MDANumRound, MDAYearsBetweenRound, NumSims,
-        ProbOneSex, ProbBothSex, InitType, InitPrev, SimYears};
-    
-    
-    
+        Real_Years,
+        MDAStartYear, MDANumRound, MDAYearsBetweenRound,
+        Additional_MDA, Additional_Scheme, Additional_Start,
+        Additional_Rounds, Additional_Years, Additonal_Villages,
+        Additonal_Coverage,NumSims,ProbOneSex, ProbBothSex,
+        InitType, InitPrev, SimYears, Targetted};
+
     return strat;
 }
 
@@ -91,3 +102,57 @@ int count_mda_scenarios(string file){
     return MDAScenarioNum;
 }
 
+int count_teams(string filename){
+    int n_teams = -1;
+    ifstream file(filename);
+    string line;
+    while(getline(file,line))
+        n_teams++;
+
+    return n_teams;
+}
+vector <double> get_targeted(string filename, int N){
+    vector <double> storage;
+
+    ifstream in;
+
+    in.open(filename.c_str());
+    if(!in){
+        cout << "open " << filename << " failed" << endl;
+        exit(1);
+    }
+
+    string line;
+
+    //skip N lines
+    for(int i = 0; i < N; ++i){
+        getline(in, line);
+    }
+
+    getline(in,line);
+    char *str = new char[line.size()+1];
+    strcpy(str, line.c_str());
+    char *p = NULL;
+
+
+    p = strtok(str, ",");       int Number_Teams = atoi(p);
+    p = strtok(NULL, ",");      double Coverage = atof(p);
+    p = strtok(NULL, ",");      double Household_Test = atof(p);
+    p = strtok(NULL, ",");      int Years = atoi(p);
+    p = strtok(NULL, ",");      int Start_Year = atoi(p);
+    p = strtok(NULL, ",");      int Treatment_Radius = atoi(p);
+    p = strtok(NULL, ",");      int Min_Test = atoi(p);
+    p = strtok(NULL, ",");      int Days_Return = atoi(p);
+    delete []str;
+
+
+    storage.push_back(Coverage);
+    storage.push_back(Household_Test);
+    storage.push_back(Years);
+    storage.push_back(Start_Year);
+    storage.push_back(Treatment_Radius);
+    storage.push_back(Min_Test);
+    storage.push_back(Days_Return);
+
+    return storage;
+}

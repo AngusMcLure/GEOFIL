@@ -46,7 +46,7 @@ public:
 };
 
 // human individual
-class agent{
+class agent{ //TODO make classes to neaten up properties and aid readability for targeted drug admin
 public:
     int aid;
     int age;        //in days
@@ -78,7 +78,7 @@ public:
     ~agent();
     
     void add_child(agent *p);
-    void sim_bites(double prv, char time, double c, double ProbOneSex, double ProbBothSex, default_random_engine* generator_path);
+    void sim_bites(double prv, char time, double c, double ProbOneSex, double ProbBothSex);
     void update(int year, int day);
     void get_drugs(drugs drug);
     void write_line_list(int SimNum, int y, int s);
