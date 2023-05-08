@@ -1,12 +1,17 @@
 # GEOFIL
 
-GEOFIL is a spatially explicit agent-based modelling framework, designed to model LF transmission dynamics in American Samoa. GEOFIL was developed at the National Centre for Epidemiology and Population Health at the Australian National University.
+GEOFIL is a spatially explicit agent-based modelling framework, designed to model lymphatic filariasis (LF) transmission  in American Samoa. GEOFIL can model a variery of disease surveillance options and interventions for the elimintaiton of LF using mass drug administration (MDA) and alternative targetted treatement strategies. GEOFIL was developed at the National Centre for Epidemiology and Population Health at the Australian National University. Early versions of the code were developed by Zhijing (Sting) Xu, with further development by Angus McLure and Callum Shaw. More details on the software and model outputs can be found in the following peer-reviewed journal articles:
+
+* McLure A, Graves PM, Lau C, Shaw C, Glass K. *Modelling lymphatic filariasis elimination in American Samoa: GEOFIL predicts need for new targets and six rounds of mass drug administration*. Epidemics. 2022 Sep 1;40:100591. https://doi.org/10.1016/j.epidem.2022.100591
+
+* Xu Z, Graves PM, Lau CL, Clements A, Geard N, Glass K. *GEOFIL: A spatially-explicit agent-based modelling framework for predicting the long-term transmission dynamics of lymphatic filariasis in American Samoa*. Epidemics. 2019 Jun 1;27:19-27. https://doi.org/10.1016/j.epidem.2018.12.003
+
 
 To accurately model American Samoan population dynamics, GEOFIL uses a synthetic population model, which allows for births, deaths, couple formation and separation, movement within American Samoa, immigration, and emigration. People are assigned households, workplaces, and schools; the locations of these buildings correspond to known locations of buildings in American Samoa. During the day people are at their day-time location (workplace for employed, school for students, or household for all other people) and during night people are at their night-time location (household for all people). The immediate area around these locations is where transmission may occur. 
 
-To model LF transmission in the human population, the model is run on a daily time step and explicitly models the human-agent while implicitly modelling the mosquito-vector. At each time-step the model simulates synthetic population changes, potential transmission, and the worm life-cycle within the host (acquisition, maturation, fecundity, and mortality). As transmission can occur at either a person's day-time location or night-time location, transmission during working hours and off-work hours is modelled separately. At each time-step a person may zero, one, or multiple transmission events, where a transmission event may transmit either one third stage-larvae of single sex, or two third stage-larvae of both sexes. 
+To model LF transmission in the human population, the model is run on a daily time step and explicitly models the human-agent while implicitly modelling the mosquito-vector. At each time-step the model simulates synthetic population changes, potential transmission, and the worm life-cycle within the host (acquisition, maturation, fecundity, and mortality). As transmission can occur at either a person's day-time location or night-time location, transmission during working hours and off-work hours is modelled separately. At each time-step a person may zero, one, or multiple transmission events, where a transmission event may transmit either one third stage-larvae of single sex, or two third stage-larvae of both sexes. GEOFIL can model treatments with flexible range of effects on worms and can be changing the efficiacy of the treatment can be used to emulate treatment with ivermectin (I), diethylcarbamazine (D), albendazole (A), or their combinations (e.g. DA or IDA). GEOFIL can different treatments to two different age groups (e.g. DA to <5 yearolds and IDA to others)
 
-The model is currently configured to initialise in 2010 and runs for $n$ years. There are 3 initial rounds of territory-wide MDA which occur in 2018, 2019, 2021, these are based on actual MDA rounds that occurred in American Samoa. After these initial rounds of MDA, a number of different additional interventions can be simulated.
+The model is currently configured to initialise in 2010 and runs for $n$ years. There are three initial rounds of territory-wide MDA which occur in 2018, 2019, 2021, these are based on actual MDA rounds that occurred in American Samoa. After these initial rounds of MDA, a number of different additional interventions can be simulated.
 
 The GEOFIL repository contains four directories. All code is contained within synPop. Data and $config contain a number of csv, dat, and init files which are used to build the initial synthetic population and contain all building locations used by GEOFIL. The parameters folder contains additional .csv files for the synthetic population & transmission, and files that control the simulation (MDAParams.csv and target_mda.csv).
 
@@ -15,18 +20,18 @@ MDAParams.csv contains 32 columns, each column providing a value for a variable 
 | **Variable** | **Description** |
 | --- | --- |
 |*Coverage*| MDA coverage of initial rounds|
-|*KillProb1*| Probability of worm death from 2 Drug MDA|
-|*FullSterProb1*| Probability of full worm sterilisation from 2 Drug MDA|
-|*PartSterProb1*| Probability of partial worm sterilisation from 2 Drug MDA|
-|*SterDuration1*| Duration of sterilisation from 2 Drug MDA|
-|*PartSterMagnitude1*| Effect of partial sterilisation from 2 Drug MDA|
-|*MinAge1*| Minimum of age person to receive 2 Drug MDA|
-|*KillProb2*| Probability of worm death from 3 Drug MDA|
-|*FullSterProb2*| Probability of full worm sterilisation from 3 Drug MDA|
-|*PartSterProb2*| Probability of partial worm sterilisation from 3 Drug MDA|
-|*SterDuration2*| Duration of sterilisation from 3 Drug MDA|
-|*PartSterMagnitude2*| Effect of partial sterilisation from 3 Drug MDA|
-|*MinAge2*| Minimum of age person to receive 3 Drug MDA|
+|*KillProb1*| Probability of worm death from treatment option 1|
+|*FullSterProb1*| Probability of full worm sterilisation from treatment option 1|
+|*PartSterProb1*| Probability of partial worm sterilisation from treatment option 1|
+|*SterDuration1*| Duration of sterilisation from treatment option 1|
+|*PartSterMagnitude1*| Effect of partial sterilisation from treatment option 1|
+|*MinAge1*| Minimum of age person to receive treatment option 1|
+|*KillProb2*| Probability of worm death from treatment option 2|
+|*FullSterProb2*| Probability of full worm sterilisation from treatment option 2|
+|*PartSterProb2*| Probability of partial worm sterilisation from treatment option 2|
+|*SterDuration2*| Duration of sterilisation from treatment option 2|
+|*PartSterMagnitude2*| Effect of partial sterilisation from treatment option 2|
+|*MinAge2*| Minimum of age person to receive treatment option 2|
 |*RealYears*| Y for initial MDA in 2018,2019 and 2021 or N for custom initial MDA|
 |*StartYear*| If N for RealYears, starting year for custom initial MDA|
 |*NumRounds*| If N for RealYears, number of rounds for custom initial MDA|
@@ -48,7 +53,7 @@ MDAParams.csv contains 32 columns, each column providing a value for a variable 
 
 If you want to simulate more than one strategy, you just have to add an extra row of variables values below the first row. GEOFIL will the run sequentially down the rows of input values.
 
-The household-based strategy is run from an additional file, target_mda.csv. The file contains eight columns/variables that govern the household based strategy. It is important to note, if running with multiple teams there must be an row of input values for each team (done as teams within the same strategy can be run with different attributes).  Below is an outline of what each variable controls-
+The parameters for the household-based strategy are set in a seperate file, target_mda.csv. The file contains eight columns/variables that govern the household based strategy. If running with multiple teams there must be an row of input values for each team (teams within the same strategy can be run with different attributes).  Below is an outline of what each variable controls-
 
 | **Variable** | **Description** |
 | --- | --- |
@@ -61,4 +66,4 @@ The household-based strategy is run from an additional file, target_mda.csv. The
 |*Min_Test*| The minimum number of households a team will aim to test in each village|
 |*Days_return*| The number of days till a team can return to a village|
 			  
-Once you have configured MDAParams.csv and target_mda.csv the model is run by compiling the code and running with an arguement (this will be the name of the outpyt file). For example ./main ouput_name.csv. 
+Parameters from MDAParams.csv and target_mda.csv are read at run time. The executable from the compiled code runs from the console with a single argument specifying the directory of the output file (formatted as a csv). Outputs will be appended to the specified file.
