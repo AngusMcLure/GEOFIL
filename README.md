@@ -2,6 +2,8 @@
 
 GEOFIL is a spatially explicit agent-based modelling framework, designed to model lymphatic filariasis (LF) transmission  in American Samoa. GEOFIL can model a variery of disease surveillance options and interventions for the elimintaiton of LF using mass drug administration (MDA) and alternative targetted treatement strategies. GEOFIL was developed at the National Centre for Epidemiology and Population Health at the Australian National University. Early versions of the code were developed by Zhijing (Sting) Xu, with further development by Angus McLure and Callum Shaw. More details on the software and model outputs can be found in the following peer-reviewed journal articles:
 
+* Shaw C, McLure A, Graves PM, Lau CL, Glass K. *Lymphatic filariasis endgame strategies: Using GEOFIL to model mass drug administration and targeted surveillance and treatment strategies in American Samoa*. PLOS Neglected Tropical Diseases 2023 17(5): e0011347. https://doi.org/10.1371/journal.pntd.0011347
+
 * McLure A, Graves PM, Lau C, Shaw C, Glass K. *Modelling lymphatic filariasis elimination in American Samoa: GEOFIL predicts need for new targets and six rounds of mass drug administration*. Epidemics. 2022 Sep 1;40:100591. https://doi.org/10.1016/j.epidem.2022.100591
 
 * Xu Z, Graves PM, Lau CL, Clements A, Geard N, Glass K. *GEOFIL: A spatially-explicit agent-based modelling framework for predicting the long-term transmission dynamics of lymphatic filariasis in American Samoa*. Epidemics. 2019 Jun 1;27:19-27. https://doi.org/10.1016/j.epidem.2018.12.003
